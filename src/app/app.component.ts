@@ -1,5 +1,4 @@
 import { Component, VERSION } from "@angular/core";
-// import { City } from './games/city';
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
@@ -28,16 +27,20 @@ export class AppComponent {
   }
 
   onGameChange(e: Event) {
+    this.stop();
+
     const key = (e.target as HTMLSelectElement).value;
     this.game = new this.Games[key]();
     this.game.reset();
     this.currentType = this.game.states[0];
   }
 
-  onTooglePlay() {
+  onTogglePlay() {
     this.playing = !this.playing;
     if (this.playing && !this.timeout) {
       this.doStep();
+    } else {
+      this.stop();
     }
   }
 
@@ -69,8 +72,10 @@ export class AppComponent {
       }, this.speed);
     }
   }
-}
 
-function matrix(length: number, n: number, v: string) {
-  return Array.from({ length }, () => new Array(n).fill(v));
+  stop() {
+    clearTimeout(this.timeout);
+    this.timeout = null;
+    this.playing = false;
+  }
 }

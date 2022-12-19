@@ -9,8 +9,8 @@
       <button (click)="onReset()">Reset</button>
       <button (click)="onRandom()">Random</button>
 
-      <button (click)="doStep()">Step</button>
-      <button (click)="onTooglePlay()">{{ playing ? "Pause" : "Play" }}</button>
+      <button (click)="doStep()" [disabled]="playing">Step</button>
+      <button (click)="onTogglePlay()">{{ playing ? "Pause" : "Play" }}</button>
     </div>
     <div id="pallet">
       <button
