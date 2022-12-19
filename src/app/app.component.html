@@ -2,13 +2,15 @@
   <aside>
     <div id="controls">
       <select (change)="onGameChange($event)">
-        <option *ngFor="let game of Games | keyvalue" [value]="game.key">{{game.key}}</option>
+        <option *ngFor="let game of Games | keyvalue" [value]="game.key">
+          {{ game.key }}
+        </option>
       </select>
       <button (click)="onReset()">Reset</button>
       <button (click)="onRandom()">Random</button>
 
       <button (click)="doStep()">Step</button>
-      <button (click)="onTooglePlay()">{{ playing ? 'Pause' : 'Play' }}</button>
+      <button (click)="onTooglePlay()">{{ playing ? "Pause" : "Play" }}</button>
     </div>
     <div id="pallet">
       <button
@@ -25,7 +27,9 @@
   </aside>
   <div id="content">
     <div id="stats">
-      <span *ngFor="let stat of game.stats | keyvalue"> {{ stat.key }}: {{ stat.value }} </span>
+      <span *ngFor="let stat of game.stats | keyvalue">
+        {{ stat.key }}: {{ stat.value }}
+      </span>
     </div>
     <table>
       <tr *ngFor="let row of game.grid; let i = index">
@@ -42,4 +46,3 @@
     </table>
   </div>
 </div>
-

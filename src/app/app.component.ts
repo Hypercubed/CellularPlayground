@@ -1,13 +1,13 @@
-import { Component, VERSION } from '@angular/core';
+import { Component, VERSION } from "@angular/core";
 // import { City } from './games/city';
-import { WireWorld } from './games/wireworld';
-import { Ant } from './games/ant';
-import { Life } from './games/life';
+import { WireWorld } from "./games/wireworld";
+import { Ant } from "./games/ant";
+import { Life } from "./games/life";
 
 @Component({
-  selector: 'my-app',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  selector: "my-app",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
 })
 export class AppComponent {
   game = new Life();
@@ -15,10 +15,10 @@ export class AppComponent {
   playing = false;
 
   readonly Games = {
-    'Conway\'s Life': Life,
-    'Langton\'s Ant': Ant,
-    WireWorld
-  }
+    "Conway's Life": Life,
+    "Langton's Ant": Ant,
+    WireWorld,
+  };
 
   private timeout = null;
   private speed = 100;
@@ -46,9 +46,8 @@ export class AppComponent {
   }
 
   onRandom() {
-    this.game.grid = Array.from(
-      { length: this.game.size },
-      () => Array.from({ length: this.game.size }).map(_ => this.game.randomState())
+    this.game.grid = Array.from({ length: this.game.size }, () =>
+      Array.from({ length: this.game.size }).map((_) => this.game.randomState())
     );
   }
 
@@ -73,9 +72,5 @@ export class AppComponent {
 }
 
 function matrix(length: number, n: number, v: string) {
-  return Array.from(
-    { length },
-    () => new Array(n).fill(v)
-  );
+  return Array.from({ length }, () => new Array(n).fill(v));
 }
-

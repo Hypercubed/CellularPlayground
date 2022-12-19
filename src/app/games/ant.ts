@@ -1,35 +1,38 @@
-import { CellState, Game } from './game';
-import { clone } from './utils';
+import { CellState, Game } from "./game";
+import { clone } from "./utils";
 
 enum Colors {
-  WHITE = '□',
-  BLACK = '■',
+  WHITE = "□",
+  BLACK = "■",
 }
 
 enum Directions {
-  UP = '▲',
-  RIGHT = '►',
-  DOWN = '▼',
-  LEFT = '◄',
+  UP = "▲",
+  RIGHT = "►",
+  DOWN = "▼",
+  LEFT = "◄",
 }
 
 const BLACK = {
   state: Colors.BLACK,
   token: Colors.BLACK,
-  showInPallet: true
-}
+  showInPallet: true,
+};
 
 const WHITE = {
   state: Colors.WHITE,
   token: Colors.WHITE,
-  showInPallet: true
-}
+  showInPallet: true,
+};
 
-function createAntState(direction: Directions, color: Colors): Readonly<CellState> {
+function createAntState(
+  direction: Directions,
+  color: Colors
+): Readonly<CellState> {
   return {
     state: color + direction,
-    token: direction
-  }
+    token: direction,
+  };
 }
 
 const BLACK_UP = createAntState(Directions.UP, Colors.BLACK);
@@ -48,24 +51,35 @@ export class Ant extends Game {
   };
 
   states = [
-    WHITE_UP, WHITE_DOWN, WHITE_LEFT, WHITE_RIGHT,
-    BLACK_UP, BLACK_DOWN, BLACK_LEFT, BLACK_RIGHT,
-    WHITE, BLACK,
+    WHITE_UP,
+    WHITE_DOWN,
+    WHITE_LEFT,
+    WHITE_RIGHT,
+    BLACK_UP,
+    BLACK_DOWN,
+    BLACK_LEFT,
+    BLACK_RIGHT,
+    WHITE,
+    BLACK,
   ];
 
-  pallet = [
-    WHITE_UP,
-    WHITE, BLACK,
-  ];
+  pallet = [WHITE_UP, WHITE, BLACK];
 
   constructor() {
     super();
 
     this.size = 19;
     this.states = [
-      WHITE_UP, WHITE_DOWN, WHITE_LEFT, WHITE_RIGHT,
-      BLACK_UP, BLACK_DOWN, BLACK_LEFT, BLACK_RIGHT,
-      WHITE, BLACK,
+      WHITE_UP,
+      WHITE_DOWN,
+      WHITE_LEFT,
+      WHITE_RIGHT,
+      BLACK_UP,
+      BLACK_DOWN,
+      BLACK_LEFT,
+      BLACK_RIGHT,
+      WHITE,
+      BLACK,
     ];
 
     this.clearGridWith(WHITE);
@@ -98,7 +112,10 @@ export class Ant extends Game {
 
           // Rotate
           const currentDirection = this.getDirection(t);
-          const newDirection = this.getNextDirection(currentDirection, currentColor);
+          const newDirection = this.getNextDirection(
+            currentDirection,
+            currentColor
+          );
 
           // Flip the cell
           const newColor = currentColor === Colors.BLACK ? WHITE : BLACK;
@@ -121,7 +138,6 @@ export class Ant extends Game {
               x--;
               break;
           }
-
 
           // Step Forward
           const nextColor = this.getColor(this.getCell(y, x));

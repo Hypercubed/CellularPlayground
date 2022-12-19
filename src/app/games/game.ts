@@ -1,4 +1,4 @@
-import { matrix } from './utils';
+import { matrix } from "./utils";
 
 export interface CellState {
   state: string;
@@ -16,12 +16,7 @@ export class Game<T extends CellState = CellState> {
     this.grid = matrix(this.size, this.size, c);
   }
 
-  neighborhoodCount(
-    y: number,
-    x: number,
-    s: T,
-    X: T[][] = this.grid
-  ): number {
+  neighborhoodCount(y: number, x: number, s: T, X: T[][] = this.grid): number {
     let c = 0;
     for (let p = x - 1; p <= x + 1; p++) {
       for (let q = y - 1; q <= y + 1; q++) {
@@ -41,7 +36,7 @@ export class Game<T extends CellState = CellState> {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
       for (let q = y - R; q <= y + R; q++) {
-        const r = Math.sqrt((p - x)**2 + (q - y)**2);
+        const r = Math.sqrt((p - x) ** 2 + (q - y) ** 2);
         if (r <= R) {
           c += +(this.getCell(q, p, X)?.state === s.state);
         }
@@ -77,9 +72,12 @@ export class Game<T extends CellState = CellState> {
   }
 }
 
-export function createState<T extends CellState = CellState>(state: string, token = state): Readonly<CellState> {
+export function createState<T extends CellState = CellState>(
+  state: string,
+  token = state
+): Readonly<CellState> {
   return {
     state,
-    token
-  }
+    token,
+  };
 }

@@ -1,15 +1,15 @@
 import { createState, Game } from "./game";
 import { matrix } from "./utils";
 
-const EMPTY = createState('empty', '□');
-const HEAD = createState('head', '⚡︎');
-const TAIL = createState('tail', '■');
-const CONDUCTOR = createState('conductor', '■');
+const EMPTY = createState("empty", "□");
+const HEAD = createState("head", "⚡︎");
+const TAIL = createState("tail", "■");
+const CONDUCTOR = createState("conductor", "■");
 
 export class WireWorld extends Game {
   stats = {
     Step: 0,
-    Electrons: 0
+    Electrons: 0,
   };
 
   constructor() {
@@ -40,7 +40,7 @@ export class WireWorld extends Game {
     return X;
   }
 
-/*
+  /*
 Empty → Empty
 Electron head → Electron tail
 Electron tail → Conductor

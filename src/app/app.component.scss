@@ -1,4 +1,3 @@
-
 #container {
   width: 100vw;
   height: 100vw;
@@ -28,7 +27,8 @@ table {
   user-select: none;
   border: 1px solid gray;
 
-  th, td {
+  th,
+  td {
     padding: 0;
   }
 
@@ -134,20 +134,19 @@ table {
     color: black;
     background-color: black;
   }
-  
+
   &.state--head {
     color: yellow;
     background-color: blue;
   }
-  
+
   &.state--tail {
     color: red;
     background-color: red;
   }
-  
+
   &.state--conductor {
     color: yellow;
     background-color: yellow;
   }
 }
-

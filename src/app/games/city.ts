@@ -1,16 +1,16 @@
 import { createState, Game } from "./game";
 import { matrix } from "./utils";
 
-const EMPTY = createState('□');
-const RESIDENTIAL = createState('⌂');
-const INDUSTRIAL = createState('I');
-const COMMERCIAL = createState('C');
-const OBSTACLE = createState('■');
+const EMPTY = createState("□");
+const RESIDENTIAL = createState("⌂");
+const INDUSTRIAL = createState("I");
+const COMMERCIAL = createState("C");
+const OBSTACLE = createState("■");
 
 export class City extends Game {
   stats = {
     Step: 0,
-    Alive: 0
+    Alive: 0,
   };
 
   constructor() {
@@ -59,7 +59,7 @@ export class City extends Game {
       if (c > r) {
         return RESIDENTIAL;
       }
-  
+
       if (r > c) {
         return COMMERCIAL;
       }
