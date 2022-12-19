@@ -8,6 +8,8 @@ const COMMERCIAL = createState("C");
 const OBSTACLE = createState("■");
 
 export class City extends Game {
+  name = "City";
+  
   stats = {
     Step: 0,
     Alive: 0,

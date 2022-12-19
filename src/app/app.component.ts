@@ -2,6 +2,7 @@ import { Component, VERSION } from "@angular/core";
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
+import { Rule30 } from "./games/rule30";
 
 @Component({
   selector: "my-app",
@@ -17,6 +18,7 @@ export class AppComponent {
     "Conway's Life": Life,
     "Langton's Ant": Ant,
     WireWorld,
+    Rule30
   };
 
   private timeout = null;

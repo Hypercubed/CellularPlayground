@@ -31,7 +31,7 @@
         {{ stat.key }}: {{ stat.value }}
       </span>
     </div>
-    <table>
+    <table class="game" [class]="'game--' + game.name">
       <tr *ngFor="let row of game.grid; let i = index">
         <td
           *ngFor="let cell of game.grid[i]; let j = index"

@@ -5,6 +5,8 @@ const DEAD = createState("□");
 const ALIVE = createState("■");
 
 export class Life extends Game {
+  name = "Life";
+  
   stats = {
     Step: 0,
     Alive: 0,

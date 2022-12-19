@@ -1,3 +1,7 @@
+/* A 4-state CA created by Brian Silverman.  WireWorld models the flow of
+currents in wires and makes it relatively easy to build logic gates
+and other digital circuits. */
+
 import { createState, Game } from "./game";
 import { matrix } from "./utils";
 
@@ -7,6 +11,8 @@ const TAIL = createState("tail", "■");
 const CONDUCTOR = createState("conductor", "■");
 
 export class WireWorld extends Game {
+  name = "WireWorld";
+  
   stats = {
     Step: 0,
     Electrons: 0,

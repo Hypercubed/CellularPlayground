@@ -45,6 +45,8 @@ const WHITE_DOWN = createAntState(Directions.DOWN, Colors.WHITE);
 const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 
 export class Ant extends Game {
+  name = "Ant";
+
   stats = {
     Step: 0,
     Alive: 0,

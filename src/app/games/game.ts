@@ -6,6 +6,8 @@ export interface CellState {
 }
 
 export class Game<T extends CellState = CellState> {
+  name: string;
+  
   states: T[];
   pallet: T[];
   size: number;
