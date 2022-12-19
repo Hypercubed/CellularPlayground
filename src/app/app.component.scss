@@ -1,0 +1,153 @@
+
+#container {
+  width: 100vw;
+  height: 100vw;
+  position: fixed;
+  background: #ddd;
+
+  aside {
+    height: 100%;
+    width: 230px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px;
+  }
+
+  #content {
+    margin-left: 250px;
+    padding: 20px;
+  }
+}
+
+table {
+  --cell-size: 30px;
+
+  border-spacing: 0;
+  border-collapse: collapse;
+  user-select: none;
+  border: 1px solid gray;
+
+  th, td {
+    padding: 0;
+  }
+
+  td {
+    border: 1px solid gray;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    text-align: center;
+    box-sizing: border-box;
+
+    &:hover {
+      outline: 2px solid blue;
+      outline-offset: 2px;
+      cursor: pointer;
+    }
+  }
+}
+
+#controls {
+  border: 1px solid red;
+  width: 200px;
+  height: auto;
+  padding: 10px;
+  margin: 10px;
+  background: white;
+
+  select {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+    height: 30px;
+    margin: 5px 0;
+
+    &.active {
+      border: 2px solid black;
+    }
+  }
+}
+
+#pallet {
+  border: 1px solid red;
+  width: 200px;
+  padding: 10px;
+  margin: 10px;
+
+  button {
+    height: 30px;
+    width: 30px;
+    margin: 0 5px;
+    vertical-align: top;
+    text-align: center;
+    box-sizing: border-box;
+
+    &.active {
+      outline: 2px solid black;
+      outline-offset: 1px;
+    }
+  }
+}
+
+#stats {
+  border: 1px solid red;
+  width: 100%;
+  margin: 0 0 10px 0;
+  padding: 5px;
+  border-radius: 5px;
+
+  > span {
+    padding: 0 10px;
+  }
+}
+
+.state {
+  &.state--■ {
+    color: black;
+    background-color: black;
+  }
+
+  &.state--□ {
+    color: white;
+    background-color: white;
+  }
+
+  &.state--■▲,
+  &.state--■►,
+  &.state--■▼,
+  &.state--■◄ {
+    color: white;
+    background-color: black;
+  }
+
+  &.state--□▲,
+  &.state--□►,
+  &.state--□▼,
+  &.state--□◄ {
+    color: black;
+    background-color: white;
+  }
+
+  &.state--empty {
+    color: black;
+    background-color: black;
+  }
+  
+  &.state--head {
+    color: yellow;
+    background-color: blue;
+  }
+  
+  &.state--tail {
+    color: red;
+    background-color: red;
+  }
+  
+  &.state--conductor {
+    color: yellow;
+    background-color: yellow;
+  }
+}
+

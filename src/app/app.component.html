@@ -1,0 +1,45 @@
+<div id="container">
+  <aside>
+    <div id="controls">
+      <select (change)="onGameChange($event)">
+        <option *ngFor="let game of Games | keyvalue" [value]="game.key">{{game.key}}</option>
+      </select>
+      <button (click)="onReset()">Reset</button>
+      <button (click)="onRandom()">Random</button>
+
+      <button (click)="doStep()">Step</button>
+      <button (click)="onTooglePlay()">{{ playing ? 'Pause' : 'Play' }}</button>
+    </div>
+    <div id="pallet">
+      <button
+        *ngFor="let type of game.pallet"
+        [title]="type.state"
+        class="state"
+        [class]="'state--' + type.state"
+        [class.active]="currentType.state === type.state"
+        (click)="currentType = type"
+      >
+        {{ type.token }}
+      </button>
+    </div>
+  </aside>
+  <div id="content">
+    <div id="stats">
+      <span *ngFor="let stat of game.stats | keyvalue"> {{ stat.key }}: {{ stat.value }} </span>
+    </div>
+    <table>
+      <tr *ngFor="let row of game.grid; let i = index">
+        <td
+          *ngFor="let cell of game.grid[i]; let j = index"
+          (mousedown)="onMouseEnter($event, i, j)"
+          (mouseenter)="onMouseEnter($event, i, j)"
+          class="state"
+          [class]="'state--' + cell.state"
+        >
+          {{ cell.token }}
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
