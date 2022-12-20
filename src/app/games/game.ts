@@ -19,14 +19,14 @@ export abstract class Game<T extends CellState = CellState> {
   private nextGrid: T[][];
 
   abstract reset(): void;
-  abstract doStats(): void;
+  abstract refreshStats(): void;
 
-  clearGridWith(c: T) {
+  fillWith(c: T) {
     this.currentGrid = matrix(this.size, this.size, c);
     this.nextGrid = matrix(this.size, this.size, c);
   }
 
-  neighborhoodCount(y: number, x: number, s: T): number {
+  neighborhoodCountWhen(y: number, x: number, s: T): number {
     let c = 0;
     for (let p = x - 1; p <= x + 1; p++) {
       for (let q = y - 1; q <= y + 1; q++) {
@@ -36,7 +36,7 @@ export abstract class Game<T extends CellState = CellState> {
     return c;
   }
 
-  regionCount(y: number, x: number, R: number, s: T): number {
+  regionCountWhen(y: number, x: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
       for (let q = y - R; q <= y + R; q++) {
@@ -49,7 +49,7 @@ export abstract class Game<T extends CellState = CellState> {
     return c;
   }
 
-  worldCount(s: T): number {
+  worldCountWhen(s: T): number {
     let c = 0;
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -63,42 +63,42 @@ export abstract class Game<T extends CellState = CellState> {
     return getCell(y, x, this.currentGrid);
   }
 
-  setCell(y: number, x: number, s: T) {
-    setCell(y, x, s, this.nextGrid);
-  }
-
-  dangerouslySetCell(y: number, x: number, s: T) {
+  immediatelySetCell(y: number, x: number, s: T) {
     setCell(y, x, s, this.currentGrid);
+    this.refreshStats();
   }
 
   doStep() {
+    const changes = [];
+
     for (let y = 0; y < this.size; y++) {
       for (let x = 0; x < this.size; x++) {
         const n = this.getNextCell(y, x);
-        this.setCell(y, x, n);
+        if (n !== this.currentGrid[y][x]) {
+          changes.push([y, x, n]);
+        }
       }
     }
 
-    const nextNextGrid = this.currentGrid;
-    this.currentGrid = this.nextGrid;
-    this.nextGrid = nextNextGrid;
+    // Only update what has changed
+    for (const [y, x, n] of changes) {
+      this.currentGrid[y][x] = n;
+    }
+
     this.stats.Step++;
+
+    this.refreshStats();
   }
 
-  randomState(): CellState {
-    return this.states[Math.floor(this.states.length * Math.random())];
-  }
-
-  getNextField() {
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        const n = this.getNextCell(j, i);
-        this.setCell(j, i, n);
+  protected getNextField() {
+    for (let y = 0; y < this.size; y++) {
+      for (let x = 0; x < this.size; x++) {
+        return this.getNextCell(y, x);
       }
     }
   }
 
-  getNextCell(y: number, x: number) {
+  protected getNextCell(y: number, x: number) {
     return this.getCell(y, x);
   }
 }

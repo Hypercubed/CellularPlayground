@@ -24,13 +24,13 @@ export class WireWorld extends Game {
     this.states = [CONDUCTOR, HEAD, TAIL, EMPTY];
     this.pallet = [CONDUCTOR, HEAD, TAIL, EMPTY];
 
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
   }
 
   reset() {
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
     this.stats.Step = 0;
-    this.doStats();
+    this.refreshStats();
   }
 
   /*
@@ -44,7 +44,7 @@ export class WireWorld extends Game {
     if (a.state === HEAD.state) return TAIL;
     if (a.state === TAIL.state) return CONDUCTOR;
     if (a.state === CONDUCTOR.state) {
-      const c = this.neighborhoodCount(y, x, HEAD);
+      const c = this.neighborhoodCountWhen(y, x, HEAD);
       if (c === 1 || c === 2) {
         return HEAD;
       }
@@ -52,7 +52,7 @@ export class WireWorld extends Game {
     return a;
   }
 
-  doStats() {
-    this.stats.Electrons = this.worldCount(HEAD);
+  refreshStats() {
+    this.stats.Electrons = this.worldCountWhen(HEAD);
   }
 }

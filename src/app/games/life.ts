@@ -16,22 +16,22 @@ export class Life extends Game {
 
   constructor() {
     super();
-    this.clearGridWith(DEAD);
+    this.fillWith(DEAD);
   }
 
   reset() {
-    this.clearGridWith(DEAD);
+    this.fillWith(DEAD);
     this.stats.Step = 0;
-    this.doStats();
+    this.refreshStats();
   }
 
   getNextCell(y: number, x: number) {
     const a = this.grid[y][x].state === ALIVE.state ? 1 : 0;
-    const s = this.neighborhoodCount(y, x, ALIVE);
+    const s = this.neighborhoodCountWhen(y, x, ALIVE);
     return s - a === 3 || s === 3 ? ALIVE : DEAD;
   }
 
-  doStats() {
-    this.stats.Alive = this.worldCount(ALIVE);
+  refreshStats() {
+    this.stats.Alive = this.worldCountWhen(ALIVE);
   }
 }

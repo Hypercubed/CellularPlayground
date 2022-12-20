@@ -1,17 +1,23 @@
-import { Component } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  ViewEncapsulation,
+} from "@angular/core";
 
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
 import { Wolfram } from "./games/wolfram";
-import { City } from "./games/city";
+// import { City } from "./games/city";
 
 const Games = {
   life: { title: "Conway's Life", create: () => new Life() },
   ant: { title: "Langton's Ant", create: () => new Ant() },
   wireWorld: { title: "WireWorld", create: () => new WireWorld() },
   rule30: { title: "Rule 30", create: () => new Wolfram() },
-  rule28: { title: "Rule 28", create: () => new Wolfram(28) },
+  rule150: { title: "Rule 150", create: () => new Wolfram(150) },
   // city: { title: 'City', create: () => new City },
 };
 
@@ -19,6 +25,8 @@ const Games = {
   selector: "my-app",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
   readonly Games = Games;
@@ -27,9 +35,11 @@ export class AppComponent {
   currentGame = "ant";
   game = this.Games[this.currentGame].create();
   currentType = this.game.states[0];
+  speed = -2;
 
   private timeout = null;
-  private speed = 100;
+
+  constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.game = this.Games[this.currentGame].create();
@@ -67,20 +77,29 @@ export class AppComponent {
 
   onMouseEnter(e: MouseEvent, j: number, i: number) {
     if (e.buttons) {
-      this.game.dangerouslySetCell(j, i, this.currentType);
-      this.game.doStats();
+      this.game.immediatelySetCell(j, i, this.currentType);
+      this.game.refreshStats();
     }
   }
 
   doStep() {
     this.timeout = null;
-    this.game.doStep();
-    this.game.doStats();
+
+    if (this.speed > 0) {
+      for (let i = 0; i <= this.speed; i++) {
+        this.game.doStep();
+      }
+    } else {
+      this.game.doStep();
+    }
+
+    this.cdr.detectChanges();
 
     if (this.playing) {
+      const ms = Math.max(0, -this.speed * 200);
       this.timeout = setTimeout(() => {
         this.doStep();
-      }, this.speed);
+      }, ms);
     }
   }
 

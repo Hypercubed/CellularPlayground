@@ -19,26 +19,26 @@ export class City extends Game {
     this.states = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
     this.pallet = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
 
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
   }
 
   reset() {
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
     this.stats.Step = 0;
-    this.doStats();
+    this.refreshStats();
   }
 
   getNextCell(y: number, x: number) {
     const a = this.getCell(y, x);
 
     if (a.state === EMPTY.state) {
-      const r = this.regionCount(y, x, 1, RESIDENTIAL);
-      const i = this.regionCount(y, x, 1, INDUSTRIAL);
-      const c = this.regionCount(y, x, 1, COMMERCIAL);
+      const r = this.regionCountWhen(y, x, 1, RESIDENTIAL);
+      const i = this.regionCountWhen(y, x, 1, INDUSTRIAL);
+      const c = this.regionCountWhen(y, x, 1, COMMERCIAL);
 
-      const rw = this.worldCount(RESIDENTIAL);
-      const iw = this.worldCount(INDUSTRIAL);
-      const cw = this.worldCount(COMMERCIAL);
+      const rw = this.worldCountWhen(RESIDENTIAL);
+      const iw = this.worldCountWhen(INDUSTRIAL);
+      const cw = this.worldCountWhen(COMMERCIAL);
 
       if (r > 0 && rw < cw + iw && i === 0) {
         return RESIDENTIAL;
@@ -55,7 +55,7 @@ export class City extends Game {
     return a;
   }
 
-  doStats() {
-    this.stats.Alive = this.worldCount(RESIDENTIAL);
+  refreshStats() {
+    this.stats.Alive = this.worldCountWhen(RESIDENTIAL);
   }
 }

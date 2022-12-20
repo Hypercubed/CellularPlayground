@@ -11,6 +11,7 @@
 
       <button (click)="doStep()" [disabled]="playing">Step</button>
       <button (click)="onTogglePlay()">{{ playing ? "Pause" : "Play" }}</button>
+      <input type="range" min="-5" max="5" [(ngModel)]="speed" class="slider" />
     </div>
     <div id="pallet">
       <button
@@ -21,7 +22,7 @@
         [class.active]="currentType.state === type.state"
         (click)="currentType = type"
       >
-        {{ type.token }}
+        <span>{{ type.token }}</span>
       </button>
     </div>
   </aside>
@@ -40,7 +41,7 @@
           class="state"
           [class]="'state--' + cell.state"
         >
-          {{ cell.token }}
+          <span>{{ cell.token }}</span>
         </td>
       </tr>
     </table>

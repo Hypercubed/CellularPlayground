@@ -4,7 +4,7 @@ import { clone } from "./utils";
 const EMPTY = createState("□");
 const ALIVE = createState("■");
 
-const NEXT = createState(" ");
+const NEXT = createState("_");
 
 export class Wolfram extends Game {
   stats = {
@@ -12,7 +12,7 @@ export class Wolfram extends Game {
     Alive: 0,
   };
 
-  size = 19;
+  size = 25;
   states = [ALIVE, EMPTY, NEXT];
   pallet = [ALIVE, EMPTY, NEXT];
 
@@ -29,37 +29,35 @@ export class Wolfram extends Game {
       })
       .reverse();
 
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
   }
 
   reset() {
-    this.clearGridWith(EMPTY);
+    this.fillWith(EMPTY);
     this.grid[1].fill(NEXT);
-    this.grid[0][9] = ALIVE;
+    this.grid[0][Math.floor(this.size / 2)] = ALIVE;
     this.stats.Step = 0;
-    this.doStats();
+    this.refreshStats();
   }
 
   getNextCell(y: number, x: number) {
     const c = this.getCell(y, x);
 
     if (c.state === NEXT.state) {
-      const b0 = this.getCell(y - 1, x + 1)?.state === ALIVE.state ? 1 : 0;
-      const b1 = this.getCell(y - 1, x)?.state === ALIVE.state ? 1 : 0;
-      const b2 = this.getCell(y - 1, x - 1)?.state === ALIVE.state ? 1 : 0;
+      const b0 = +(this.getCell(y - 1, x + 1)?.state === ALIVE.state);
+      const b1 = +(this.getCell(y - 1, x)?.state === ALIVE.state);
+      const b2 = +(this.getCell(y - 1, x - 1)?.state === ALIVE.state);
       const s = b0 + b1 * 2 + b2 * 4;
       return this.rule[s];
     }
 
     const up = this.getCell(y - 1, x);
-    if (up?.state === NEXT.state) {
-      return NEXT;
-    }
+    if (up?.state === NEXT.state) return NEXT;
 
     return c;
   }
 
-  doStats() {
-    this.stats.Alive = this.worldCount(ALIVE);
+  refreshStats() {
+    this.stats.Alive = this.worldCountWhen(ALIVE);
   }
 }

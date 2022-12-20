@@ -82,18 +82,20 @@ export class Ant extends Game {
       BLACK,
     ];
 
-    this.clearGridWith(WHITE);
+    this.fillWith(WHITE);
   }
 
   reset() {
     this.stats.Step = 0;
-    this.clearGridWith(WHITE);
-    this.doStats();
+    this.fillWith(WHITE);
+    this.refreshStats();
   }
 
-  doStats() {
+  refreshStats() {
     this.stats.Alive =
-      this.size * this.size - this.worldCount(WHITE) - this.worldCount(BLACK);
+      this.size * this.size -
+      this.worldCountWhen(WHITE) -
+      this.worldCountWhen(BLACK);
   }
 
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit
