@@ -1,13 +1,13 @@
 <div id="container">
   <aside>
     <div id="controls">
-      <select (change)="onGameChange($event)">
+      <select (change)="onGameChange($event)" [(ngModel)]="currentGame">
         <option *ngFor="let game of Games | keyvalue" [value]="game.key">
-          {{ game.key }}
+          {{ game.value.title }}
         </option>
       </select>
       <button (click)="onReset()">Reset</button>
-      <button (click)="onRandom()">Random</button>
+      <!-- <button (click)="onRandom()">Random</button> -->
 
       <button (click)="doStep()" [disabled]="playing">Step</button>
       <button (click)="onTogglePlay()">{{ playing ? "Pause" : "Play" }}</button>
@@ -31,7 +31,7 @@
         {{ stat.key }}: {{ stat.value }}
       </span>
     </div>
-    <table class="game" [class]="'game--' + game.name">
+    <table class="game" [class]="'game--' + currentGame">
       <tr *ngFor="let row of game.grid; let i = index">
         <td
           *ngFor="let cell of game.grid[i]; let j = index"

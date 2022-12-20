@@ -1,76 +1,105 @@
-import { matrix } from "./utils";
+import { matrix, setCell, getCell } from "./utils";
 
 export interface CellState {
   state: string;
   token: string;
 }
 
-export class Game<T extends CellState = CellState> {
-  name: string;
-  
+export abstract class Game<T extends CellState = CellState> {
   states: T[];
   pallet: T[];
   size: number;
-  grid: T[][];
   stats: Record<string, any>;
 
-  clearGridWith(c: T) {
-    this.grid = matrix(this.size, this.size, c);
+  get grid() {
+    return this.currentGrid;
   }
 
-  neighborhoodCount(y: number, x: number, s: T, X: T[][] = this.grid): number {
+  private currentGrid: T[][];
+  private nextGrid: T[][];
+
+  abstract reset(): void;
+  abstract doStats(): void;
+
+  clearGridWith(c: T) {
+    this.currentGrid = matrix(this.size, this.size, c);
+    this.nextGrid = matrix(this.size, this.size, c);
+  }
+
+  neighborhoodCount(y: number, x: number, s: T): number {
     let c = 0;
     for (let p = x - 1; p <= x + 1; p++) {
       for (let q = y - 1; q <= y + 1; q++) {
-        c += +(this.getCell(q, p, X)?.state === s.state);
+        c += +(this.getCell(q, p)?.state === s.state);
       }
     }
     return c;
   }
 
-  regionCount(
-    y: number,
-    x: number,
-    R: number,
-    s: T,
-    X: T[][] = this.grid
-  ): number {
+  regionCount(y: number, x: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
       for (let q = y - R; q <= y + R; q++) {
-        const r = Math.sqrt((p - x) ** 2 + (q - y) ** 2);
+        const r = Math.abs(p - x) + Math.abs(q - y); // Manhattan distance
         if (r <= R) {
-          c += +(this.getCell(q, p, X)?.state === s.state);
+          c += +(this.getCell(q, p)?.state === s.state);
         }
       }
     }
     return c;
   }
 
-  worldCount(s: T, X: T[][] = this.grid): number {
+  worldCount(s: T): number {
     let c = 0;
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        c += +(this.getCell(j, i, X).state === s.state);
+        c += +(this.getCell(j, i).state === s.state);
       }
     }
     return c;
   }
 
-  getCell(y: number, x: number, X: T[][] = this.grid): T {
-    if (x < 0 || y < 0) return null;
-    if (x >= this.size || y >= this.size) return null;
-    return X[y][x] as T;
+  getCell(y: number, x: number): T {
+    return getCell(y, x, this.currentGrid);
   }
 
-  setCell(y: number, x: number, s: T, X: T[][] = this.grid) {
-    if (x < 0 || y < 0) return null;
-    if (x >= this.size || y >= this.size) return null;
-    X[y][x] = s;
+  setCell(y: number, x: number, s: T) {
+    setCell(y, x, s, this.nextGrid);
+  }
+
+  dangerouslySetCell(y: number, x: number, s: T) {
+    setCell(y, x, s, this.currentGrid);
+  }
+
+  doStep() {
+    for (let y = 0; y < this.size; y++) {
+      for (let x = 0; x < this.size; x++) {
+        const n = this.getNextCell(y, x);
+        this.setCell(y, x, n);
+      }
+    }
+
+    const nextNextGrid = this.currentGrid;
+    this.currentGrid = this.nextGrid;
+    this.nextGrid = nextNextGrid;
+    this.stats.Step++;
   }
 
   randomState(): CellState {
     return this.states[Math.floor(this.states.length * Math.random())];
+  }
+
+  getNextField() {
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        const n = this.getNextCell(j, i);
+        this.setCell(j, i, n);
+      }
+    }
+  }
+
+  getNextCell(y: number, x: number) {
+    return this.getCell(y, x);
   }
 }
 

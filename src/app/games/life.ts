@@ -5,8 +5,6 @@ const DEAD = createState("□");
 const ALIVE = createState("■");
 
 export class Life extends Game {
-  name = "Life";
-  
   stats = {
     Step: 0,
     Alive: 0,
@@ -27,27 +25,10 @@ export class Life extends Game {
     this.doStats();
   }
 
-  getNextField() {
-    const X = matrix(this.size, this.size, DEAD);
-
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        X[j][i] = this.getNextCell(j, i);
-      }
-    }
-
-    return X;
-  }
-
   getNextCell(y: number, x: number) {
     const a = this.grid[y][x].state === ALIVE.state ? 1 : 0;
     const s = this.neighborhoodCount(y, x, ALIVE);
     return s - a === 3 || s === 3 ? ALIVE : DEAD;
-  }
-
-  doStep() {
-    this.grid = this.getNextField();
-    this.stats.Step++;
   }
 
   doStats() {

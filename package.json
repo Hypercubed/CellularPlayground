@@ -9,7 +9,8 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "deploy": "ng deploy --base-href=/CellularPlayground/"
+    "deploy": "ng deploy --base-href=/CellularPlayground/",
+    "fix": "prettier --write ."
   },
   "dependencies": {
     "@angular/animations": "^15.0.2",
