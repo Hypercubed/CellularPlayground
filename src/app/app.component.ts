@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  NgZone,
   ViewEncapsulation,
 } from "@angular/core";
 
@@ -10,14 +9,32 @@ import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
 import { Wolfram } from "./games/wolfram";
+import { Game } from "./games/game";
+import { KeyValue } from "@angular/common";
 // import { City } from "./games/city";
 
-const Games = {
+/* Defining the interface for the pattern. */
+// interface Pattern {
+//   name: string;
+//   rle: string;
+// }
+
+interface GameListItem {
+  title: string;
+  create: () => Game;
+  // TODO: support RLE patterns
+  // patterns: Record<string, Pattern>;
+}
+
+const Games: Record<string, GameListItem> = {
   life: { title: "Conway's Life", create: () => new Life() },
-  ant: { title: "Langton's Ant", create: () => new Ant() },
+  historyLife: { title: "Conway's Life (History)", create: () => new Life() },
+  torusLife: { title: "Conway's Life (Torus)", create: () => new Life({ continuous: true }) },
+  ant: { title: "Langton's Ant", create: () => new Ant({ sizeX: 41, sizeY: 41 }) },
+  torusAnt: { title: "Langton's Ant (Torus)", create: () => new Ant({ sizeX: 21, sizeY: 21, continuous: true }) },
   wireWorld: { title: "WireWorld", create: () => new WireWorld() },
   rule30: { title: "Rule 30", create: () => new Wolfram() },
-  rule150: { title: "Rule 150", create: () => new Wolfram(150) },
+  rule110: { title: "Rule 110", create: () => new Wolfram(110) },
   // city: { title: 'City', create: () => new City },
 };
 
@@ -32,12 +49,14 @@ export class AppComponent {
   readonly Games = Games;
 
   playing = false;
-  currentGame = "ant";
+  currentGame = "life";
   game = this.Games[this.currentGame].create();
   currentType = this.game.states[0];
   speed = -2;
+  rle: string;
 
   private timeout = null;
+  mouseDown = false;
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
@@ -70,15 +89,33 @@ export class AppComponent {
   }
 
   onRandom() {
-    // this.game.grid = Array.from({ length: this.game.size }, () =>
-    //   Array.from({ length: this.game.size }).map((_) => this.game.randomState())
-    // );
+    this.game.fillWith(() => {
+      const i = Math.floor(Math.random() * this.game.pallet.length);
+      return this.game.pallet[i];
+    });
+  }
+
+  onMouseLeave() {
+    if (this.playing) {
+      this.doStep();
+    }
   }
 
   onMouseEnter(e: MouseEvent, j: number, i: number) {
     if (e.buttons) {
-      this.game.immediatelySetCell(j, i, this.currentType);
-      this.game.refreshStats();
+      const s = e.buttons === 1 ? this.currentType : this.game.pallet[this.game.pallet.length - 1];
+
+      const c = this.game.getCell(j, i);
+      if (c !== s) {
+        this.game.immediatelySetCell(j, i, s);
+        this.game.refreshStats();
+        this.rle = this.game.getRLE();
+      }
+
+      if (this.playing) {
+        this.pause();
+        this.onMouseEnter(e, j, i);
+      }
     }
   }
 
@@ -93,10 +130,11 @@ export class AppComponent {
       this.game.doStep();
     }
 
+    this.rle = this.game.getRLE();
     this.cdr.detectChanges();
 
     if (this.playing) {
-      const ms = Math.max(0, -this.speed * 200);
+      const ms = Math.max(0, -this.speed * 100);
       this.timeout = setTimeout(() => {
         this.doStep();
       }, ms);
@@ -107,5 +145,18 @@ export class AppComponent {
     clearTimeout(this.timeout);
     this.timeout = null;
     this.playing = false;
+  }
+
+  pause() {
+    clearTimeout(this.timeout);
+    this.timeout = null;
+  }
+
+  trackByMethod(index: number): number {
+    return index;
+  }
+
+  titleAscOrder = (a: KeyValue<string, GameListItem>, b: KeyValue<string, GameListItem>): number => {
+    return a.value.title.localeCompare(b.value.title);
   }
 }

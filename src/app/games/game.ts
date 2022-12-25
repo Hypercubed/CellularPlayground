@@ -1,48 +1,109 @@
-import { matrix, setCell, getCell } from "./utils";
-
 export interface CellState {
   state: string;
   token: string;
 }
 
+export interface GameOptions {
+  sizeX: number;
+  sizeY: number;
+  continuous: boolean;
+}
+
+export const DEAD = createState("b");
+export const ALIVE = createState("o");
+
 export abstract class Game<T extends CellState = CellState> {
   states: T[];
   pallet: T[];
-  size: number;
+
+  sizeX: number;
+  sizeY: number;
   stats: Record<string, any>;
+  continuous: boolean = false;
 
   get grid() {
     return this.currentGrid;
   }
 
   private currentGrid: T[][];
-  private nextGrid: T[][];
 
-  abstract reset(): void;
-  abstract refreshStats(): void;
-
-  fillWith(c: T) {
-    this.currentGrid = matrix(this.size, this.size, c);
-    this.nextGrid = matrix(this.size, this.size, c);
+  constructor(options?: Partial<GameOptions>) {
+    if (options) {
+      Object.assign(this, options);
+    }
   }
 
-  neighborhoodCountWhen(y: number, x: number, s: T): number {
-    let c = 0;
-    for (let p = x - 1; p <= x + 1; p++) {
-      for (let q = y - 1; q <= y + 1; q++) {
-        c += +(this.getCell(q, p)?.state === s.state);
+  refreshStats() {
+    this.stats.Alive = this.worldCountWhen(ALIVE as T);
+  }
+
+  reset() {
+    this.fillWith(DEAD as T);
+    this.stats.Step = 0;
+  }
+
+  fillWith(c: T | ((x: number, y: number) => T)) {
+    this.currentGrid = Array.from({ length: this.sizeY }, (_, y) => {
+      return Array.from({ length: this.sizeX }, (_, x) => {
+        return typeof c === 'function' ? c(x, y) : c;
+      });
+    });
+    this.refreshStats();
+  }
+
+  getWorld(): T[] {
+    let c = [];
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        c.push(this.getCell(x, y));
       }
     }
     return c;
   }
 
-  regionCountWhen(y: number, x: number, R: number, s: T): number {
+  getWorldWhen(s: T): T[] {
+    let c = [];
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        const ss = this.getCell(x, y);
+        if (ss?.state === s.state) c.push(ss);
+      }
+    }
+    return c;
+  }
+
+  // Moore neighborhood
+  getNeighborsWhen(x: number, y: number, s: T): T[] {
+    let c = [];
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        if (p === x && q === y) continue;
+        const ss = this.getCell(p, q);
+        if (ss?.state === s.state) c.push(ss);
+      }
+    }
+    return c;
+  }
+
+  // Moore neighborhood
+  neighborhoodCountWhen(x: number, y: number, s: T): number {
+    let c = 0;
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        c += +(this.getCell(p, q)?.state === s.state);
+      }
+    }
+    return c;
+  }
+
+  // Von Neumann neighborhood
+  regionCountWhen(x: number, y: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
       for (let q = y - R; q <= y + R; q++) {
         const r = Math.abs(p - x) + Math.abs(q - y); // Manhattan distance
         if (r <= R) {
-          c += +(this.getCell(q, p)?.state === s.state);
+          c += +(this.getCell(p, q)?.state === s.state);
         }
       }
     }
@@ -51,37 +112,52 @@ export abstract class Game<T extends CellState = CellState> {
 
   worldCountWhen(s: T): number {
     let c = 0;
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        c += +(this.getCell(j, i).state === s.state);
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        c += +(this.getCell(x, y)?.state === s.state);
       }
     }
     return c;
   }
 
-  getCell(y: number, x: number): T {
-    return getCell(y, x, this.currentGrid);
+  getCell(x: number, y: number): T {
+    if (this.continuous) {
+      x = (x + this.sizeX) % this.sizeX;
+      y = (y + this.sizeY) % this.sizeY;
+    } else {
+      if (x < 0 || y < 0) return null;
+      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length) return null;
+    }
+    return this.currentGrid[y][x] as T;
   }
 
-  immediatelySetCell(y: number, x: number, s: T) {
-    setCell(y, x, s, this.currentGrid);
+  immediatelySetCell(x: number, y: number, s: T) {
+    if (this.continuous) {
+      x = (x + this.sizeX) % this.sizeX;
+      y = (y + this.sizeY) % this.sizeY;
+    } else {
+      if (x < 0 || y < 0) return null;
+      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length) return null;
+    }
+    this.currentGrid[y][x] = s;
     this.refreshStats();
   }
 
   doStep() {
     const changes = [];
 
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        const n = this.getNextCell(y, x);
-        if (n !== this.currentGrid[y][x]) {
-          changes.push([y, x, n]);
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        const c = this.getCell(x, y);
+        const n = this.getNextCell(x, y);
+        if (n !== c) {
+          changes.push([x, y, n]);
         }
       }
     }
 
     // Only update what has changed
-    for (const [y, x, n] of changes) {
+    for (const [x, y, n] of changes) {
       this.currentGrid[y][x] = n;
     }
 
@@ -90,25 +166,55 @@ export abstract class Game<T extends CellState = CellState> {
     this.refreshStats();
   }
 
+  getRLE() {
+    let rle = "";
+
+    let l = "";
+    let c = 0;
+
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        const t = this.getCell(x, y)?.token;
+        if (t !== l) {
+          if (l !== "") rle += c + l;
+          l = t;
+          c = 1;
+        } else {
+          c++;
+        }
+      }
+      rle += c + l + "$";
+      c = 0;
+      l = "";
+    }
+    return rle;
+
+    /* 
+      Tidy:
+        Removes trailing b's from rows
+        bounding box
+    */
+  }
+
   protected getNextField() {
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        return this.getNextCell(y, x);
+    for (let y = 0; y < this.sizeX; y++) {
+      for (let x = 0; x < this.sizeY; x++) {
+        return this.getNextCell(x, y);
       }
     }
   }
 
   protected getNextCell(y: number, x: number) {
-    return this.getCell(y, x);
+    return this.getCell(x, y);
   }
 }
 
 export function createState<T extends CellState = CellState>(
   state: string,
   token = state
-): Readonly<CellState> {
+): Readonly<T> {
   return {
     state,
     token,
-  };
+  } as T;
 }

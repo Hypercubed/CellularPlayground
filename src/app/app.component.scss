@@ -1,4 +1,9 @@
 #container {
+  --cell-height: 15px;
+  --cell-width: 15px;
+  --board-height: auto;
+  --board-width: 100%;
+
   width: 100vw;
   height: 100vw;
   position: fixed;
@@ -19,8 +24,9 @@
     max-width: 570px;
   }
 
-  table {
-    width: 100%;
+  #board {
+    height: var(--board-height);
+    width: var(--board-width);
     aspect-ratio: 1 / 1;
     margin: 0 auto;
     table-layout: fixed;
@@ -35,12 +41,15 @@
       padding: 0;
     }
 
-    td {
+    .cell {
+      height: var(--cell-height);
+      width: var(--cell-width);
+
       border: 1px solid gray;
       text-align: center;
       box-sizing: border-box;
       aspect-ratio: 1 / 1;
-      line-height: 1em;
+      line-height: 0;
 
       &:hover {
         outline: 2px solid blue;
@@ -110,56 +119,94 @@
     }
   }
 
-  .state {
-    &.state--■ {
-      color: black;
+  .cell {
+    transition: background 0.2s ease-in-out;
+    color: transparent;
+    background-color: white;
+
+    &--■,
+    &--o,
+    &--1 {
       background-color: black;
     }
 
-    &.state--□ {
-      color: white;
+    &--b,
+    &--□,
+    &--0 {
       background-color: white;
     }
 
-    &.state--_ {
-      color: rgb(216, 216, 216);
-      background-color: rgb(216, 216, 216);
+    &.cell--_ {
+      background-color: lightgray;
     }
+  }
 
-    &.state--■▲,
-    &.state--■►,
-    &.state--■▼,
-    &.state--■◄ {
-      color: white;
-      background-color: black;
+  &.game--ant,
+  &.game--torusAnt {
+    .cell {
+      &--■▲,
+      &--■►,
+      &--■▼,
+      &--■◄ {
+        color: white;
+        background-color: black;
+      }
+
+      &--□▲,
+      &--□►,
+      &--□▼,
+      &--□◄ {
+        color: black;
+        background-color: white;
+      }       
     }
+  }
 
-    &.state--□▲,
-    &.state--□►,
-    &.state--□▼,
-    &.state--□◄ {
-      color: black;
-      background-color: white;
+  &.game--wireworld {
+    .cell {
+      transition: unset;
+
+      &.cell--empty {
+        background-color: black;
+      }
+  
+      &.cell--head {
+        color: yellow;
+        background-color: blue;
+      }
+  
+      &.cell--tail {
+        background-color: red;
+      }
+  
+      &.cell--conductor {
+        background-color: yellow;
+      }
     }
+  }
 
-    &.state--empty {
-      color: black;
-      background-color: black;
+  &.game--rule30,
+  &.game--rule110 {
+    #board {
+      aspect-ratio: 43/22;
+
+      .cell {
+        line-height: 0;
+      }
     }
+  }
 
-    &.state--head {
-      color: yellow;
-      background-color: blue;
-    }
-
-    &.state--tail {
-      color: red;
-      background-color: red;
-    }
-
-    &.state--conductor {
-      color: yellow;
-      background-color: yellow;
+  &.game--historyLife {
+    &.playing {
+      .cell {
+        &--■ {
+          transition: background 0.2s ease-in-out;
+        }
+    
+        &--_ {
+          transition: background 1s ease-in-out;
+        }
+      }
     }
   }
 }

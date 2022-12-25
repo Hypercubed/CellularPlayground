@@ -1,24 +1,29 @@
-<div id="container">
+<div id="container" class="game" [class]="'game--' + currentGame" [class.playing]="playing">
   <aside>
     <div id="controls">
       <select (change)="onGameChange($event)" [(ngModel)]="currentGame">
-        <option *ngFor="let game of Games | keyvalue" [value]="game.key">
+        <option *ngFor="let game of Games | keyvalue: titleAscOrder" [value]="game.key">
           {{ game.value.title }}
         </option>
       </select>
-      <button (click)="onReset()">Reset</button>
-      <!-- <button (click)="onRandom()">Random</button> -->
+      <button (click)="onReset()">⏮ Reset</button>
+      <button (click)="onRandom()">Random</button>
 
-      <button (click)="doStep()" [disabled]="playing">Step</button>
-      <button (click)="onTogglePlay()">{{ playing ? "Pause" : "Play" }}</button>
-      <input type="range" min="-5" max="5" [(ngModel)]="speed" class="slider" />
+      <button (click)="doStep()" [disabled]="playing">⏯ Step</button>
+      <button (click)="onTogglePlay()">{{ playing ? "⏸ Pause" : "⏵ Play" }}</button>
+      <input type="range" min="-5" max="5" [(ngModel)]="speed" class="slider" list="step-list" />
+      <datalist id="step-list">
+        <option>-5</option>
+        <option>0</option>
+        <option>5</option>
+    </datalist>
     </div>
     <div id="pallet">
       <button
         *ngFor="let type of game.pallet"
         [title]="type.state"
-        class="state"
-        [class]="'state--' + type.state"
+        class="cell"
+        [class]="'cell--' + type.state"
         [class.active]="currentType.state === type.state"
         (click)="currentType = type"
       >
@@ -32,14 +37,15 @@
         {{ stat.key }}: {{ stat.value }}
       </span>
     </div>
-    <table class="game" [class]="'game--' + currentGame">
-      <tr *ngFor="let row of game.grid; let i = index">
+    <table id="board" oncontextmenu="return false;" (mouseleave)="onMouseLeave()">
+      <tr *ngFor="let row of game.grid; let y = index; trackBy: trackByMethod">
         <td
-          *ngFor="let cell of game.grid[i]; let j = index"
-          (mousedown)="onMouseEnter($event, i, j)"
-          (mouseenter)="onMouseEnter($event, i, j)"
-          class="state"
-          [class]="'state--' + cell.state"
+          *ngFor="let cell of game.grid[y]; let x = index; trackBy: trackByMethod"
+          (mousedown)="onMouseEnter($event, x, y)"
+          (mouseenter)="onMouseEnter($event, x, y)"
+          (mouseup)="onMouseLeave()"
+          class="cell"
+          [class]="'cell--' + cell.state"
         >
           <span>{{ cell.token }}</span>
         </td>

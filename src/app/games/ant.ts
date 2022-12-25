@@ -1,5 +1,4 @@
-import { CellState, Game } from "./game";
-import { clone } from "./utils";
+import { CellState, Game, GameOptions } from "./game";
 
 enum Colors {
   WHITE = "□",
@@ -44,10 +43,16 @@ const WHITE_RIGHT = createAntState(Directions.RIGHT, Colors.WHITE);
 const WHITE_DOWN = createAntState(Directions.DOWN, Colors.WHITE);
 const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 
+const AntOptionsDefault = {
+  sizeX: 19,
+  sizeY: 19,
+  continuous: false
+};
+
 export class Ant extends Game {
   stats = {
     Step: 0,
-    Alive: 0,
+    Ants: 0,
   };
 
   states = [
@@ -65,24 +70,11 @@ export class Ant extends Game {
 
   pallet = [WHITE_UP, WHITE, BLACK];
 
-  constructor() {
-    super();
-
-    this.size = 19;
-    this.states = [
-      WHITE_UP,
-      WHITE_DOWN,
-      WHITE_LEFT,
-      WHITE_RIGHT,
-      BLACK_UP,
-      BLACK_DOWN,
-      BLACK_LEFT,
-      BLACK_RIGHT,
-      WHITE,
-      BLACK,
-    ];
-
-    this.fillWith(WHITE);
+  constructor(options?: Partial<GameOptions>) {
+    super({
+      ...AntOptionsDefault,
+      ...options
+    });
   }
 
   reset() {
@@ -92,8 +84,8 @@ export class Ant extends Game {
   }
 
   refreshStats() {
-    this.stats.Alive =
-      this.size * this.size -
+    this.stats.Ants =
+      this.sizeX * this.sizeY -
       this.worldCountWhen(WHITE) -
       this.worldCountWhen(BLACK);
   }
@@ -101,8 +93,8 @@ export class Ant extends Game {
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit
   // At a black square, turn 90° counter-clockwise, flip the color of the square, move forward one unit
 
-  getNextCell(j: number, i: number) {
-    const t = this.getCell(j, i);
+  getNextCell(x: number, y: number) {
+    const t = this.getCell(x, y);
     const currentColor = this.getColor(t);
 
     if (this.getDirection(t)) {
@@ -111,25 +103,25 @@ export class Ant extends Game {
       return currentColor === Colors.BLACK ? WHITE : BLACK;
     }
 
-    const up = this.getCell(j - 1, i);
+    const up = this.getCell(x, y - 1);
     if (this.getDirection(up) === Directions.DOWN) {
       const newDirection = this.getNextDirection(Directions.DOWN, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const right = this.getCell(j, i + 1);
+    const right = this.getCell(x + 1, y);
     if (this.getDirection(right) === Directions.LEFT) {
       const newDirection = this.getNextDirection(Directions.LEFT, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const down = this.getCell(j + 1, i);
+    const down = this.getCell(x, y + 1);
     if (this.getDirection(down) === Directions.UP) {
       const newDirection = this.getNextDirection(Directions.UP, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const left = this.getCell(j, i - 1);
+    const left = this.getCell(x - 1, y);
     if (this.getDirection(left) === Directions.RIGHT) {
       const newDirection = this.getNextDirection(
         Directions.RIGHT,

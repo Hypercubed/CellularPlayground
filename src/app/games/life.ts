@@ -1,8 +1,10 @@
-import { createState, Game } from "./game";
-import { matrix } from "./utils";
+import {  ALIVE, DEAD, Game, GameOptions } from "./game";
 
-const DEAD = createState("□");
-const ALIVE = createState("■");
+const LifeDefaultOptions = {
+  sizeX: 19,
+  sizeY: 19,
+  continuous: false,
+};
 
 export class Life extends Game {
   stats = {
@@ -10,24 +12,20 @@ export class Life extends Game {
     Alive: 0,
   };
 
-  size = 19;
   states = [ALIVE, DEAD];
   pallet = [ALIVE, DEAD];
 
-  constructor() {
-    super();
-    this.fillWith(DEAD);
+  constructor(options?: Partial<GameOptions>) {
+    super({
+      ...LifeDefaultOptions,
+      ...options,
+    });
   }
 
-  reset() {
-    this.fillWith(DEAD);
-    this.stats.Step = 0;
-    this.refreshStats();
-  }
-
-  getNextCell(y: number, x: number) {
-    const a = this.grid[y][x].state === ALIVE.state ? 1 : 0;
-    const s = this.neighborhoodCountWhen(y, x, ALIVE);
+  getNextCell(x: number, y: number) {
+    const c = this.getCell(x, y);
+    const a = c.state === ALIVE.state ? 1 : 0;
+    const s = this.neighborhoodCountWhen(x, y, ALIVE);
     return s - a === 3 || s === 3 ? ALIVE : DEAD;
   }
 

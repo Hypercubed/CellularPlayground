@@ -1,8 +1,7 @@
 import { CellState, createState, Game } from "./game";
-import { clone } from "./utils";
 
-const EMPTY = createState("□");
-const ALIVE = createState("■");
+const EMPTY = createState("0");
+const ALIVE = createState("1");
 
 const NEXT = createState("_");
 
@@ -12,7 +11,9 @@ export class Wolfram extends Game {
     Alive: 0,
   };
 
-  size = 25;
+  sizeX = 43;
+  sizeY = 22;
+
   states = [ALIVE, EMPTY, NEXT];
   pallet = [ALIVE, EMPTY, NEXT];
 
@@ -34,24 +35,24 @@ export class Wolfram extends Game {
 
   reset() {
     this.fillWith(EMPTY);
+    this.immediatelySetCell(Math.floor(this.sizeX / 2), 0, ALIVE);
     this.grid[1].fill(NEXT);
-    this.grid[0][Math.floor(this.size / 2)] = ALIVE;
     this.stats.Step = 0;
     this.refreshStats();
   }
 
-  getNextCell(y: number, x: number) {
-    const c = this.getCell(y, x);
+  getNextCell(x: number, y: number) {
+    const c = this.getCell(x, y);
 
-    if (c.state === NEXT.state) {
-      const b0 = +(this.getCell(y - 1, x + 1)?.state === ALIVE.state);
-      const b1 = +(this.getCell(y - 1, x)?.state === ALIVE.state);
-      const b2 = +(this.getCell(y - 1, x - 1)?.state === ALIVE.state);
+    if (c?.state === NEXT.state) {
+      const b0 = +(this.getCell(x + 1, y - 1)?.state === ALIVE.state);
+      const b1 = +(this.getCell(x, y - 1)?.state === ALIVE.state);
+      const b2 = +(this.getCell(x - 1, y - 1)?.state === ALIVE.state);
       const s = b0 + b1 * 2 + b2 * 4;
       return this.rule[s];
     }
 
-    const up = this.getCell(y - 1, x);
+    const up = this.getCell(x, y - 1);
     if (up?.state === NEXT.state) return NEXT;
 
     return c;

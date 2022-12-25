@@ -17,13 +17,14 @@ export class WireWorld extends Game {
     Electrons: 0,
   };
 
+  sizeX = 19;
+  sizeY = 19;
+
+  states = [CONDUCTOR, HEAD, TAIL, EMPTY];
+  pallet = [CONDUCTOR, HEAD, TAIL, EMPTY];
+
   constructor() {
     super();
-
-    this.size = 19;
-    this.states = [CONDUCTOR, HEAD, TAIL, EMPTY];
-    this.pallet = [CONDUCTOR, HEAD, TAIL, EMPTY];
-
     this.fillWith(EMPTY);
   }
 
@@ -39,12 +40,12 @@ export class WireWorld extends Game {
   Electron tail → Conductor
   Conductor → Electron head if exactly one or two of the neighboring cells are electron heads, or remains Conductor otherwise.
   */
-  getNextCell(y: number, x: number) {
-    const a = this.grid[y][x];
+  getNextCell(x: number, y: number) {
+    const a = this.getCell(x, y);
     if (a.state === HEAD.state) return TAIL;
     if (a.state === TAIL.state) return CONDUCTOR;
     if (a.state === CONDUCTOR.state) {
-      const c = this.neighborhoodCountWhen(y, x, HEAD);
+      const c = this.neighborhoodCountWhen(x, y, HEAD);
       if (c === 1 || c === 2) {
         return HEAD;
       }
