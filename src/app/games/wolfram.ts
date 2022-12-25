@@ -5,11 +5,12 @@ const ALIVE = createState("1");
 
 const NEXT = createState("_");
 
-export const startingGrid = (sizeX: number = 43, sizeY: number = 22) => makeGridWith(sizeX, sizeY, (x, y) => {
-  if (y === 0 && x === Math.floor(sizeX / 2)) return ALIVE;
-  if (y === 1) return NEXT;
-  return EMPTY;
-});
+export const startingGrid = (sizeX: number = 43, sizeY: number = 22) =>
+  makeGridWith(sizeX, sizeY, (x, y) => {
+    if (y === 0 && x === Math.floor(sizeX / 2)) return ALIVE;
+    if (y === 1) return NEXT;
+    return EMPTY;
+  });
 
 export class Wolfram extends Game {
   stats = {

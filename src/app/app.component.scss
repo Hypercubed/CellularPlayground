@@ -68,6 +68,7 @@
   }
 
   #board {
+    transform: scale(0.8);
     .cell {
       &:hover {
         outline: 2px solid blue;
@@ -189,9 +190,8 @@
       &--□◄ {
         color: black;
         background-color: white;
-      }       
+      }
     }
-
   }
 
   &.game--wireworld {
@@ -201,16 +201,16 @@
       &.cell--empty {
         background-color: black;
       }
-  
+
       &.cell--head {
         color: yellow;
         background-color: blue;
       }
-  
+
       &.cell--tail {
         background-color: red;
       }
-  
+
       &.cell--conductor {
         background-color: yellow;
       }
@@ -231,11 +231,11 @@
   &.game--historyLife {
     &.playing {
       .cell {
-        &--■ {
+        &--o {
           transition: background 0.2s ease-in-out;
         }
-    
-        &--_ {
+
+        &--b {
           transition: background 1s ease-in-out;
         }
       }

@@ -1,4 +1,4 @@
-import {  ALIVE, DEAD, Game, GameOptions } from "./game";
+import { ALIVE, DEAD, Game, GameOptions } from "./game";
 
 const LifeDefaultOptions = {
   sizeX: 19,

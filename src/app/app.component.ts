@@ -76,7 +76,7 @@ export class AppComponent {
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.setupGame('life');
+    this.setupGame("life");
   }
 
   onGameChange(e: Event) {
@@ -95,6 +95,10 @@ export class AppComponent {
 
   onReset() {
     this.resetGame();
+  }
+
+  onClear() {
+    this.game.fillWith(() => this.game.pallet[this.game.pallet.length - 1]);
   }
 
   onRandom() {
@@ -186,7 +190,7 @@ export class AppComponent {
     b: KeyValue<string, GameListItem>
   ): number {
     return a.value.title.localeCompare(b.value.title);
-  };
+  }
 
   onAddPattern() {
     this.gameItem.patterns.push(this.game.getGridClone());

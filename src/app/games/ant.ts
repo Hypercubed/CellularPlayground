@@ -46,7 +46,7 @@ const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 const AntOptionsDefault = {
   sizeX: 19,
   sizeY: 19,
-  continuous: false
+  continuous: false,
 };
 
 export class Ant extends Game {
@@ -73,14 +73,17 @@ export class Ant extends Game {
   constructor(options?: Partial<GameOptions>) {
     super({
       ...AntOptionsDefault,
-      ...options
+      ...options,
     });
   }
 
   reset() {
     this.stats.Step = 0;
     this.fillWith((x, y) => {
-      if (y === Math.floor(this.sizeY / 2) && x === Math.floor(this.sizeX / 2)) {
+      if (
+        y === Math.floor(this.sizeY / 2) &&
+        x === Math.floor(this.sizeX / 2)
+      ) {
         return WHITE_UP;
       }
       return WHITE;

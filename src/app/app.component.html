@@ -1,23 +1,40 @@
-<div id="container" class="game" [class]="'game--' + currentGame" [class.playing]="playing"
-  [style.--m]="game.sizeX"  [style.--n]="game.sizeY">
+<div
+  id="container"
+  class="game"
+  [class]="'game--' + currentGame"
+  [class.playing]="playing"
+  [style.--m]="game.sizeX"
+  [style.--n]="game.sizeY"
+>
   <aside id="left-side">
     <div class="controls">
       <select (change)="onGameChange($event)" [(ngModel)]="currentGame">
-        <option *ngFor="let game of Games | keyvalue: titleAscOrder" [value]="game.key">
+        <option
+          *ngFor="let game of Games | keyvalue : titleAscOrder"
+          [value]="game.key"
+        >
           {{ game.value.title }}
         </option>
       </select>
       <button (click)="onReset()">⏮ Reset</button>
-      <button (click)="onRandom()">Random</button>
 
       <button (click)="doStep()" [disabled]="playing">⏯ Step</button>
-      <button (click)="onTogglePlay()">{{ playing ? "⏸ Pause" : "⏵ Play" }}</button>
-      <input type="range" min="-5" max="5" [(ngModel)]="speed" class="slider" list="step-list" />
+      <button (click)="onTogglePlay()">
+        {{ playing ? "⏸ Pause" : "⏵ Play" }}
+      </button>
+      <input
+        type="range"
+        min="-5"
+        max="5"
+        [(ngModel)]="speed"
+        class="slider"
+        list="step-list"
+      />
       <datalist id="step-list">
         <option>-5</option>
         <option>0</option>
         <option>5</option>
-    </datalist>
+      </datalist>
     </div>
     <div id="pallet">
       <button
@@ -38,10 +55,18 @@
         {{ stat.key }}: {{ stat.value }}
       </span>
     </div>
-    <table id="board" oncontextmenu="return false;" (mouseleave)="onMouseLeave()">
+    <table
+      id="board"
+      oncontextmenu="return false;"
+      (mouseleave)="onMouseLeave()"
+    >
       <tr *ngFor="let row of game.grid; let y = index; trackBy: trackByMethod">
         <td
-          *ngFor="let cell of game.grid[y]; let x = index; trackBy: trackByMethod"
+          *ngFor="
+            let cell of game.grid[y];
+            let x = index;
+            trackBy: trackByMethod
+          "
           (mousedown)="onMouseEnter($event, x, y)"
           (mouseenter)="onMouseEnter($event, x, y)"
           (mouseup)="onMouseLeave()"
@@ -55,12 +80,14 @@
   </div>
   <aside id="right-side">
     <div class="controls">
+      <button (click)="onRandom()">Random</button>
+      <button (click)="onClear()">Clear</button>
       <div *ngFor="let pattern of gameItem.patterns; trackBy: trackByMethod">
-        <ng-container *ngTemplateOutlet="miniBoard; context: { pattern }"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="miniBoard; context: { pattern }"
+        ></ng-container>
       </div>
-      <button (click)="onAddPattern()">
-        + Add Pattern
-      </button>    
+      <button (click)="onAddPattern()">+ Add Pattern</button>
     </div>
   </aside>
 </div>

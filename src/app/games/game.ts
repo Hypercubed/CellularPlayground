@@ -122,7 +122,8 @@ export abstract class Game<T extends CellState = CellState> {
       y = (y + this.sizeY) % this.sizeY;
     } else {
       if (x < 0 || y < 0) return null;
-      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length) return null;
+      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
+        return null;
     }
     return this.currentGrid[y][x] as T;
   }
@@ -133,7 +134,8 @@ export abstract class Game<T extends CellState = CellState> {
       y = (y + this.sizeY) % this.sizeY;
     } else {
       if (x < 0 || y < 0) return null;
-      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length) return null;
+      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
+        return null;
     }
     this.currentGrid[y][x] = s;
     this.refreshStats();
@@ -228,11 +230,14 @@ export function createState<T extends CellState = CellState>(
   } as T;
 }
 
-export function makeGridWith<T extends CellState = CellState>(sizeX: number, sizeY: number, c: T | ((x: number, y: number) => T)) {
+export function makeGridWith<T extends CellState = CellState>(
+  sizeX: number,
+  sizeY: number,
+  c: T | ((x: number, y: number) => T)
+) {
   return Array.from({ length: sizeY }, (_, y) => {
     return Array.from({ length: sizeX }, (_, x) => {
-      return typeof c === 'function' ? c(x, y) : c;
+      return typeof c === "function" ? c(x, y) : c;
     });
   });
 }
-
