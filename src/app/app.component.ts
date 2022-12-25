@@ -34,12 +34,12 @@ const Games: Record<string, GameListItem> = {
   },
   ant: {
     title: "Langton's Ant",
-    create: () => new Ant({ sizeX: 21, sizeY: 21 }),
+    create: () => new Ant(),
     patterns: [],
   },
   torusAnt: {
     title: "Langton's Ant (Torus)",
-    create: () => new Ant({ sizeX: 21, sizeY: 21, continuous: true }),
+    create: () => new Ant({ continuous: true }),
     patterns: [],
   },
   wireWorld: {
@@ -130,7 +130,6 @@ export class AppComponent {
 
       if (this.playing) {
         this.pause();
-        this.onMouseEnter(e, j, i);
       }
     }
   }
@@ -138,7 +137,10 @@ export class AppComponent {
   setupGame(name: string) {
     this.gameItem = this.Games[name];
     this.resetGame();
-    this.gameItem.patterns[0] = this.game.getGridClone();
+    // console.log(this.game.getRLE());
+    if (!/^\$+$/.test(this.game.getRLE())) {
+      this.gameItem.patterns[0] = this.game.getGridClone();
+    }
     this.currentType = this.game.pallet[0];
   }
 
@@ -159,7 +161,7 @@ export class AppComponent {
       this.game.doStep();
     }
 
-    this.rle = this.game.getRLE();
+    // console.log(this.game.getRLE());
     this.cdr.detectChanges();
 
     if (this.playing) {

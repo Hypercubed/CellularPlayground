@@ -13,15 +13,24 @@ export const DEAD = createState("b");
 export const ALIVE = createState("o");
 
 export abstract class Game<T extends CellState = CellState> {
+  /* Array of all possible states
+    * The first state is the default state
+    * The last state is the state that is used when the cell is empty
+    */
   states: T[];
+
+  /* Array of states that are shown in the pallet */
   pallet: T[];
 
   sizeX: number;
   sizeY: number;
   stats: Record<string, any>;
+
+  /* If true, the grid is a torus */
   continuous: boolean = false;
 
-  get grid() {
+  /* readonly */
+  get grid(): Readonly<T[][]> {
     return this.currentGrid;
   }
 
@@ -92,7 +101,7 @@ export abstract class Game<T extends CellState = CellState> {
     return c;
   }
 
-  // Von Neumann neighborhood
+  // von Neumann neighborhood
   regionCountWhen(x: number, y: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
@@ -170,8 +179,8 @@ export abstract class Game<T extends CellState = CellState> {
     let l = "";
     let c = 0;
 
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
+    for (let y = 0; y < this.sizeY; y++) {
+      for (let x = 0; x < this.sizeX; x++) {
         const t = this.getCell(x, y)?.token;
         if (t !== l) {
           if (l !== "") rle += c + l;
@@ -185,13 +194,9 @@ export abstract class Game<T extends CellState = CellState> {
       c = 0;
       l = "";
     }
-    return rle;
 
-    /* 
-      Tidy:
-        Removes trailing b's from rows
-        bounding box
-    */
+    const b = this.states[this.states.length - 1].token;
+    return rle.replace(new RegExp(`\\d+${b}\\$`, 'g'), "$"); // Remove trailing blanks
   }
 
   getGridClone() {

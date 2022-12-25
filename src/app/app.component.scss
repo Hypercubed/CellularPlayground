@@ -11,6 +11,9 @@
   position: fixed;
   background: #ddd;
 
+  overflow-y: auto;
+  overflow-x: clip;
+
   #left-side {
     height: 100%;
     width: 230px;
@@ -68,7 +71,6 @@
   }
 
   #board {
-    transform: scale(0.8);
     .cell {
       &:hover {
         outline: 2px solid blue;

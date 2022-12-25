@@ -1,8 +1,8 @@
 import { ALIVE, DEAD, Game, GameOptions } from "./game";
 
 const LifeDefaultOptions = {
-  sizeX: 19,
-  sizeY: 19,
+  sizeX: 40,
+  sizeY: 40,
   continuous: false,
 };
 

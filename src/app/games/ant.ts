@@ -44,8 +44,8 @@ const WHITE_DOWN = createAntState(Directions.DOWN, Colors.WHITE);
 const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 
 const AntOptionsDefault = {
-  sizeX: 19,
-  sizeY: 19,
+  sizeX: 29,
+  sizeY: 29,
   continuous: false,
 };
 

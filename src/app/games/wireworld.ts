@@ -17,8 +17,8 @@ export class WireWorld extends Game {
     Electrons: 0,
   };
 
-  sizeX = 19;
-  sizeY = 19;
+  sizeX = 30;
+  sizeY = 30;
 
   states = [CONDUCTOR, HEAD, TAIL, EMPTY];
   pallet = [CONDUCTOR, HEAD, TAIL, EMPTY];
