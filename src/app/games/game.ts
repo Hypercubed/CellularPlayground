@@ -25,7 +25,7 @@ export abstract class Game<T extends CellState = CellState> {
     return this.currentGrid;
   }
 
-  private currentGrid: T[][];
+  protected currentGrid: T[][];
 
   constructor(options?: Partial<GameOptions>) {
     if (options) {
@@ -43,11 +43,7 @@ export abstract class Game<T extends CellState = CellState> {
   }
 
   fillWith(c: T | ((x: number, y: number) => T)) {
-    this.currentGrid = Array.from({ length: this.sizeY }, (_, y) => {
-      return Array.from({ length: this.sizeX }, (_, x) => {
-        return typeof c === 'function' ? c(x, y) : c;
-      });
-    });
+    this.currentGrid = makeGridWith(this.sizeX, this.sizeY, c);
     this.refreshStats();
   }
 
@@ -196,6 +192,19 @@ export abstract class Game<T extends CellState = CellState> {
     */
   }
 
+  getGridClone() {
+    return this.currentGrid.map((row) => row.slice());
+  }
+
+  setGrid(g: T[][]) {
+    for (let x = 0; x < this.sizeX; x++) {
+      for (let y = 0; y < this.sizeY; y++) {
+        this.currentGrid[y][x] = g[y][x];
+      }
+    }
+    this.refreshStats();
+  }
+
   protected getNextField() {
     for (let y = 0; y < this.sizeX; y++) {
       for (let x = 0; x < this.sizeY; x++) {
@@ -218,3 +227,12 @@ export function createState<T extends CellState = CellState>(
     token,
   } as T;
 }
+
+export function makeGridWith<T extends CellState = CellState>(sizeX: number, sizeY: number, c: T | ((x: number, y: number) => T)) {
+  return Array.from({ length: sizeY }, (_, y) => {
+    return Array.from({ length: sizeX }, (_, x) => {
+      return typeof c === 'function' ? c(x, y) : c;
+    });
+  });
+}
+

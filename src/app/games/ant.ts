@@ -68,7 +68,7 @@ export class Ant extends Game {
     BLACK,
   ];
 
-  pallet = [WHITE_UP, WHITE, BLACK];
+  pallet = [WHITE_UP, BLACK, WHITE];
 
   constructor(options?: Partial<GameOptions>) {
     super({
@@ -79,7 +79,12 @@ export class Ant extends Game {
 
   reset() {
     this.stats.Step = 0;
-    this.fillWith(WHITE);
+    this.fillWith((x, y) => {
+      if (y === Math.floor(this.sizeY / 2) && x === Math.floor(this.sizeX / 2)) {
+        return WHITE_UP;
+      }
+      return WHITE;
+    });
     this.refreshStats();
   }
 

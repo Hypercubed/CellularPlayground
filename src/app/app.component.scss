@@ -1,15 +1,17 @@
 #container {
-  --cell-height: 15px;
-  --cell-width: 15px;
-  --board-height: auto;
-  --board-width: 100%;
+  --n: 19;
+  --m: 19;
+
+  --board-width: calc(100vw - 540px);
+  --cell-size: calc(var(--board-width) / var(--m));
+  --board-height: calc(var(--n) * var(--cell-size));
 
   width: 100vw;
-  height: 100vw;
+  height: 100vh;
   position: fixed;
   background: #ddd;
 
-  aside {
+  #left-side {
     height: 100%;
     width: 230px;
     position: absolute;
@@ -19,16 +21,26 @@
   }
 
   #content {
-    margin-left: 250px;
+    width: var(--board-width);
     padding: 20px;
-    max-width: 570px;
+    margin: 0 auto;
   }
 
-  #board {
+  #right-side {
+    height: 100%;
+    width: 230px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 10px;
+  }
+
+  #board,
+  .pattern-board {
     height: var(--board-height);
     width: var(--board-width);
     aspect-ratio: 1 / 1;
-    margin: 0 auto;
+    margin: 10px auto;
     table-layout: fixed;
 
     border-spacing: 0;
@@ -36,21 +48,27 @@
     user-select: none;
     border: 1px solid gray;
 
-    th,
-    td {
-      padding: 0;
-    }
-
     .cell {
-      height: var(--cell-height);
-      width: var(--cell-width);
-
+      height: var(--cell-size);
+      width: var(--cell-size);
       border: 1px solid gray;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+
+      line-height: 1em;
+
+      padding: 0;
       text-align: center;
       box-sizing: border-box;
       aspect-ratio: 1 / 1;
-      line-height: 0;
+      font-size: calc(0.8 * var(--cell-size));
+    }
+  }
 
+  #board {
+    .cell {
       &:hover {
         outline: 2px solid blue;
         outline-offset: 2px;
@@ -59,7 +77,19 @@
     }
   }
 
-  #controls {
+  .pattern-board {
+    cursor: pointer;
+    --board-width: 100px;
+    --cell-size: calc(var(--board-width) / var(--m));
+    --board-height: calc(var(--n) * var(--cell-size));
+
+    .cell {
+      border: none;
+      // font-size: 0;
+    }
+  }
+
+  .controls {
     border: 1px solid red;
     width: 200px;
     height: auto;
@@ -113,6 +143,7 @@
     margin: 0 0 10px 0;
     padding: 5px;
     border-radius: 5px;
+    box-sizing: border-box;
 
     > span {
       padding: 0 10px;
@@ -160,6 +191,7 @@
         background-color: white;
       }       
     }
+
   }
 
   &.game--wireworld {

@@ -1,9 +1,15 @@
-import { CellState, createState, Game } from "./game";
+import { CellState, createState, Game, makeGridWith } from "./game";
 
 const EMPTY = createState("0");
 const ALIVE = createState("1");
 
 const NEXT = createState("_");
+
+export const startingGrid = (sizeX: number = 43, sizeY: number = 22) => makeGridWith(sizeX, sizeY, (x, y) => {
+  if (y === 0 && x === Math.floor(sizeX / 2)) return ALIVE;
+  if (y === 1) return NEXT;
+  return EMPTY;
+});
 
 export class Wolfram extends Game {
   stats = {
@@ -29,14 +35,10 @@ export class Wolfram extends Game {
         return n;
       })
       .reverse();
-
-    this.fillWith(EMPTY);
   }
 
   reset() {
-    this.fillWith(EMPTY);
-    this.immediatelySetCell(Math.floor(this.sizeX / 2), 0, ALIVE);
-    this.grid[1].fill(NEXT);
+    this.currentGrid = startingGrid(this.sizeX, this.sizeY);
     this.stats.Step = 0;
     this.refreshStats();
   }

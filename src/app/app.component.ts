@@ -8,34 +8,48 @@ import {
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
-import { Wolfram } from "./games/wolfram";
-import { Game } from "./games/game";
+import { startingGrid, Wolfram } from "./games/wolfram";
+import { CellState, Game, makeGridWith } from "./games/game";
 import { KeyValue } from "@angular/common";
 // import { City } from "./games/city";
 
 /* Defining the interface for the pattern. */
-// interface Pattern {
-//   name: string;
-//   rle: string;
-// }
-
 interface GameListItem {
   title: string;
   create: () => Game;
-  // TODO: support RLE patterns
-  // patterns: Record<string, Pattern>;
+  patterns: Array<CellState[][]>;
 }
 
 const Games: Record<string, GameListItem> = {
-  life: { title: "Conway's Life", create: () => new Life() },
-  historyLife: { title: "Conway's Life (History)", create: () => new Life() },
-  torusLife: { title: "Conway's Life (Torus)", create: () => new Life({ continuous: true }) },
-  ant: { title: "Langton's Ant", create: () => new Ant({ sizeX: 41, sizeY: 41 }) },
-  torusAnt: { title: "Langton's Ant (Torus)", create: () => new Ant({ sizeX: 21, sizeY: 21, continuous: true }) },
-  wireWorld: { title: "WireWorld", create: () => new WireWorld() },
-  rule30: { title: "Rule 30", create: () => new Wolfram() },
-  rule110: { title: "Rule 110", create: () => new Wolfram(110) },
-  // city: { title: 'City', create: () => new City },
+  life: { title: "Conway's Life", create: () => new Life(), patterns: [] },
+  historyLife: {
+    title: "Conway's Life (History)",
+    create: () => new Life(),
+    patterns: [],
+  },
+  torusLife: {
+    title: "Conway's Life (Torus)",
+    create: () => new Life({ continuous: true }),
+    patterns: [],
+  },
+  ant: {
+    title: "Langton's Ant",
+    create: () => new Ant({ sizeX: 21, sizeY: 21 }),
+    patterns: [],
+  },
+  torusAnt: {
+    title: "Langton's Ant (Torus)",
+    create: () => new Ant({ sizeX: 21, sizeY: 21, continuous: true }),
+    patterns: [],
+  },
+  wireWorld: {
+    title: "WireWorld",
+    create: () => new WireWorld(),
+    patterns: [],
+  },
+  rule30: { title: "Rule 30", create: () => new Wolfram(), patterns: [] },
+  rule110: { title: "Rule 110", create: () => new Wolfram(110), patterns: [] },
+  // city: { title: 'City', create: () => new City, patterns: [] },
 };
 
 @Component({
@@ -50,8 +64,9 @@ export class AppComponent {
 
   playing = false;
   currentGame = "life";
-  game = this.Games[this.currentGame].create();
-  currentType = this.game.states[0];
+  gameItem: GameListItem;
+  game: Game;
+  currentType: CellState;
   speed = -2;
   rle: string;
 
@@ -61,18 +76,12 @@ export class AppComponent {
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.game = this.Games[this.currentGame].create();
-    this.game.reset();
-    this.currentType = this.game.states[0];
+    this.setupGame('life');
   }
 
   onGameChange(e: Event) {
     this.stop();
-
-    this.currentGame = (e.target as HTMLSelectElement).value;
-    this.game = this.Games[this.currentGame].create();
-    this.game.reset();
-    this.currentType = this.game.states[0];
+    this.setupGame((e.target as HTMLSelectElement).value);
   }
 
   onTogglePlay() {
@@ -85,7 +94,7 @@ export class AppComponent {
   }
 
   onReset() {
-    this.game.reset();
+    this.resetGame();
   }
 
   onRandom() {
@@ -103,7 +112,10 @@ export class AppComponent {
 
   onMouseEnter(e: MouseEvent, j: number, i: number) {
     if (e.buttons) {
-      const s = e.buttons === 1 ? this.currentType : this.game.pallet[this.game.pallet.length - 1];
+      const s =
+        e.buttons === 1
+          ? this.currentType
+          : this.game.pallet[this.game.pallet.length - 1];
 
       const c = this.game.getCell(j, i);
       if (c !== s) {
@@ -117,6 +129,19 @@ export class AppComponent {
         this.onMouseEnter(e, j, i);
       }
     }
+  }
+
+  setupGame(name: string) {
+    this.gameItem = this.Games[name];
+    this.resetGame();
+    this.gameItem.patterns[0] = this.game.getGridClone();
+    this.currentType = this.game.pallet[0];
+  }
+
+  resetGame() {
+    this.stop();
+    this.game = this.gameItem.create();
+    this.game.reset();
   }
 
   doStep() {
@@ -156,7 +181,18 @@ export class AppComponent {
     return index;
   }
 
-  titleAscOrder = (a: KeyValue<string, GameListItem>, b: KeyValue<string, GameListItem>): number => {
+  titleAscOrder(
+    a: KeyValue<string, GameListItem>,
+    b: KeyValue<string, GameListItem>
+  ): number {
     return a.value.title.localeCompare(b.value.title);
+  };
+
+  onAddPattern() {
+    this.gameItem.patterns.push(this.game.getGridClone());
+  }
+
+  onUsePattern(g: CellState[][]) {
+    this.game.setGrid(g);
   }
 }

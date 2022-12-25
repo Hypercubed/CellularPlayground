@@ -1,6 +1,7 @@
-<div id="container" class="game" [class]="'game--' + currentGame" [class.playing]="playing">
-  <aside>
-    <div id="controls">
+<div id="container" class="game" [class]="'game--' + currentGame" [class.playing]="playing"
+  [style.--m]="game.sizeX"  [style.--n]="game.sizeY">
+  <aside id="left-side">
+    <div class="controls">
       <select (change)="onGameChange($event)" [(ngModel)]="currentGame">
         <option *ngFor="let game of Games | keyvalue: titleAscOrder" [value]="game.key">
           {{ game.value.title }}
@@ -52,4 +53,28 @@
       </tr>
     </table>
   </div>
+  <aside id="right-side">
+    <div class="controls">
+      <div *ngFor="let pattern of gameItem.patterns; trackBy: trackByMethod">
+        <ng-container *ngTemplateOutlet="miniBoard; context: { pattern }"></ng-container>
+      </div>
+      <button (click)="onAddPattern()">
+        + Add Pattern
+      </button>    
+    </div>
+  </aside>
 </div>
+
+<ng-template #miniBoard let-pattern="pattern">
+  <table class="pattern-board" (click)="onUsePattern(pattern)">
+    <tr *ngFor="let row of pattern; let y = index; trackBy: trackByMethod">
+      <td
+        *ngFor="let cell of pattern[y]; let x = index; trackBy: trackByMethod"
+        class="cell"
+        [class]="'cell--' + cell.state"
+      >
+        <span>{{ cell.token }}</span>
+      </td>
+    </tr>
+  </table>
+</ng-template>
