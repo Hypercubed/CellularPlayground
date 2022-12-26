@@ -14,14 +14,20 @@
   overflow-y: auto;
   overflow-x: clip;
 
-  #left-side {
-    height: 100%;
+  aside {
     width: 230px;
     position: absolute;
     top: 0;
-    left: 0;
     padding: 10px;
-  }
+
+    &#left-side {
+      left: 0;
+    }
+
+    &#right-side {
+      right: 0;
+    }
+  };
 
   #content {
     width: var(--board-width);
@@ -29,14 +35,6 @@
     margin: 0 auto;
   }
 
-  #right-side {
-    height: 100%;
-    width: 230px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 10px;
-  }
 
   #board,
   .pattern-board {
@@ -125,6 +123,11 @@
     padding: 10px;
     margin: 10px;
 
+    .set {
+      clear: both;
+      margin: 10px auto;
+    }
+
     button {
       height: 30px;
       width: 30px;
@@ -134,7 +137,7 @@
       box-sizing: border-box;
 
       &.active {
-        outline: 2px solid black;
+        outline: 2px solid blue;
         outline-offset: 1px;
       }
     }
@@ -153,8 +156,13 @@
     }
   }
 
+  &.playing {
+    .cell {
+      transition: background 0.2s ease-in-out;
+    }
+  }
+
   .cell {
-    transition: background 0.2s ease-in-out;
     color: transparent;
     background-color: white;
 

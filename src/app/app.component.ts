@@ -24,12 +24,27 @@ const Games: Record<string, GameListItem> = {
   life: { title: "Conway's Life", create: () => new Life(), patterns: [] },
   historyLife: {
     title: "Conway's Life (History)",
-    create: () => new Life(),
+    create: () => new Life('b2s23'),
     patterns: [],
   },
   torusLife: {
     title: "Conway's Life (Torus)",
-    create: () => new Life({ continuous: true }),
+    create: () => new Life('b2s23', { continuous: true }),
+    patterns: [],
+  },
+  // starTrekLife: {
+  //   title: "Star Trek",
+  //   create: () => new Life('B3/S0248'),
+  //   patterns: [],
+  // },
+  diamoebaLife: {
+    title: "Diamoeba",
+    create: () => new Life('B35678/S5678'),
+    patterns: [],
+  },
+  mazeLife: {
+    title: "Maze",
+    create: () => new Life('B3/S12345'),
     patterns: [],
   },
   ant: {
@@ -98,13 +113,13 @@ export class AppComponent {
   }
 
   onClear() {
-    this.game.fillWith(() => this.game.pallet[this.game.pallet.length - 1]);
+    this.game.fillWith(() => this.game.emptyCell);
   }
 
   onRandom() {
     this.game.fillWith(() => {
-      const i = Math.floor(Math.random() * this.game.pallet.length);
-      return this.game.pallet[i];
+      const i = Math.floor(Math.random() * this.game.states.length);
+      return this.game.states[i];
     });
   }
 
@@ -119,7 +134,7 @@ export class AppComponent {
       const s =
         e.buttons === 1
           ? this.currentType
-          : this.game.pallet[this.game.pallet.length - 1];
+          : this.game.emptyCell;
 
       const c = this.game.getCell(j, i);
       if (c !== s) {
@@ -141,7 +156,7 @@ export class AppComponent {
     if (!/^\$+$/.test(this.game.getRLE())) {
       this.gameItem.patterns[0] = this.game.getGridClone();
     }
-    this.currentType = this.game.pallet[0];
+    this.currentType = this.game.defaultCell;
   }
 
   resetGame() {

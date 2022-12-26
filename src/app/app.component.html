@@ -37,16 +37,18 @@
       </datalist>
     </div>
     <div id="pallet">
-      <button
-        *ngFor="let type of game.pallet"
-        [title]="type.state"
-        class="cell"
-        [class]="'cell--' + type.state"
-        [class.active]="currentType.state === type.state"
-        (click)="currentType = type"
-      >
-        <span>{{ type.token }}</span>
-      </button>
+      <div class="set" *ngFor="let set of game.pallet; trackBy: trackByMethod">
+        <button
+          *ngFor="let type of set; trackBy: trackByMethod"
+          [title]="type.state"
+          class="cell"
+          [class]="'cell--' + type.state"
+          [class.active]="currentType.state === type.state"
+          (click)="currentType = type"
+        >
+          <span>{{ type.token }}</span>
+        </button>
+      </div>
     </div>
   </aside>
   <div id="content">

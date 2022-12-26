@@ -6,3 +6,7 @@ dist
 
 # Ignore dependencies:
 node_modules
+
+# Ignore IDE files:
+.idea
+.vscode

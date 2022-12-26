@@ -13,20 +13,32 @@ export class Life extends Game {
   };
 
   states = [ALIVE, DEAD];
-  pallet = [ALIVE, DEAD];
+  pallet = [[ALIVE, DEAD]];
 
-  constructor(options?: Partial<GameOptions>) {
+  birth: number[];
+  survive: number[];
+
+  constructor(ruleString: string = 'b3s23', options?: Partial<GameOptions>) {
     super({
       ...LifeDefaultOptions,
       ...options,
     });
+
+    ruleString = ruleString.toLowerCase();
+
+    const [, b, s] = ruleString.split(/[sbSB]+/);
+
+    this.birth = b.split('').map(Number);
+    this.survive = s.split('').map(Number);
   }
 
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
-    const a = c.state === ALIVE.state ? 1 : 0;
     const s = this.neighborhoodCountWhen(x, y, ALIVE);
-    return s - a === 3 || s === 3 ? ALIVE : DEAD;
+    if (c.state === DEAD.state) {
+      return this.birth.includes(s) ? ALIVE : DEAD;
+    }
+    return this.survive.includes(s) ? ALIVE : DEAD;
   }
 
   refreshStats() {

@@ -21,7 +21,7 @@ export class WireWorld extends Game {
   sizeY = 30;
 
   states = [CONDUCTOR, HEAD, TAIL, EMPTY];
-  pallet = [CONDUCTOR, HEAD, TAIL, EMPTY];
+  pallet = [[CONDUCTOR, EMPTY], [HEAD, TAIL]];
 
   constructor() {
     super();

@@ -20,7 +20,7 @@ export abstract class Game<T extends CellState = CellState> {
   states: T[];
 
   /* Array of states that are shown in the pallet */
-  pallet: T[];
+  pallet: T[][];
 
   sizeX: number;
   sizeY: number;
@@ -32,6 +32,14 @@ export abstract class Game<T extends CellState = CellState> {
   /* readonly */
   get grid(): Readonly<T[][]> {
     return this.currentGrid;
+  }
+
+  get defaultCell() {
+    return this.states[0];
+  }
+
+  get emptyCell() {
+    return this.states[this.states.length - 1];
   }
 
   protected currentGrid: T[][];
@@ -51,7 +59,8 @@ export abstract class Game<T extends CellState = CellState> {
     this.stats.Step = 0;
   }
 
-  fillWith(c: T | ((x: number, y: number) => T)) {
+  fillWith(c?: T | ((x: number, y: number) => T)) {
+    c ||= this.emptyCell
     this.currentGrid = makeGridWith(this.sizeX, this.sizeY, c);
     this.refreshStats();
   }
@@ -92,13 +101,7 @@ export abstract class Game<T extends CellState = CellState> {
 
   // Moore neighborhood
   neighborhoodCountWhen(x: number, y: number, s: T): number {
-    let c = 0;
-    for (let p = x - 1; p <= x + 1; p++) {
-      for (let q = y - 1; q <= y + 1; q++) {
-        c += +(this.getCell(p, q)?.state === s.state);
-      }
-    }
-    return c;
+    return this.getNeighborsWhen(x, y, s).length;
   }
 
   // von Neumann neighborhood
@@ -130,9 +133,9 @@ export abstract class Game<T extends CellState = CellState> {
       x = (x + this.sizeX) % this.sizeX;
       y = (y + this.sizeY) % this.sizeY;
     } else {
-      if (x < 0 || y < 0) return null;
+      if (x < 0 || y < 0) return this.emptyCell;
       if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
-        return null;
+        return this.emptyCell;
     }
     return this.currentGrid[y][x] as T;
   }
@@ -142,9 +145,9 @@ export abstract class Game<T extends CellState = CellState> {
       x = (x + this.sizeX) % this.sizeX;
       y = (y + this.sizeY) % this.sizeY;
     } else {
-      if (x < 0 || y < 0) return null;
+      if (x < 0 || y < 0) return this.emptyCell;
       if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
-        return null;
+        return this.emptyCell;
     }
     this.currentGrid[y][x] = s;
     this.refreshStats();
@@ -195,8 +198,14 @@ export abstract class Game<T extends CellState = CellState> {
       l = "";
     }
 
-    const b = this.states[this.states.length - 1].token;
-    return rle.replace(new RegExp(`\\d+${b}\\$`, 'g'), "$"); // Remove trailing blanks
+    // normalize
+    const b = this.emptyCell.token;
+    rle = rle.replace(new RegExp(`${b}`, 'g'), "b");
+
+    const o = this.defaultCell.token;
+    rle = rle.replace(new RegExp(`${o}`, 'g'), "o");
+
+    return rle.replace(/\d+b\$/g, "$"); // Remove trailing blanks
   }
 
   getGridClone() {

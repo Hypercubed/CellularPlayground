@@ -35,7 +35,7 @@ export class City extends Game<CityState> {
   sizeY = 5;
 
   states = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
-  pallet = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
+  pallet = [[RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL], [EMPTY]];
 
   constructor() {
     super();

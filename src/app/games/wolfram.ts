@@ -1,16 +1,16 @@
-import { CellState, createState, Game, makeGridWith } from "./game";
-
-const EMPTY = createState("0");
-const ALIVE = createState("1");
-
-const NEXT = createState("_");
+import { ALIVE, CellState, createState, DEAD, Game, GameOptions, makeGridWith } from "./game";
 
 export const startingGrid = (sizeX: number = 43, sizeY: number = 22) =>
   makeGridWith(sizeX, sizeY, (x, y) => {
     if (y === 0 && x === Math.floor(sizeX / 2)) return ALIVE;
-    if (y === 1) return NEXT;
-    return EMPTY;
+    return DEAD;
   });
+
+const defaultWolframOptions = {
+  sizeX: 43,
+  sizeY: 22,
+  continuous: false,
+};
 
 export class Wolfram extends Game {
   stats = {
@@ -18,21 +18,24 @@ export class Wolfram extends Game {
     Alive: 0,
   };
 
-  sizeX = 43;
-  sizeY = 22;
+  sizeX = 86 / 2;
+  sizeY = 44 / 2;
 
-  states = [ALIVE, EMPTY, NEXT];
-  pallet = [ALIVE, EMPTY, NEXT];
+  states = [ALIVE, DEAD];
+  pallet = [[ALIVE, DEAD]];
 
-  private rule: CellState[] = Array(8).fill(EMPTY);
+  private rule: CellState[] = Array(8).fill(DEAD);
 
-  constructor(N: number = 30) {
-    super();
+  constructor(N: number = 30, options?: Partial<GameOptions>) {
+    super({
+      ...defaultWolframOptions,
+      ...options
+    });
 
     const s = ("00000000" + N.toString(2)).slice(-8);
     this.rule = this.rule
       .map((_, i) => {
-        const n = s[i] === "1" ? ALIVE : EMPTY;
+        const n = s[i] === "1" ? ALIVE : DEAD;
         return n;
       })
       .reverse();
@@ -47,7 +50,7 @@ export class Wolfram extends Game {
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
 
-    if (c?.state === NEXT.state) {
+    if (c?.state === DEAD.state) {
       const b0 = +(this.getCell(x + 1, y - 1)?.state === ALIVE.state);
       const b1 = +(this.getCell(x, y - 1)?.state === ALIVE.state);
       const b2 = +(this.getCell(x - 1, y - 1)?.state === ALIVE.state);
@@ -55,8 +58,8 @@ export class Wolfram extends Game {
       return this.rule[s];
     }
 
-    const up = this.getCell(x, y - 1);
-    if (up?.state === NEXT.state) return NEXT;
+    // const up = this.getCell(x, y - 1);
+    // if (up?.state === NEXT.state) return NEXT;
 
     return c;
   }

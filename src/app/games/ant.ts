@@ -56,6 +56,7 @@ export class Ant extends Game {
   };
 
   states = [
+    BLACK,
     WHITE_UP,
     WHITE_DOWN,
     WHITE_LEFT,
@@ -65,10 +66,19 @@ export class Ant extends Game {
     BLACK_LEFT,
     BLACK_RIGHT,
     WHITE,
-    BLACK,
   ];
 
-  pallet = [WHITE_UP, BLACK, WHITE];
+  pallet = [
+    [ WHITE_UP,
+    WHITE_DOWN,
+    WHITE_LEFT,
+    WHITE_RIGHT ],
+    [ BLACK_UP,
+    BLACK_DOWN,
+    BLACK_LEFT,
+    BLACK_RIGHT ],
+    [ BLACK, WHITE ]
+  ];
 
   constructor(options?: Partial<GameOptions>) {
     super({
