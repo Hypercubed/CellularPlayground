@@ -71,6 +71,8 @@
           "
           (mousedown)="onMouseEnter($event, x, y)"
           (mouseenter)="onMouseEnter($event, x, y)"
+          (click)="onClick($event, x, y)"
+          (touchend)="onClick($event, x, y)"
           (mouseup)="onMouseLeave()"
           class="cell"
           [class]="'cell--' + cell.state"

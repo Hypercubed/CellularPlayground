@@ -140,12 +140,22 @@ export class AppComponent {
       if (c !== s) {
         this.game.immediatelySetCell(j, i, s);
         this.game.refreshStats();
-        this.rle = this.game.getRLE();
       }
 
       if (this.playing) {
         this.pause();
       }
+    }
+  }
+
+  onClick(e: MouseEvent, j: number, i: number) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const c = this.game.getCell(j, i);
+    if (c !== this.currentType) {
+      this.game.immediatelySetCell(j, i, this.currentType);
+      this.game.refreshStats();
     }
   }
 
