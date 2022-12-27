@@ -98,12 +98,6 @@
       width: 26px;
       height: 26px;
     }
-
-    // .mat-mdc-fab .mat-mdc-button-touch-target,
-    // .mat-mdc-mini-fab .mat-mdc-button-touch-target {
-    //   height: 20px;
-    //   width: 20px;
-    // }
   }
 
   .pattern-board {
@@ -125,6 +119,12 @@
     padding: 10px;
     margin: 10px;
     background: white;
+
+    .control-group {
+      display: block;
+      margin: 0 auto;
+      text-align: center;
+    }
 
     .mat-mdc-slider {
       margin: 0 auto;
@@ -196,17 +196,12 @@
       background-color: black;
     }
 
-    &--dead {
-      background-color: white;
-    }
-
     &--empty {
-      background-color: lightgray;
+      background-color: white;
     }
   }
 
-  &.game--ant,
-  &.game--torusAnt {
+  &.game--ant {
     .cell {
       &--■ {
         background-color: black;
@@ -238,7 +233,7 @@
     .cell {
       transition: unset;
 
-      &.cell--dead {
+      &.cell--empty {
         background-color: black !important;
       }
 
@@ -268,16 +263,24 @@
     }
   }
 
-  &.game--historyLife {
-    &.playing {
-      .cell {
-        &--o {
-          transition: background 0.2s ease-in-out;
-        }
+  // &.game--historyLife {
+  //   &.playing {
+  //     .cell {
+  //       &--o {
+  //         transition: background 0.2s ease-in-out;
+  //       }
 
-        &--b {
-          transition: background 1s ease-in-out;
-        }
+  //       &--b {
+  //         transition: background 1s ease-in-out;
+  //       }
+  //     }
+  //   }
+  // }
+
+  &.game--rain {
+    .cell {
+      &--drop {
+        background-color: blue;
       }
     }
   }

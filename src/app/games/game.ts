@@ -9,8 +9,8 @@ export interface GameOptions {
   continuous: boolean;
 }
 
-export const DEAD = createState("dead", "b");
-export const ALIVE = createState("alive", "o");
+export const EMPTY = createState("empty", "b");
+export const ACTIVE = createState("alive", "o");
 
 const DefaultGameOptions = {
   width: 40,
@@ -22,8 +22,6 @@ export abstract class Game<
   T extends CellState = CellState,
   O extends GameOptions = GameOptions
 > {
-  patterns: string[] = [];
-
   /* Array of all possible states
    * The first state is the default state
    * The last state is the state that is used when the cell is empty
@@ -68,15 +66,11 @@ export abstract class Game<
   }
 
   refreshStats() {
-    this.stats.Alive = this.worldCountWhen(ALIVE as T);
+    this.stats.Alive = this.worldCountWhen(ACTIVE as T);
   }
 
   reset() {
-    this.fillWith(DEAD as T);
-    if (this.patterns?.length > 0) {
-      const g = this.rleToGrid(this.patterns[0]);
-      this.setGrid(g);
-    }
+    this.fillWith(EMPTY as T);
     this.stats.Step = 0;
     this.refreshStats();
   }

@@ -1,4 +1,4 @@
-import { ALIVE, DEAD, Game, GameOptions } from "./game";
+import { ACTIVE, EMPTY, Game, GameOptions } from "./game";
 
 interface LifeOptions extends GameOptions {
   ruleString: string;
@@ -12,15 +12,13 @@ const LifeDefaultOptions = {
 };
 
 export class Life extends Game {
-  readonly patterns = [""];
-
   stats = {
     Step: 0,
     Alive: 0,
   };
 
-  states = [ALIVE, DEAD];
-  pallet = [[ALIVE, DEAD]];
+  states = [ACTIVE, EMPTY];
+  pallet = [[ACTIVE, EMPTY]];
 
   birth: number[];
   survive: number[];
@@ -43,14 +41,15 @@ export class Life extends Game {
 
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
-    const s = this.neighborhoodCountWhen(x, y, ALIVE);
-    if (c.state === DEAD.state) {
-      return this.birth.includes(s) ? ALIVE : DEAD;
+    const s = this.neighborhoodCountWhen(x, y, ACTIVE);
+    if (c.state === EMPTY.state) {
+      return this.birth.includes(s) ? ACTIVE : EMPTY;
+    } else if (c.state === ACTIVE.state) {
+      return this.survive.includes(s) ? ACTIVE : EMPTY;
     }
-    return this.survive.includes(s) ? ALIVE : DEAD;
   }
 
   refreshStats() {
-    this.stats.Alive = this.worldCountWhen(ALIVE);
+    this.stats.Alive = this.worldCountWhen(ACTIVE);
   }
 }

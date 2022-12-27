@@ -28,16 +28,18 @@
       </mat-select>
     </div>
     <div class="controls">
-      <button mat-icon-button (click)="onReset()">
-        <mat-icon>restart_alt</mat-icon>
-      </button>
-      <button mat-icon-button (click)="doStep()" [disabled]="playing || paused">
-        <mat-icon>skip_next</mat-icon>
-      </button>
-      <button mat-icon-button (click)="onTogglePlay()" [disabled]="paused">
-        <mat-icon *ngIf="playing">pause</mat-icon>
-        <mat-icon *ngIf="!playing">play_arrow</mat-icon>
-      </button>
+      <div class="control-group">
+        <button mat-icon-button (click)="onReset()">
+          <mat-icon>restart_alt</mat-icon>
+        </button>
+        <button mat-icon-button (click)="doStep()" [disabled]="playing || paused">
+          <mat-icon>skip_next</mat-icon>
+        </button>
+        <button mat-icon-button (click)="onTogglePlay()" [disabled]="paused">
+          <mat-icon *ngIf="playing">pause</mat-icon>
+          <mat-icon *ngIf="!playing">play_arrow</mat-icon>
+        </button>
+      </div>
       <mat-slider min="-5" max="5" step="1" value="1.5" discrete showTickMarks>
         <input matSliderThumb [(ngModel)]="speed" />
       </mat-slider>
@@ -102,7 +104,7 @@
       <div
         class="pattern-container"
         *ngFor="
-          let pattern of gameItem.patterns;
+          let pattern of gameItem.savedPatterns;
           let i = index;
           trackBy: trackByMethod
         "
@@ -110,7 +112,7 @@
         <button
           mat-mini-fab
           (click)="onRemovePattern(pattern)"
-          *ngIf="i >= game.patterns.length - 1"
+          *ngIf="i >= gameItem.patterns.length - 1"
         >
           <mat-icon>close</mat-icon>
         </button>

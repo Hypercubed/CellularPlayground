@@ -1,4 +1,4 @@
-import { ALIVE, CellState, DEAD, Game, GameOptions } from "./game";
+import { ACTIVE, CellState, EMPTY, Game, GameOptions } from "./game";
 
 const defaultWolframOptions = {
   width: 43,
@@ -12,8 +12,6 @@ interface WolframOptions extends GameOptions {
 }
 
 export class Wolfram extends Game<CellState, WolframOptions> {
-  readonly patterns = ["21b1o"];
-
   stats = {
     Step: 0,
     Alive: 0,
@@ -22,10 +20,10 @@ export class Wolfram extends Game<CellState, WolframOptions> {
   width = 86 / 2;
   height = 44 / 2;
 
-  states = [ALIVE, DEAD];
-  pallet = [[ALIVE, DEAD]];
+  states = [ACTIVE, EMPTY];
+  pallet = [[ACTIVE, EMPTY]];
 
-  private rule: CellState[] = Array(8).fill(DEAD);
+  private rule: CellState[] = Array(8).fill(EMPTY);
 
   constructor(options?: Partial<WolframOptions>) {
     super({
@@ -36,7 +34,7 @@ export class Wolfram extends Game<CellState, WolframOptions> {
     const s = ("00000000" + this.options.N.toString(2)).slice(-8);
     this.rule = this.rule
       .map((_, i) => {
-        const n = s[i] === "1" ? ALIVE : DEAD;
+        const n = s[i] === "1" ? ACTIVE : EMPTY;
         return n;
       })
       .reverse();
@@ -44,12 +42,11 @@ export class Wolfram extends Game<CellState, WolframOptions> {
 
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
-    // console.log(c);
-
-    if (c?.state === DEAD.state) {
-      const b0 = +(this.getCell(x + 1, y - 1)?.state === ALIVE.state);
-      const b1 = +(this.getCell(x, y - 1)?.state === ALIVE.state);
-      const b2 = +(this.getCell(x - 1, y - 1)?.state === ALIVE.state);
+    
+    if (c?.state === EMPTY.state) {
+      const b0 = +(this.getCell(x + 1, y - 1)?.state === ACTIVE.state);
+      const b1 = +(this.getCell(x, y - 1)?.state === ACTIVE.state);
+      const b2 = +(this.getCell(x - 1, y - 1)?.state === ACTIVE.state);
       const s = b0 + (b1 << 1) + (b2 << 2);
       return this.rule[s];
     }
@@ -58,6 +55,6 @@ export class Wolfram extends Game<CellState, WolframOptions> {
   }
 
   refreshStats() {
-    this.stats.Alive = this.worldCountWhen(ALIVE);
+    this.stats.Alive = this.worldCountWhen(ACTIVE);
   }
 }

@@ -50,8 +50,6 @@ const AntOptionsDefault = {
 };
 
 export class Ant extends Game {
-  readonly patterns = ["$$$$$$$$$$$$$$14b1▲"];
-
   stats = {
     Step: 0,
     Ants: 0,

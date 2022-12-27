@@ -11,21 +11,23 @@ import Stats from "stats.js";
 
 import { MatSelectChange } from "@angular/material/select";
 
-import { WireWorld } from "./games/wireworld";
+import { Diodes, WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
 import { Wolfram } from "./games/wolfram";
 import { CellState, Game, GameOptions } from "./games/game";
 import { KeyValue } from "@angular/common";
+import { Rain } from "./games/rain";
 // import { City } from "./games/city";
 
 /* Defining the interface for the pattern. */
 interface GameListItem {
   title: string;
   Ctor: any;
-  options: any;
-  patterns: Array<CellState[][]>;
-  class: string;
+  options?: any;
+  patterns: string[];
+  savedPatterns: Array<CellState[][]>;
+  class?: string;
 }
 
 const Games: GameListItem[] = [
@@ -33,13 +35,13 @@ const Games: GameListItem[] = [
     title: "Conway's Life",
     Ctor: Life,
     options: [
-      { title: "Default", ruleString: "b2s23" },
-      { title: "Torus", ruleString: "b2s23", continuous: true },
+      { title: "Default", ruleString: "b3s23" },
+      { title: "Torus", ruleString: "b3s23", continuous: true },
       { title: "Diamoeba", ruleString: "B35678/S5678" },
       { title: "Maze", ruleString: "B3/S12345" },
     ],
-    // create: () => new Life(),
-    patterns: [],
+    patterns: [""],
+    savedPatterns: [],
     class: "life",
   },
   {
@@ -49,14 +51,16 @@ const Games: GameListItem[] = [
       { title: "Default", continuous: false },
       { title: "Torus", continuous: true },
     ],
-    patterns: [],
+    patterns: ["$$$$$$$$$$$$$$14b1▲"],
+    savedPatterns: [],
     class: "ant",
   },
   {
     title: "WireWorld",
     Ctor: WireWorld,
     options: [],
-    patterns: [],
+    patterns: ["", Diodes],
+    savedPatterns: [],
     class: "wireworld",
   },
   {
@@ -67,8 +71,18 @@ const Games: GameListItem[] = [
       { title: "Rule 90", N: 90 },
       { title: "Rule 110", N: 110 },
     ],
-    patterns: [],
+    patterns: ["21b1o"],
+    savedPatterns: [],
     class: "wolfram",
+  },
+  {
+    title: "Rain",
+    Ctor: Rain,
+    options: [
+    ],
+    patterns: [],
+    savedPatterns: [],
+    class: "rain",
   },
 ];
 
@@ -197,15 +211,16 @@ export class AppComponent {
     }
   }
 
-  setupGame(game: GameListItem, gameOptions: GameOptions = game.options[0]) {
+  setupGame(gameItem: GameListItem, gameOptions: GameOptions = gameItem.options[0]) {
     this.stop();
 
-    this.gameItem = game;
+    this.gameItem = gameItem;
     this.resetGame(gameOptions);
-    if (this.game.patterns && !this.gameItem.patterns.length) {
-      this.game.patterns.forEach((pattern: string) => {
+
+    if (this.gameItem.patterns && !this.gameItem.savedPatterns.length) {
+      this.gameItem.patterns.forEach((pattern: string) => {
         if (pattern) {
-          this.gameItem.patterns.push(this.game.rleToGrid(pattern));
+          this.gameItem.savedPatterns.push(this.game.rleToGrid(pattern));
         }
       });
     }
@@ -219,6 +234,12 @@ export class AppComponent {
     const { Ctor } = this.gameItem;
     this.game = new Ctor(gameOptions);
     this.game.reset();
+
+    if (this.gameItem.patterns && this.gameItem.patterns.length > 0) {
+      const g = this.gameItem.patterns[0];
+      const gg = this.game.rleToGrid(g)
+      this.game.setGrid(gg);
+    }
   }
 
   doStep() {
@@ -273,8 +294,7 @@ export class AppComponent {
   }
 
   onAddPattern() {
-    this.gameItem.patterns.push(this.game.getGridClone());
-    // console.log(this.game.getRLE());
+    this.gameItem.savedPatterns.push(this.game.getGridClone());
   }
 
   onUsePattern(g: CellState[][]) {
@@ -282,7 +302,7 @@ export class AppComponent {
   }
 
   onRemovePattern(pattern: CellState[][]) {
-    this.gameItem.patterns = this.gameItem.patterns.filter(
+    this.gameItem.savedPatterns = this.gameItem.savedPatterns.filter(
       (p) => p !== pattern
     );
   }

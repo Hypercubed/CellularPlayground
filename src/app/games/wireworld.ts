@@ -2,23 +2,21 @@
 currents in wires and makes it relatively easy to build logic gates
 and other digital circuits. */
 
-import { ALIVE, createState, DEAD, Game, GameOptions } from "./game";
+import { ACTIVE, createState, EMPTY, Game, GameOptions } from "./game";
 
 const HEAD = createState("electron", "⚡︎");
 const TAIL = createState("tail", "■");
 
-const States = [ALIVE, HEAD, TAIL, DEAD];
+const States = [ACTIVE, HEAD, TAIL, EMPTY];
 const Pallet = [
-  [ALIVE, DEAD],
+  [ACTIVE, EMPTY],
   [HEAD, TAIL],
 ];
 
-const diodes =
+export const Diodes =
   "$$$$$$3b1■1⚡︎3o7b1■1⚡︎$2b1o5b7o1■1b3o$3b5o7b1■1⚡︎3b1o$20b1o$20b1o$20b1o$20b1o$21b1o$20b3o1■1⚡︎5o$21b1o$20b1o$20b1o$20b1o$20b1o$3b1■1⚡︎3o7b1■1⚡︎3b1o$2b1o5b7o1b1⚡︎3o$3b5o7b1■1⚡︎";
 
 export class WireWorld extends Game {
-  readonly patterns = ["", diodes];
-
   stats = {
     Step: 0,
     Electrons: 0,
@@ -43,8 +41,8 @@ export class WireWorld extends Game {
   getNextCell(x: number, y: number) {
     const a = this.getCell(x, y);
     if (a.state === HEAD.state) return TAIL;
-    if (a.state === TAIL.state) return ALIVE;
-    if (a.state === ALIVE.state) {
+    if (a.state === TAIL.state) return ACTIVE;
+    if (a.state === ACTIVE.state) {
       const c = this.neighborhoodCountWhen(x, y, HEAD);
       if (c === 1 || c === 2) {
         return HEAD;
