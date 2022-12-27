@@ -58,9 +58,14 @@
       </span>
     </div>
     <table
+      #board
       id="board"
       oncontextmenu="return false;"
       (mouseleave)="onMouseLeave()"
+      (touchstart)="onTouch($event)"
+      (touchmove)="onTouch($event)"
+      (touchend)="onMouseLeave()"
+      (touchcancel)="onMouseLeave()"
     >
       <tr *ngFor="let row of game.grid; let y = index; trackBy: trackByMethod">
         <td
@@ -72,7 +77,6 @@
           (mousedown)="onMouseEnter($event, x, y)"
           (mouseenter)="onMouseEnter($event, x, y)"
           (click)="onClick($event, x, y)"
-          (touchend)="onClick($event, x, y)"
           (mouseup)="onMouseLeave()"
           class="cell"
           [class]="'cell--' + cell.state"

@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
+  ViewChild,
   ViewEncapsulation,
 } from "@angular/core";
 
@@ -88,6 +90,8 @@ export class AppComponent {
   private timeout = null;
   mouseDown = false;
 
+  @ViewChild('board', { static: true }) board: ElementRef;
+
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -129,32 +133,51 @@ export class AppComponent {
     }
   }
 
-  onMouseEnter(e: MouseEvent, j: number, i: number) {
+  onMouseEnter(e: MouseEvent, x: number, y: number) {
     if (e.buttons) {
+      if (this.playing) {
+        this.pause();
+      }
+
       const s =
         e.buttons === 1
           ? this.currentType
           : this.game.emptyCell;
 
-      const c = this.game.getCell(j, i);
-      if (c !== s) {
-        this.game.immediatelySetCell(j, i, s);
-        this.game.refreshStats();
-      }
-
-      if (this.playing) {
-        this.pause();
-      }
+      this.setCell(x, y, s);
     }
   }
 
-  onClick(e: MouseEvent, j: number, i: number) {
+  onClick(e: MouseEvent, x: number, y: number) {
     e.preventDefault();
     e.stopPropagation();
 
-    const c = this.game.getCell(j, i);
-    if (c !== this.currentType) {
-      this.game.immediatelySetCell(j, i, this.currentType);
+    this.setCell(x, y, this.currentType);
+  }
+
+  onTouch(e: TouchEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (this.playing) {
+      this.pause();
+    }
+
+    const el = this.board.nativeElement;
+
+    const dx = e.touches[0].clientX - el.offsetLeft;
+    const dy = e.touches[0].clientY - el.offsetTop;
+
+    const x = Math.floor(dx / el.clientWidth * this.game.sizeX);
+    const y = Math.floor(dy / el.clientHeight * this.game.sizeY);
+
+    this.setCell(x, y, this.currentType);
+  }
+
+  setCell(x: number, y: number, s: CellState) {
+    const c = this.game.getCell(x, y);
+    if (c !== s) {
+      this.game.immediatelySetCell(x, y, s);
       this.game.refreshStats();
     }
   }
