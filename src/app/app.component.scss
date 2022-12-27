@@ -192,7 +192,7 @@
     color: transparent;
     background-color: white;
 
-    &--alive {
+    &--active {
       background-color: black;
     }
 
@@ -246,7 +246,7 @@
         background-color: red;
       }
 
-      &.cell--alive {
+      &.cell--active {
         background-color: yellow !important;
       }
     }
@@ -277,10 +277,18 @@
   //   }
   // }
 
-  &.game--rain {
+  &.game--snow {
     .cell {
       &--drop {
-        background-color: blue;
+        background-color: white;
+      }
+
+      &--active {
+        background-color: green !important
+      }
+
+      &--empty {
+        background-color: black;
       }
     }
   }

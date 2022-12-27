@@ -10,7 +10,7 @@ export interface GameOptions {
 }
 
 export const EMPTY = createState("empty", "b");
-export const ACTIVE = createState("alive", "o");
+export const ACTIVE = createState("active", "o");
 
 const DefaultGameOptions = {
   width: 40,

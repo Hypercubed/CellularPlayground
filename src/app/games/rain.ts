@@ -30,24 +30,24 @@ export class Rain extends Game {
     const c = this.getCell(x, y);
 
     if (c.state === EMPTY.state) {
-      const up = this.getCell(x, y - 1)?.state === DROP.state;
-      if (up) return DROP;
+      if (y === 0) return Math.random() < 0.1 ? DROP : EMPTY;
+      if (y === this.height) return c;
 
-      const up_left = this.getCell(x - 1, y - 1)?.state === DROP.state;
-      const left_blocked = this.getCell(x - 1, y)?.state === ACTIVE.state;
-      if (up_left && left_blocked) return DROP;
-      
-      const up_right = this.getCell(x + 1, y - 1)?.state === DROP.state;
-      const right_blocked = this.getCell(x + 1, y)?.state === ACTIVE.state;
-      if (up_right && right_blocked) return DROP;
+      return this.getCell(x, y - 1);
     }
 
     if (c.state === DROP.state) {
       const down = this.getCell(x, y + 1)?.state === EMPTY.state;
-      const down_left = this.getCell(x - 1, y + 1)?.state === ACTIVE.state;
-      const down_right = this.getCell(x + 1, y + 1)?.state === ACTIVE.state;
+      if (down) return EMPTY;
 
-      if (down || down_left || down_right) return EMPTY;
+      const up = this.getCell(x, y - 1)?.state === EMPTY.state;
+      if (up) return Math.random() < 0.2 ? EMPTY : DROP;
+    }
+
+    if (c.state === ACTIVE.state) {
+      if (y >= this.height - 1) return c;
+      const down = this.getCell(x, y + 1)?.state === EMPTY.state;
+      if (down) return EMPTY;
     }
 
     return c;

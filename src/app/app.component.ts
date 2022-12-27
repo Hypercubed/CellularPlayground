@@ -76,13 +76,13 @@ const Games: GameListItem[] = [
     class: "wolfram",
   },
   {
-    title: "Rain",
+    title: "Snow",
     Ctor: Rain,
     options: [
     ],
     patterns: [],
     savedPatterns: [],
-    class: "rain",
+    class: "snow",
   },
 ];
 
