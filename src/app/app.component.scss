@@ -27,14 +27,13 @@
     &#right-side {
       right: 0;
     }
-  };
+  }
 
   #content {
     width: var(--board-width);
     padding: 20px;
     margin: 0 auto;
   }
-
 
   #board,
   .pattern-board {
@@ -208,20 +207,20 @@
     .cell {
       transition: unset;
 
-      &.cell--empty {
+      &.cell--b {
         background-color: black;
       }
 
-      &.cell--head {
+      &.cell--⚡︎ {
         color: yellow;
         background-color: blue;
       }
 
-      &.cell--tail {
+      &.cell--■ {
         background-color: red;
       }
 
-      &.cell--conductor {
+      &.cell--o {
         background-color: yellow;
       }
     }

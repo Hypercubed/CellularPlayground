@@ -2,36 +2,33 @@
 currents in wires and makes it relatively easy to build logic gates
 and other digital circuits. */
 
-import { createState, Game } from "./game";
+import { ALIVE, createState, DEAD, Game, GameOptions } from "./game";
 
-const EMPTY = createState("empty", "□");
-const HEAD = createState("head", "⚡︎");
-const TAIL = createState("tail", "■");
-const CONDUCTOR = createState("conductor", "■");
+const HEAD = createState("⚡︎");
+const TAIL = createState("■");
 
 export class WireWorld extends Game {
-  name = "WireWorld";
+  readonly patterns = [
+    "",
+    "$$$$$$3b1■1⚡︎3o7b1■1⚡︎$2b1o5b7o1■1b3o$3b5o7b1■1⚡︎3b1o$20b1o$20b1o$20b1o$20b1o$21b1o$20b3o1■1⚡︎5o$21b1o$20b1o$20b1o$20b1o$20b1o$3b1■1⚡︎3o7b1■1⚡︎3b1o$2b1o5b7o1b1⚡︎3o$3b5o7b1■1⚡︎",
+  ];
 
   stats = {
     Step: 0,
     Electrons: 0,
   };
 
-  sizeX = 30;
-  sizeY = 30;
+  width = 30;
+  height = 30;
 
-  states = [CONDUCTOR, HEAD, TAIL, EMPTY];
-  pallet = [[CONDUCTOR, EMPTY], [HEAD, TAIL]];
+  states = [ALIVE, HEAD, TAIL, DEAD];
+  pallet = [
+    [ALIVE, DEAD],
+    [HEAD, TAIL],
+  ];
 
-  constructor() {
-    super();
-    this.fillWith(EMPTY);
-  }
-
-  reset() {
-    this.fillWith(EMPTY);
-    this.stats.Step = 0;
-    this.refreshStats();
+  constructor(options?: Partial<GameOptions>) {
+    super(options);
   }
 
   /*
@@ -43,8 +40,8 @@ export class WireWorld extends Game {
   getNextCell(x: number, y: number) {
     const a = this.getCell(x, y);
     if (a.state === HEAD.state) return TAIL;
-    if (a.state === TAIL.state) return CONDUCTOR;
-    if (a.state === CONDUCTOR.state) {
+    if (a.state === TAIL.state) return ALIVE;
+    if (a.state === ALIVE.state) {
       const c = this.neighborhoodCountWhen(x, y, HEAD);
       if (c === 1 || c === 2) {
         return HEAD;

@@ -10,7 +10,7 @@ import {
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
-import { startingGrid, Wolfram } from "./games/wolfram";
+import { Wolfram } from "./games/wolfram";
 import { CellState, Game, makeGridWith } from "./games/game";
 import { KeyValue } from "@angular/common";
 // import { City } from "./games/city";
@@ -18,54 +18,79 @@ import { KeyValue } from "@angular/common";
 /* Defining the interface for the pattern. */
 interface GameListItem {
   title: string;
-  create: () => Game;
+  // create: () => Game;
+  Ctor: any;
+  options: any;
   patterns: Array<CellState[][]>;
 }
 
 const Games: Record<string, GameListItem> = {
-  life: { title: "Conway's Life", create: () => new Life(), patterns: [] },
+  life: {
+    title: "Conway's Life",
+    Ctor: Life,
+    options: {},
+    // create: () => new Life(),
+    patterns: [],
+  },
   historyLife: {
     title: "Conway's Life (History)",
-    create: () => new Life('b2s23'),
+    Ctor: Life,
+    options: { ruleString: "b2s23" },
     patterns: [],
   },
   torusLife: {
     title: "Conway's Life (Torus)",
-    create: () => new Life('b2s23', { continuous: true }),
+    Ctor: Life,
+    options: { ruleString: "b2s23", continuous: true },
     patterns: [],
   },
   // starTrekLife: {
   //   title: "Star Trek",
-  //   create: () => new Life('B3/S0248'),
+  //   create: () => new Life({ ruleString: 'B3/S0248' }),
   //   patterns: [],
   // },
   diamoebaLife: {
     title: "Diamoeba",
-    create: () => new Life('B35678/S5678'),
+    Ctor: Life,
+    options: { ruleString: "B35678/S5678" },
     patterns: [],
   },
   mazeLife: {
     title: "Maze",
-    create: () => new Life('B3/S12345'),
+    Ctor: Life,
+    options: { ruleString: "B3/S12345" },
     patterns: [],
   },
   ant: {
     title: "Langton's Ant",
-    create: () => new Ant(),
+    Ctor: Ant,
+    options: {},
     patterns: [],
   },
   torusAnt: {
     title: "Langton's Ant (Torus)",
-    create: () => new Ant({ continuous: true }),
+    Ctor: Ant,
+    options: { continuous: true },
     patterns: [],
   },
   wireWorld: {
     title: "WireWorld",
-    create: () => new WireWorld(),
+    Ctor: WireWorld,
+    options: {},
     patterns: [],
   },
-  rule30: { title: "Rule 30", create: () => new Wolfram(), patterns: [] },
-  rule110: { title: "Rule 110", create: () => new Wolfram(110), patterns: [] },
+  rule30: {
+    title: "Rule 30",
+    Ctor: Wolfram,
+    options: { N: 30 },
+    patterns: [],
+  },
+  rule110: {
+    title: "Rule 110",
+    Ctor: Wolfram,
+    options: { N: 110 },
+    patterns: [],
+  },
   // city: { title: 'City', create: () => new City, patterns: [] },
 };
 
@@ -90,7 +115,7 @@ export class AppComponent {
   private timeout = null;
   mouseDown = false;
 
-  @ViewChild('board', { static: true }) board: ElementRef;
+  @ViewChild("board", { static: true }) board: ElementRef;
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
@@ -139,10 +164,7 @@ export class AppComponent {
         this.pause();
       }
 
-      const s =
-        e.buttons === 1
-          ? this.currentType
-          : this.game.emptyCell;
+      const s = e.buttons === 1 ? this.currentType : this.game.emptyCell;
 
       this.setCell(x, y, s);
     }
@@ -158,7 +180,7 @@ export class AppComponent {
   onTouch(e: TouchEvent) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (this.playing) {
       this.pause();
     }
@@ -168,8 +190,8 @@ export class AppComponent {
     const dx = e.touches[0].clientX - el.offsetLeft;
     const dy = e.touches[0].clientY - el.offsetTop;
 
-    const x = Math.floor(dx / el.clientWidth * this.game.sizeX);
-    const y = Math.floor(dy / el.clientHeight * this.game.sizeY);
+    const x = Math.floor((dx / el.clientWidth) * this.game.width);
+    const y = Math.floor((dy / el.clientHeight) * this.game.height);
 
     this.setCell(x, y, this.currentType);
   }
@@ -185,16 +207,20 @@ export class AppComponent {
   setupGame(name: string) {
     this.gameItem = this.Games[name];
     this.resetGame();
-    // console.log(this.game.getRLE());
-    if (!/^\$+$/.test(this.game.getRLE())) {
-      this.gameItem.patterns[0] = this.game.getGridClone();
+    if (this.game.patterns && !this.gameItem.patterns.length) {
+      this.game.patterns.forEach((pattern: string) => {
+        if (pattern) {
+          this.gameItem.patterns.push(this.game.rleToGrid(pattern));
+        }
+      });
     }
     this.currentType = this.game.defaultCell;
   }
 
   resetGame() {
     this.stop();
-    this.game = this.gameItem.create();
+    const { Ctor, options } = this.gameItem;
+    this.game = new Ctor(options);
     this.game.reset();
   }
 
@@ -244,6 +270,7 @@ export class AppComponent {
 
   onAddPattern() {
     this.gameItem.patterns.push(this.game.getGridClone());
+    console.log(this.game.getRLE());
   }
 
   onUsePattern(g: CellState[][]) {

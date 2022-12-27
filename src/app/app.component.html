@@ -3,8 +3,8 @@
   class="game"
   [class]="'game--' + currentGame"
   [class.playing]="playing"
-  [style.--m]="game.sizeX"
-  [style.--n]="game.sizeY"
+  [style.--m]="game.width"
+  [style.--n]="game.height"
 >
   <aside id="left-side">
     <div class="controls">
@@ -16,8 +16,9 @@
           {{ game.value.title }}
         </option>
       </select>
+    </div>
+    <div class="controls">
       <button (click)="onReset()">⏮ Reset</button>
-
       <button (click)="doStep()" [disabled]="playing">⏯ Step</button>
       <button (click)="onTogglePlay()">
         {{ playing ? "⏸ Pause" : "⏵ Play" }}
@@ -36,7 +37,7 @@
         <option>5</option>
       </datalist>
     </div>
-    <div id="pallet">
+    <div id="pallet" class="controls">
       <div class="set" *ngFor="let set of game.pallet; trackBy: trackByMethod">
         <button
           *ngFor="let type of set; trackBy: trackByMethod"

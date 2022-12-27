@@ -1,25 +1,21 @@
-import { ALIVE, CellState, createState, DEAD, Game, GameOptions, makeGridWith } from "./game";
-
-export const startingGrid = (sizeX: number = 43, sizeY: number = 22) =>
-  makeGridWith(sizeX, sizeY, (x, y) => {
-    if (y === 0 && x === Math.floor(sizeX / 2)) return ALIVE;
-    return DEAD;
-  });
+import { ALIVE, CellState, DEAD, Game, GameOptions } from "./game";
 
 const defaultWolframOptions = {
-  sizeX: 43,
-  sizeY: 22,
+  width: 43,
+  height: 22,
   continuous: false,
 };
 
 export class Wolfram extends Game {
+  readonly patterns = ["21b1o"];
+
   stats = {
     Step: 0,
     Alive: 0,
   };
 
-  sizeX = 86 / 2;
-  sizeY = 44 / 2;
+  width = 86 / 2;
+  height = 44 / 2;
 
   states = [ALIVE, DEAD];
   pallet = [[ALIVE, DEAD]];
@@ -29,7 +25,7 @@ export class Wolfram extends Game {
   constructor(N: number = 30, options?: Partial<GameOptions>) {
     super({
       ...defaultWolframOptions,
-      ...options
+      ...options,
     });
 
     const s = ("00000000" + N.toString(2)).slice(-8);
@@ -39,12 +35,6 @@ export class Wolfram extends Game {
         return n;
       })
       .reverse();
-  }
-
-  reset() {
-    this.currentGrid = startingGrid(this.sizeX, this.sizeY);
-    this.stats.Step = 0;
-    this.refreshStats();
   }
 
   getNextCell(x: number, y: number) {

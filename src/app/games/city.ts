@@ -1,4 +1,4 @@
-import { Game, CellState } from "./game";
+import { Game, CellState, GameOptions } from "./game";
 
 interface CityState extends CellState {
   state: string;
@@ -31,14 +31,14 @@ export class City extends Game<CityState> {
     R: 0,
   };
 
-  sizeX = 5;
-  sizeY = 5;
+  width = 5;
+  height = 5;
 
   states = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
   pallet = [[RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL], [EMPTY]];
 
-  constructor() {
-    super();
+  constructor(options?: Partial<GameOptions>) {
+    super(options);
     this.fillWith(EMPTY);
   }
 

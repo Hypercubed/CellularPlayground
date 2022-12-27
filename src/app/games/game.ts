@@ -4,26 +4,37 @@ export interface CellState {
 }
 
 export interface GameOptions {
-  sizeX: number;
-  sizeY: number;
+  width: number;
+  height: number;
   continuous: boolean;
 }
 
 export const DEAD = createState("b");
 export const ALIVE = createState("o");
 
-export abstract class Game<T extends CellState = CellState> {
+const DefaultGameOptions = {
+  width: 40,
+  height: 40,
+  continuous: false,
+};
+
+export abstract class Game<
+  T extends CellState = CellState,
+  O extends GameOptions = GameOptions
+> {
+  patterns: string[] = [];
+
   /* Array of all possible states
-    * The first state is the default state
-    * The last state is the state that is used when the cell is empty
-    */
+   * The first state is the default state
+   * The last state is the state that is used when the cell is empty
+   */
   states: T[];
 
   /* Array of states that are shown in the pallet */
   pallet: T[][];
 
-  sizeX: number;
-  sizeY: number;
+  width: number;
+  height: number;
   stats: Record<string, any>;
 
   /* If true, the grid is a torus */
@@ -43,11 +54,17 @@ export abstract class Game<T extends CellState = CellState> {
   }
 
   protected currentGrid: T[][];
+  protected options: O;
 
-  constructor(options?: Partial<GameOptions>) {
-    if (options) {
-      Object.assign(this, options);
-    }
+  constructor(options?: Partial<O>) {
+    this.options = {
+      ...DefaultGameOptions,
+      ...options,
+    } as O;
+
+    this.width = this.options.width;
+    this.height = this.options.height;
+    this.continuous = this.options.continuous;
   }
 
   refreshStats() {
@@ -56,19 +73,24 @@ export abstract class Game<T extends CellState = CellState> {
 
   reset() {
     this.fillWith(DEAD as T);
+    if (this.patterns?.length > 0) {
+      const g = this.rleToGrid(this.patterns[0]);
+      this.setGrid(g);
+    }
     this.stats.Step = 0;
+    this.refreshStats();
   }
 
   fillWith(c?: T | ((x: number, y: number) => T)) {
-    c ||= this.emptyCell
-    this.currentGrid = makeGridWith(this.sizeX, this.sizeY, c);
+    c ||= this.emptyCell;
+    this.currentGrid = makeGridWith(this.width, this.height, c);
     this.refreshStats();
   }
 
   getWorld(): T[] {
     let c = [];
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         c.push(this.getCell(x, y));
       }
     }
@@ -77,8 +99,8 @@ export abstract class Game<T extends CellState = CellState> {
 
   getWorldWhen(s: T): T[] {
     let c = [];
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         const ss = this.getCell(x, y);
         if (ss?.state === s.state) c.push(ss);
       }
@@ -120,8 +142,8 @@ export abstract class Game<T extends CellState = CellState> {
 
   worldCountWhen(s: T): number {
     let c = 0;
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         c += +(this.getCell(x, y)?.state === s.state);
       }
     }
@@ -130,8 +152,8 @@ export abstract class Game<T extends CellState = CellState> {
 
   getCell(x: number, y: number): T {
     if (this.continuous) {
-      x = (x + this.sizeX) % this.sizeX;
-      y = (y + this.sizeY) % this.sizeY;
+      x = (x + this.width) % this.width;
+      y = (y + this.height) % this.height;
     } else {
       if (x < 0 || y < 0) return this.emptyCell;
       if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
@@ -142,8 +164,8 @@ export abstract class Game<T extends CellState = CellState> {
 
   immediatelySetCell(x: number, y: number, s: T) {
     if (this.continuous) {
-      x = (x + this.sizeX) % this.sizeX;
-      y = (y + this.sizeY) % this.sizeY;
+      x = (x + this.width) % this.width;
+      y = (y + this.height) % this.height;
     } else {
       if (x < 0 || y < 0) return this.emptyCell;
       if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
@@ -156,8 +178,8 @@ export abstract class Game<T extends CellState = CellState> {
   doStep() {
     const changes = [];
 
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
         const c = this.getCell(x, y);
         const n = this.getNextCell(x, y);
         if (n !== c) {
@@ -182,8 +204,8 @@ export abstract class Game<T extends CellState = CellState> {
     let l = "";
     let c = 0;
 
-    for (let y = 0; y < this.sizeY; y++) {
-      for (let x = 0; x < this.sizeX; x++) {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
         const t = this.getCell(x, y)?.token;
         if (t !== l) {
           if (l !== "") rle += c + l;
@@ -200,12 +222,42 @@ export abstract class Game<T extends CellState = CellState> {
 
     // normalize
     const b = this.emptyCell.token;
-    rle = rle.replace(new RegExp(`${b}`, 'g'), "b");
+    rle = rle.replace(new RegExp(`${b}`, "g"), "b");
 
     const o = this.defaultCell.token;
-    rle = rle.replace(new RegExp(`${o}`, 'g'), "o");
+    rle = rle.replace(new RegExp(`${o}`, "g"), "o");
 
-    return rle.replace(/\d+b\$/g, "$"); // Remove trailing blanks
+    rle = rle.replace(/\d+b\$/g, "$"); // Remove trailing blanks
+    rle = rle.replace(/\$+$/, ""); // Remove trailing newlines
+
+    return rle; // Remove trailing blanks
+  }
+
+  rleToGrid(rle: string) {
+    const g = makeGridWith(this.width, this.height, this.emptyCell);
+
+    let x = 0;
+    let y = 0;
+
+    const r = rle.split("$");
+
+    for (const c of r) {
+      const m = c.matchAll(/(\d+)(\D+)/g);
+      for (const [_, count, token] of m) {
+        const s = this.tokenToState(token);
+        for (let i = 0; i < +count; i++) {
+          g[y][x++] = s;
+        }
+      }
+
+      x = 0;
+      y++;
+    }
+    return g;
+  }
+
+  tokenToState(token: string) {
+    return this.states.find((s) => s.token === token) || this.emptyCell;
   }
 
   getGridClone() {
@@ -213,17 +265,17 @@ export abstract class Game<T extends CellState = CellState> {
   }
 
   setGrid(g: T[][]) {
-    for (let x = 0; x < this.sizeX; x++) {
-      for (let y = 0; y < this.sizeY; y++) {
-        this.currentGrid[y][x] = g[y][x];
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        this.currentGrid[y][x] = g?.[y]?.[x] || this.emptyCell;
       }
     }
     this.refreshStats();
   }
 
   protected getNextField() {
-    for (let y = 0; y < this.sizeX; y++) {
-      for (let x = 0; x < this.sizeY; x++) {
+    for (let y = 0; y < this.width; y++) {
+      for (let x = 0; x < this.height; x++) {
         return this.getNextCell(x, y);
       }
     }
@@ -245,12 +297,12 @@ export function createState<T extends CellState = CellState>(
 }
 
 export function makeGridWith<T extends CellState = CellState>(
-  sizeX: number,
-  sizeY: number,
+  width: number,
+  height: number,
   c: T | ((x: number, y: number) => T)
 ) {
-  return Array.from({ length: sizeY }, (_, y) => {
-    return Array.from({ length: sizeX }, (_, x) => {
+  return Array.from({ length: height }, (_, y) => {
+    return Array.from({ length: width }, (_, x) => {
       return typeof c === "function" ? c(x, y) : c;
     });
   });

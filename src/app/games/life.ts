@@ -1,12 +1,19 @@
 import { ALIVE, DEAD, Game, GameOptions } from "./game";
 
+interface LifeOptions extends GameOptions {
+  ruleString: string;
+}
+
 const LifeDefaultOptions = {
-  sizeX: 40,
-  sizeY: 40,
+  width: 40,
+  height: 40,
   continuous: false,
+  ruleString: "b3s23",
 };
 
 export class Life extends Game {
+  readonly patterns = [""];
+
   stats = {
     Step: 0,
     Alive: 0,
@@ -18,18 +25,20 @@ export class Life extends Game {
   birth: number[];
   survive: number[];
 
-  constructor(ruleString: string = 'b3s23', options?: Partial<GameOptions>) {
+  protected options: LifeOptions;
+
+  constructor(options?: Partial<LifeOptions>) {
     super({
       ...LifeDefaultOptions,
       ...options,
     });
 
-    ruleString = ruleString.toLowerCase();
+    const ruleString = this.options.ruleString.toLowerCase();
 
     const [, b, s] = ruleString.split(/[sbSB]+/);
 
-    this.birth = b.split('').map(Number);
-    this.survive = s.split('').map(Number);
+    this.birth = b.split("").map(Number);
+    this.survive = s.split("").map(Number);
   }
 
   getNextCell(x: number, y: number) {

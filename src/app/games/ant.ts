@@ -44,12 +44,14 @@ const WHITE_DOWN = createAntState(Directions.DOWN, Colors.WHITE);
 const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 
 const AntOptionsDefault = {
-  sizeX: 29,
-  sizeY: 29,
+  width: 29,
+  height: 29,
   continuous: false,
 };
 
 export class Ant extends Game {
+  readonly patterns = ["$$$$$$$$$$$$$$14b1▲"];
+
   stats = {
     Step: 0,
     Ants: 0,
@@ -69,15 +71,9 @@ export class Ant extends Game {
   ];
 
   pallet = [
-    [ WHITE_UP,
-    WHITE_DOWN,
-    WHITE_LEFT,
-    WHITE_RIGHT ],
-    [ BLACK_UP,
-    BLACK_DOWN,
-    BLACK_LEFT,
-    BLACK_RIGHT ],
-    [ BLACK, WHITE ]
+    [WHITE_UP, WHITE_DOWN, WHITE_LEFT, WHITE_RIGHT],
+    [BLACK_UP, BLACK_DOWN, BLACK_LEFT, BLACK_RIGHT],
+    [BLACK, WHITE],
   ];
 
   constructor(options?: Partial<GameOptions>) {
@@ -87,23 +83,9 @@ export class Ant extends Game {
     });
   }
 
-  reset() {
-    this.stats.Step = 0;
-    this.fillWith((x, y) => {
-      if (
-        y === Math.floor(this.sizeY / 2) &&
-        x === Math.floor(this.sizeX / 2)
-      ) {
-        return WHITE_UP;
-      }
-      return WHITE;
-    });
-    this.refreshStats();
-  }
-
   refreshStats() {
     this.stats.Ants =
-      this.sizeX * this.sizeY -
+      this.width * this.height -
       this.worldCountWhen(WHITE) -
       this.worldCountWhen(BLACK);
   }
