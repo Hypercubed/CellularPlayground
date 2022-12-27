@@ -7,92 +7,70 @@ import {
   ViewEncapsulation,
 } from "@angular/core";
 
+import Stats from "stats.js";
+
+import { MatSelectChange } from "@angular/material/select";
+
 import { WireWorld } from "./games/wireworld";
 import { Ant } from "./games/ant";
 import { Life } from "./games/life";
 import { Wolfram } from "./games/wolfram";
-import { CellState, Game, makeGridWith } from "./games/game";
+import { CellState, Game, GameOptions } from "./games/game";
 import { KeyValue } from "@angular/common";
 // import { City } from "./games/city";
 
 /* Defining the interface for the pattern. */
 interface GameListItem {
   title: string;
-  // create: () => Game;
   Ctor: any;
   options: any;
   patterns: Array<CellState[][]>;
+  class: string;
 }
 
-const Games: Record<string, GameListItem> = {
-  life: {
+const Games: GameListItem[] = [
+  {
     title: "Conway's Life",
     Ctor: Life,
-    options: {},
+    options: [
+      { title: "Default", ruleString: "b2s23" },
+      { title: "Torus", ruleString: "b2s23", continuous: true },
+      { title: "Diamoeba", ruleString: "B35678/S5678" },
+      { title: "Maze", ruleString: "B3/S12345" },
+    ],
     // create: () => new Life(),
     patterns: [],
+    class: "life",
   },
-  historyLife: {
-    title: "Conway's Life (History)",
-    Ctor: Life,
-    options: { ruleString: "b2s23" },
-    patterns: [],
-  },
-  torusLife: {
-    title: "Conway's Life (Torus)",
-    Ctor: Life,
-    options: { ruleString: "b2s23", continuous: true },
-    patterns: [],
-  },
-  // starTrekLife: {
-  //   title: "Star Trek",
-  //   create: () => new Life({ ruleString: 'B3/S0248' }),
-  //   patterns: [],
-  // },
-  diamoebaLife: {
-    title: "Diamoeba",
-    Ctor: Life,
-    options: { ruleString: "B35678/S5678" },
-    patterns: [],
-  },
-  mazeLife: {
-    title: "Maze",
-    Ctor: Life,
-    options: { ruleString: "B3/S12345" },
-    patterns: [],
-  },
-  ant: {
+  {
     title: "Langton's Ant",
     Ctor: Ant,
-    options: {},
+    options: [
+      { title: "Default", continuous: false },
+      { title: "Torus", continuous: true },
+    ],
     patterns: [],
+    class: "ant",
   },
-  torusAnt: {
-    title: "Langton's Ant (Torus)",
-    Ctor: Ant,
-    options: { continuous: true },
-    patterns: [],
-  },
-  wireWorld: {
+  {
     title: "WireWorld",
     Ctor: WireWorld,
-    options: {},
+    options: [],
     patterns: [],
+    class: "wireworld",
   },
-  rule30: {
-    title: "Rule 30",
+  {
+    title: "Wolfram Rules",
     Ctor: Wolfram,
-    options: { N: 30 },
+    options: [
+      { title: "Rule 30", N: 30 },
+      { title: "Rule 90", N: 90 },
+      { title: "Rule 110", N: 110 },
+    ],
     patterns: [],
+    class: "wolfram",
   },
-  rule110: {
-    title: "Rule 110",
-    Ctor: Wolfram,
-    options: { N: 110 },
-    patterns: [],
-  },
-  // city: { title: 'City', create: () => new City, patterns: [] },
-};
+];
 
 @Component({
   selector: "my-app",
@@ -105,27 +83,41 @@ export class AppComponent {
   readonly Games = Games;
 
   playing = false;
-  currentGame = "life";
+  paused = false;
+
   gameItem: GameListItem;
   game: Game;
+  gameOptions: GameOptions;
+
   currentType: CellState;
   speed = -2;
   rle: string;
 
   private timeout = null;
-  mouseDown = false;
+  private stats: Stats;
 
   @ViewChild("board", { static: true }) board: ElementRef;
+  @ViewChild("stats", { static: true }) statElement: ElementRef;
 
-  constructor(private readonly cdr: ChangeDetectorRef) {}
-
-  ngOnInit() {
-    this.setupGame("life");
+  constructor(private readonly cdr: ChangeDetectorRef) {
+    this.stats = new Stats();
   }
 
-  onGameChange(e: Event) {
+  ngOnInit() {
+    this.setupGame(this.Games[0], this.Games[0].options[0]);
+
+    this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    this.statElement.nativeElement.appendChild(this.stats.dom);
+  }
+
+  onGameChange(e: MatSelectChange) {
     this.stop();
-    this.setupGame((e.target as HTMLSelectElement).value);
+    this.setupGame(e.value);
+  }
+
+  onOptionsChange(e: MatSelectChange) {
+    this.stop();
+    this.setupGame(this.gameItem, e.value);
   }
 
   onTogglePlay() {
@@ -153,7 +145,8 @@ export class AppComponent {
   }
 
   onMouseLeave() {
-    if (this.playing) {
+    if (this.playing && this.paused) {
+      this.paused = false;
       this.doStep();
     }
   }
@@ -204,9 +197,11 @@ export class AppComponent {
     }
   }
 
-  setupGame(name: string) {
-    this.gameItem = this.Games[name];
-    this.resetGame();
+  setupGame(game: GameListItem, gameOptions: GameOptions = game.options[0]) {
+    this.stop();
+
+    this.gameItem = game;
+    this.resetGame(gameOptions);
     if (this.game.patterns && !this.gameItem.patterns.length) {
       this.game.patterns.forEach((pattern: string) => {
         if (pattern) {
@@ -217,32 +212,40 @@ export class AppComponent {
     this.currentType = this.game.defaultCell;
   }
 
-  resetGame() {
+  resetGame(gameOptions: GameOptions = this.gameItem.options[0]) {
     this.stop();
-    const { Ctor, options } = this.gameItem;
-    this.game = new Ctor(options);
+
+    this.gameOptions = gameOptions;
+    const { Ctor } = this.gameItem;
+    this.game = new Ctor(gameOptions);
     this.game.reset();
   }
 
   doStep() {
     this.timeout = null;
 
+    this.stats.begin();
+
     if (this.speed > 0) {
-      for (let i = 0; i <= this.speed; i++) {
-        this.game.doStep();
-      }
+      this.game.doSteps(this.speed, this.playing);
     } else {
-      this.game.doStep();
+      this.game.doSteps(1, this.playing);
     }
 
-    // console.log(this.game.getRLE());
     this.cdr.detectChanges();
+    this.stats.end();
 
-    if (this.playing) {
-      const ms = Math.max(0, -this.speed * 100);
-      this.timeout = setTimeout(() => {
+    if (this.playing && !this.paused) {
+      const next = () => {
         this.doStep();
-      }, ms);
+      };
+
+      if (this.speed < 0) {
+        const ms = Math.max(0, -this.speed * 100);
+        this.timeout = setTimeout(next, ms);
+      } else {
+        requestAnimationFrame(next);
+      }
     }
   }
 
@@ -255,6 +258,7 @@ export class AppComponent {
   pause() {
     clearTimeout(this.timeout);
     this.timeout = null;
+    this.paused = true;
   }
 
   trackByMethod(index: number): number {
@@ -270,10 +274,16 @@ export class AppComponent {
 
   onAddPattern() {
     this.gameItem.patterns.push(this.game.getGridClone());
-    console.log(this.game.getRLE());
+    // console.log(this.game.getRLE());
   }
 
   onUsePattern(g: CellState[][]) {
     this.game.setGrid(g);
+  }
+
+  onRemovePattern(pattern: CellState[][]) {
+    this.gameItem.patterns = this.gameItem.patterns.filter(
+      (p) => p !== pattern
+    );
   }
 }

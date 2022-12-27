@@ -1,45 +1,51 @@
 <div
   id="container"
   class="game"
-  [class]="'game--' + currentGame"
+  [class]="'game--' + gameItem.class"
   [class.playing]="playing"
   [style.--m]="game.width"
   [style.--n]="game.height"
 >
   <aside id="left-side">
+    <div #stats id="fpsStats"></div>
     <div class="controls">
-      <select (change)="onGameChange($event)" [(ngModel)]="currentGame">
-        <option
-          *ngFor="let game of Games | keyvalue : titleAscOrder"
-          [value]="game.key"
-        >
-          {{ game.value.title }}
-        </option>
-      </select>
+      <mat-select
+        (selectionChange)="onGameChange($event)"
+        [(ngModel)]="gameItem"
+      >
+        <mat-option *ngFor="let game of Games" [value]="game">
+          {{ game.title }}
+        </mat-option>
+      </mat-select>
+      <mat-select
+        (selectionChange)="onOptionsChange($event)"
+        [(ngModel)]="gameOptions"
+        *ngIf="gameItem.options?.length"
+      >
+        <mat-option *ngFor="let option of gameItem.options" [value]="option">
+          {{ option.title }}
+        </mat-option>
+      </mat-select>
     </div>
     <div class="controls">
-      <button (click)="onReset()">⏮ Reset</button>
-      <button (click)="doStep()" [disabled]="playing">⏯ Step</button>
-      <button (click)="onTogglePlay()">
-        {{ playing ? "⏸ Pause" : "⏵ Play" }}
+      <button mat-icon-button (click)="onReset()">
+        <mat-icon>restart_alt</mat-icon>
       </button>
-      <input
-        type="range"
-        min="-5"
-        max="5"
-        [(ngModel)]="speed"
-        class="slider"
-        list="step-list"
-      />
-      <datalist id="step-list">
-        <option>-5</option>
-        <option>0</option>
-        <option>5</option>
-      </datalist>
+      <button mat-icon-button (click)="doStep()" [disabled]="playing || paused">
+        <mat-icon>skip_next</mat-icon>
+      </button>
+      <button mat-icon-button (click)="onTogglePlay()" [disabled]="paused">
+        <mat-icon *ngIf="playing">pause</mat-icon>
+        <mat-icon *ngIf="!playing">play_arrow</mat-icon>
+      </button>
+      <mat-slider min="-5" max="5" step="1" value="1.5" discrete showTickMarks>
+        <input matSliderThumb [(ngModel)]="speed" />
+      </mat-slider>
     </div>
     <div id="pallet" class="controls">
       <div class="set" *ngFor="let set of game.pallet; trackBy: trackByMethod">
         <button
+          mat-fab
           *ngFor="let type of set; trackBy: trackByMethod"
           [title]="type.state"
           class="cell"
@@ -89,14 +95,30 @@
   </div>
   <aside id="right-side">
     <div class="controls">
-      <button (click)="onRandom()">Random</button>
-      <button (click)="onClear()">Clear</button>
-      <div *ngFor="let pattern of gameItem.patterns; trackBy: trackByMethod">
+      <button mat-button (click)="onRandom()">Random</button>
+      <button mat-button (click)="onClear()">Clear</button>
+    </div>
+    <div class="controls">
+      <div
+        class="pattern-container"
+        *ngFor="
+          let pattern of gameItem.patterns;
+          let i = index;
+          trackBy: trackByMethod
+        "
+      >
+        <button
+          mat-mini-fab
+          (click)="onRemovePattern(pattern)"
+          *ngIf="i >= game.patterns.length - 1"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
         <ng-container
           *ngTemplateOutlet="miniBoard; context: { pattern }"
         ></ng-container>
       </div>
-      <button (click)="onAddPattern()">+ Save Pattern</button>
+      <button mat-button (click)="onAddPattern()">+ Save Pattern</button>
     </div>
   </aside>
 </div>

@@ -4,9 +4,14 @@ const defaultWolframOptions = {
   width: 43,
   height: 22,
   continuous: false,
+  N: 30,
 };
 
-export class Wolfram extends Game {
+interface WolframOptions extends GameOptions {
+  N: number;
+}
+
+export class Wolfram extends Game<CellState, WolframOptions> {
   readonly patterns = ["21b1o"];
 
   stats = {
@@ -22,13 +27,13 @@ export class Wolfram extends Game {
 
   private rule: CellState[] = Array(8).fill(DEAD);
 
-  constructor(N: number = 30, options?: Partial<GameOptions>) {
+  constructor(options?: Partial<WolframOptions>) {
     super({
       ...defaultWolframOptions,
       ...options,
     });
 
-    const s = ("00000000" + N.toString(2)).slice(-8);
+    const s = ("00000000" + this.options.N.toString(2)).slice(-8);
     this.rule = this.rule
       .map((_, i) => {
         const n = s[i] === "1" ? ALIVE : DEAD;
@@ -39,17 +44,15 @@ export class Wolfram extends Game {
 
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
+    // console.log(c);
 
     if (c?.state === DEAD.state) {
       const b0 = +(this.getCell(x + 1, y - 1)?.state === ALIVE.state);
       const b1 = +(this.getCell(x, y - 1)?.state === ALIVE.state);
       const b2 = +(this.getCell(x - 1, y - 1)?.state === ALIVE.state);
-      const s = b0 + b1 * 2 + b2 * 4;
+      const s = b0 + (b1 << 1) + (b2 << 2);
       return this.rule[s];
     }
-
-    // const up = this.getCell(x, y - 1);
-    // if (up?.state === NEXT.state) return NEXT;
 
     return c;
   }

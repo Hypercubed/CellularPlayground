@@ -9,8 +9,8 @@ export interface GameOptions {
   continuous: boolean;
 }
 
-export const DEAD = createState("b");
-export const ALIVE = createState("o");
+export const DEAD = createState("dead", "b");
+export const ALIVE = createState("alive", "o");
 
 const DefaultGameOptions = {
   width: 40,
@@ -175,7 +175,14 @@ export abstract class Game<
     this.refreshStats();
   }
 
-  doStep() {
+  doSteps(n: number = 1, fps = false) {
+    for (let i = 0; i < n; i++) {
+      this.doStep();
+    }
+    this.refreshStats();
+  }
+
+  protected doStep() {
     const changes = [];
 
     for (let x = 0; x < this.width; x++) {
@@ -194,8 +201,6 @@ export abstract class Game<
     }
 
     this.stats.Step++;
-
-    this.refreshStats();
   }
 
   getRLE() {

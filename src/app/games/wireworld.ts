@@ -4,14 +4,20 @@ and other digital circuits. */
 
 import { ALIVE, createState, DEAD, Game, GameOptions } from "./game";
 
-const HEAD = createState("⚡︎");
-const TAIL = createState("■");
+const HEAD = createState("electron", "⚡︎");
+const TAIL = createState("tail", "■");
+
+const States = [ALIVE, HEAD, TAIL, DEAD];
+const Pallet = [
+  [ALIVE, DEAD],
+  [HEAD, TAIL],
+];
+
+const diodes =
+  "$$$$$$3b1■1⚡︎3o7b1■1⚡︎$2b1o5b7o1■1b3o$3b5o7b1■1⚡︎3b1o$20b1o$20b1o$20b1o$20b1o$21b1o$20b3o1■1⚡︎5o$21b1o$20b1o$20b1o$20b1o$20b1o$3b1■1⚡︎3o7b1■1⚡︎3b1o$2b1o5b7o1b1⚡︎3o$3b5o7b1■1⚡︎";
 
 export class WireWorld extends Game {
-  readonly patterns = [
-    "",
-    "$$$$$$3b1■1⚡︎3o7b1■1⚡︎$2b1o5b7o1■1b3o$3b5o7b1■1⚡︎3b1o$20b1o$20b1o$20b1o$20b1o$21b1o$20b3o1■1⚡︎5o$21b1o$20b1o$20b1o$20b1o$20b1o$3b1■1⚡︎3o7b1■1⚡︎3b1o$2b1o5b7o1b1⚡︎3o$3b5o7b1■1⚡︎",
-  ];
+  readonly patterns = ["", diodes];
 
   stats = {
     Step: 0,
@@ -21,11 +27,8 @@ export class WireWorld extends Game {
   width = 30;
   height = 30;
 
-  states = [ALIVE, HEAD, TAIL, DEAD];
-  pallet = [
-    [ALIVE, DEAD],
-    [HEAD, TAIL],
-  ];
+  readonly states = States;
+  readonly pallet = Pallet;
 
   constructor(options?: Partial<GameOptions>) {
     super(options);

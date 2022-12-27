@@ -29,6 +29,15 @@
     }
   }
 
+  #fpsStats {
+    > div {
+      right: 20px !important;
+      top: unset !important;
+      left: unset !important;
+      bottom: 20px !important;
+    }
+  }
+
   #content {
     width: var(--board-width);
     padding: 20px;
@@ -77,6 +86,26 @@
     }
   }
 
+  .pattern-container {
+    position: relative;
+    width: 100px;
+    margin: 0 auto;
+
+    [mat-mini-fab] {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 26px;
+      height: 26px;
+    }
+
+    // .mat-mdc-fab .mat-mdc-button-touch-target,
+    // .mat-mdc-mini-fab .mat-mdc-button-touch-target {
+    //   height: 20px;
+    //   width: 20px;
+    // }
+  }
+
   .pattern-board {
     cursor: pointer;
     --board-width: 100px;
@@ -97,19 +126,17 @@
     margin: 10px;
     background: white;
 
-    select {
-      width: 100%;
+    .mat-mdc-slider {
+      margin: 0 auto;
+      display: block;
     }
 
-    input[type="range"] {
+    [mat-button] {
       width: 100%;
+      margin: 5px 0;
     }
 
     button {
-      width: 100%;
-      height: 30px;
-      margin: 5px 0;
-
       &.active {
         border: 2px solid black;
       }
@@ -165,19 +192,15 @@
     color: transparent;
     background-color: white;
 
-    &--■,
-    &--o,
-    &--1 {
+    &--alive {
       background-color: black;
     }
 
-    &--b,
-    &--□,
-    &--0 {
+    &--dead {
       background-color: white;
     }
 
-    &.cell--_ {
+    &--empty {
       background-color: lightgray;
     }
   }
@@ -185,6 +208,14 @@
   &.game--ant,
   &.game--torusAnt {
     .cell {
+      &--■ {
+        background-color: black;
+      }
+
+      &--□ {
+        background-color: white;
+      }
+
       &--■▲,
       &--■►,
       &--■▼,
@@ -207,21 +238,21 @@
     .cell {
       transition: unset;
 
-      &.cell--b {
-        background-color: black;
+      &.cell--dead {
+        background-color: black !important;
       }
 
-      &.cell--⚡︎ {
+      &.cell--electron {
         color: yellow;
         background-color: blue;
       }
 
-      &.cell--■ {
+      &.cell--tail {
         background-color: red;
       }
 
-      &.cell--o {
-        background-color: yellow;
+      &.cell--alive {
+        background-color: yellow !important;
       }
     }
   }
