@@ -17,7 +17,7 @@ import { Life } from "./games/life";
 import { Wolfram } from "./games/wolfram";
 import { CellState, Game, GameOptions } from "./games/game";
 import { KeyValue } from "@angular/common";
-import { Rain } from "./games/rain";
+// import { Rain } from "./games/rain";
 // import { City } from "./games/city";
 
 /* Defining the interface for the pattern. */
@@ -51,7 +51,7 @@ const Games: GameListItem[] = [
       { title: "Default", continuous: false },
       { title: "Torus", continuous: true },
     ],
-    patterns: ["$$$$$$$$$$$$$$14b1▲"],
+    patterns: ["$$$$$$$$$$$$$$14b▲"],
     savedPatterns: [],
     class: "ant",
   },
@@ -71,19 +71,19 @@ const Games: GameListItem[] = [
       { title: "Rule 90", N: 90 },
       { title: "Rule 110", N: 110 },
     ],
-    patterns: ["21b1o"],
+    patterns: ["21bo"],
     savedPatterns: [],
     class: "wolfram",
   },
-  {
-    title: "Snow",
-    Ctor: Rain,
-    options: [
-    ],
-    patterns: [],
-    savedPatterns: [],
-    class: "snow",
-  },
+  // {
+  //   title: "Snow",
+  //   Ctor: Rain,
+  //   options: [
+  //   ],
+  //   patterns: [],
+  //   savedPatterns: [],
+  //   class: "snow",
+  // },
 ];
 
 @Component({
@@ -211,7 +211,10 @@ export class AppComponent {
     }
   }
 
-  setupGame(gameItem: GameListItem, gameOptions: GameOptions = gameItem.options[0]) {
+  setupGame(
+    gameItem: GameListItem,
+    gameOptions: GameOptions = gameItem.options[0]
+  ) {
     this.stop();
 
     this.gameItem = gameItem;
@@ -237,7 +240,7 @@ export class AppComponent {
 
     if (this.gameItem.patterns && this.gameItem.patterns.length > 0) {
       const g = this.gameItem.patterns[0];
-      const gg = this.game.rleToGrid(g)
+      const gg = this.game.rleToGrid(g);
       this.game.setGrid(gg);
     }
   }
@@ -295,6 +298,7 @@ export class AppComponent {
 
   onAddPattern() {
     this.gameItem.savedPatterns.push(this.game.getGridClone());
+    console.log(this.game.getRLE());
   }
 
   onUsePattern(g: CellState[][]) {

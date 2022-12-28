@@ -255,27 +255,11 @@
   &.game--rule30,
   &.game--rule110 {
     #board {
-      aspect-ratio: 43/22;
-
       .cell {
         line-height: 0;
       }
     }
   }
-
-  // &.game--historyLife {
-  //   &.playing {
-  //     .cell {
-  //       &--o {
-  //         transition: background 0.2s ease-in-out;
-  //       }
-
-  //       &--b {
-  //         transition: background 1s ease-in-out;
-  //       }
-  //     }
-  //   }
-  // }
 
   &.game--snow {
     .cell {
@@ -284,7 +268,7 @@
       }
 
       &--active {
-        background-color: green !important
+        background-color: green !important;
       }
 
       &--empty {

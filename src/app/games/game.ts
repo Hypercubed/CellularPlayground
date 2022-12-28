@@ -1,6 +1,7 @@
 export interface CellState {
-  state: string;
-  token: string;
+  state: string; // state name
+  token: string; // token used for saving
+  display?: string; // token for display
 }
 
 export interface GameOptions {
@@ -207,14 +208,16 @@ export abstract class Game<
       for (let x = 0; x < this.width; x++) {
         const t = this.getCell(x, y)?.token;
         if (t !== l) {
-          if (l !== "") rle += c + l;
+          if (l !== "") {
+            rle += c > 1 ? c + l : l;
+          }
           l = t;
           c = 1;
         } else {
           c++;
         }
       }
-      rle += c + l + "$";
+      rle += (c > 1 ? c + l : l) + "$";
       c = 0;
       l = "";
     }
@@ -233,7 +236,8 @@ export abstract class Game<
   }
 
   rleToGrid(rle: string) {
-    const g = makeGridWith(this.width, this.height, this.emptyCell);
+    // TODO: sparse grids
+    const g = makeGridWith<any>(this.width, this.height, this.emptyCell);
 
     let x = 0;
     let y = 0;
@@ -241,10 +245,10 @@ export abstract class Game<
     const r = rle.split("$");
 
     for (const c of r) {
-      const m = c.matchAll(/(\d+)(\D+)/g);
-      for (const [_, count, token] of m) {
+      const m = c.matchAll(/(\d*)(\D)/g);
+      for (let [_, count, token] of m) {
         const s = this.tokenToState(token);
-        for (let i = 0; i < +count; i++) {
+        for (let i = 0; i < +(count || 1); i++) {
           g[y][x++] = s;
         }
       }
@@ -256,6 +260,9 @@ export abstract class Game<
   }
 
   tokenToState(token: string) {
+    if (token === "b") return this.emptyCell;
+    if (token === "o") return this.defaultCell;
+
     return this.states.find((s) => s.token === token) || this.emptyCell;
   }
 
@@ -287,12 +294,14 @@ export abstract class Game<
 
 export function createState<T extends CellState = CellState>(
   state: string,
-  token = state
+  token = state,
+  display = token
 ): Readonly<T> {
-  return {
+  return Object.freeze({
     state,
-    token,
-  } as T;
+    token: token[0], // ensure token is one character
+    display,
+  }) as T;
 }
 
 export function makeGridWith<T extends CellState = CellState>(

@@ -32,7 +32,11 @@
         <button mat-icon-button (click)="onReset()">
           <mat-icon>restart_alt</mat-icon>
         </button>
-        <button mat-icon-button (click)="doStep()" [disabled]="playing || paused">
+        <button
+          mat-icon-button
+          (click)="doStep()"
+          [disabled]="playing || paused"
+        >
           <mat-icon>skip_next</mat-icon>
         </button>
         <button mat-icon-button (click)="onTogglePlay()" [disabled]="paused">
@@ -55,7 +59,7 @@
           [class.active]="currentType.state === type.state"
           (click)="currentType = type"
         >
-          <span>{{ type.token }}</span>
+          <span>{{ type.display || type.token }}</span>
         </button>
       </div>
     </div>
@@ -90,7 +94,7 @@
           class="cell"
           [class]="'cell--' + cell.state"
         >
-          <span>{{ cell.token }}</span>
+          <span>{{ cell.display || cell.token }}</span>
         </td>
       </tr>
     </table>
@@ -133,7 +137,7 @@
         class="cell"
         [class]="'cell--' + cell.state"
       >
-        <span>{{ cell.token }}</span>
+        <span>{{ cell.display || cell.token }}</span>
       </td>
     </tr>
   </table>

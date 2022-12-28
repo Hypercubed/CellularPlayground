@@ -4,7 +4,7 @@ const RainDefaultOptions = {
   width: 40,
   height: 40,
   continuous: false,
-}
+};
 
 const DROP = createState("drop", "*");
 
@@ -45,9 +45,17 @@ export class Rain extends Game {
     }
 
     if (c.state === ACTIVE.state) {
+      // SAND
       if (y >= this.height - 1) return c;
-      const down = this.getCell(x, y + 1)?.state === EMPTY.state;
-      if (down) return EMPTY;
+
+      const down = this.getCell(x, y + 1);
+      if (down?.state === EMPTY.state) return EMPTY;
+
+      // const down_left = this.getCell(x - 1, y + 1);
+      // if (down?.state === EMPTY.state) return EMPTY;
+
+      // const down_right = this.getCell(x + 1, y + 1);
+      // if (down?.state === EMPTY.state) return EMPTY;
     }
 
     return c;

@@ -42,7 +42,7 @@ export class Wolfram extends Game<CellState, WolframOptions> {
 
   getNextCell(x: number, y: number) {
     const c = this.getCell(x, y);
-    
+
     if (c?.state === EMPTY.state) {
       const b0 = +(this.getCell(x + 1, y - 1)?.state === ACTIVE.state);
       const b1 = +(this.getCell(x, y - 1)?.state === ACTIVE.state);

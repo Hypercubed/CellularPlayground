@@ -4,7 +4,7 @@ and other digital circuits. */
 
 import { ACTIVE, createState, EMPTY, Game, GameOptions } from "./game";
 
-const HEAD = createState("electron", "⚡︎");
+const HEAD = createState("electron", "e", "⚡︎");
 const TAIL = createState("tail", "■");
 
 const States = [ACTIVE, HEAD, TAIL, EMPTY];
@@ -14,7 +14,7 @@ const Pallet = [
 ];
 
 export const Diodes =
-  "$$$$$$3b1■1⚡︎3o7b1■1⚡︎$2b1o5b7o1■1b3o$3b5o7b1■1⚡︎3b1o$20b1o$20b1o$20b1o$20b1o$21b1o$20b3o1■1⚡︎5o$21b1o$20b1o$20b1o$20b1o$20b1o$3b1■1⚡︎3o7b1■1⚡︎3b1o$2b1o5b7o1b1⚡︎3o$3b5o7b1■1⚡︎";
+  "$$$$$$3b2o■eo7b2o$2bo5b8ob3o$3b5o7b2o3bo$20bo$20bo$20bo$20bo$21bo$20b10o$21bo$20bo$20bo$20bo$20bo$3b2o■eo7b2o3bo$2bo5b7ob5o$3b5o7b2o";
 
 export class WireWorld extends Game {
   stats = {
