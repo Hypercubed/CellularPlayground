@@ -1,4 +1,4 @@
-import { ACTIVE, EMPTY, Game, GameOptions } from "./game";
+import { ACTIVE, EMPTY, Game, GameOptions } from './game';
 
 interface LifeOptions extends GameOptions {
   ruleString: string;
@@ -8,7 +8,7 @@ const LifeDefaultOptions = {
   width: 40,
   height: 40,
   continuous: false,
-  ruleString: "b3s23",
+  ruleString: 'b3s23',
 };
 
 export class Life extends Game {
@@ -35,8 +35,8 @@ export class Life extends Game {
 
     const [, b, s] = ruleString.split(/[sbSB]+/);
 
-    this.birth = b.split("").map(Number);
-    this.survive = s.split("").map(Number);
+    this.birth = b.split('').map(Number);
+    this.survive = s.split('').map(Number);
   }
 
   getNextCell(x: number, y: number) {

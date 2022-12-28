@@ -1,4 +1,4 @@
-import { ACTIVE, CellState, EMPTY, Game, GameOptions } from "./game";
+import { ACTIVE, CellState, EMPTY, Game, GameOptions } from './game';
 
 const defaultWolframOptions = {
   width: 43,
@@ -31,10 +31,10 @@ export class Wolfram extends Game<CellState, WolframOptions> {
       ...options,
     });
 
-    const s = ("00000000" + this.options.N.toString(2)).slice(-8);
+    const s = ('00000000' + this.options.N.toString(2)).slice(-8);
     this.rule = this.rule
       .map((_, i) => {
-        const n = s[i] === "1" ? ACTIVE : EMPTY;
+        const n = s[i] === '1' ? ACTIVE : EMPTY;
         return n;
       })
       .reverse();

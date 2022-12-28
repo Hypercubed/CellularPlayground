@@ -1,4 +1,4 @@
-import { ACTIVE, createState, EMPTY, Game, GameOptions } from "./game";
+import { ACTIVE, createState, EMPTY, Game, GameOptions } from './game';
 
 const RainDefaultOptions = {
   width: 40,
@@ -6,10 +6,10 @@ const RainDefaultOptions = {
   continuous: false,
 };
 
-const DROP = createState("drop", "*");
+const DROP = createState('drop', '*');
 
 export class Rain extends Game {
-  readonly patterns = [""];
+  readonly patterns = [''];
 
   stats = {
     Step: 0,

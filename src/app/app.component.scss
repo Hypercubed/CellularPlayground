@@ -5,11 +5,16 @@
   --board-width: calc(100vw - 540px);
   --cell-size: calc(var(--board-width) / var(--m));
   --board-height: calc(var(--n) * var(--cell-size));
+  --board-grid-color: #bdbdbd;
+
+  --background-color: #ddd;
+  --control-background-color: #fff;
+  --control-border-color: #bdbdbd;;
 
   width: 100vw;
   height: 100vh;
   position: fixed;
-  background: #ddd;
+  background: var(--background-color);
 
   overflow-y: auto;
   overflow-x: clip;
@@ -30,6 +35,12 @@
   }
 
   #fpsStats {
+    display: none;
+
+    &.show {
+      display: block;
+    }
+
     > div {
       right: 20px !important;
       top: unset !important;
@@ -60,7 +71,7 @@
     .cell {
       height: var(--cell-size);
       width: var(--cell-size);
-      border: 1px solid gray;
+      border: 1px solid var(--board-grid-color);
 
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -78,10 +89,12 @@
 
   #board {
     .cell {
+      cursor: pointer;
+
       &:hover {
-        outline: 2px solid blue;
+        outline: 5px solid rgba(red, 0.8);
         outline-offset: 2px;
-        cursor: pointer;
+        border-radius: 1px;
       }
     }
   }
@@ -113,12 +126,13 @@
   }
 
   .controls {
-    border: 1px solid red;
+    border: 1px solid var(--control-border-color);
     width: 200px;
     height: auto;
     padding: 10px;
     margin: 10px;
-    background: white;
+    background: var(--control-background-color, #fff);
+    border-radius: 5px;
 
     .control-group {
       display: block;
@@ -144,10 +158,11 @@
   }
 
   #pallet {
-    border: 1px solid red;
+    border: 1px solid var(--control-border-color);
     width: 200px;
     padding: 10px;
     margin: 10px;
+    background: var(--control-background-color, #fff);
 
     .set {
       clear: both;
@@ -170,12 +185,13 @@
   }
 
   #stats {
-    border: 1px solid red;
+    border: 1px solid var(--control-border-color);
     width: 100%;
     margin: 0 0 10px 0;
     padding: 5px;
     border-radius: 5px;
     box-sizing: border-box;
+    background: var(--control-background-color, #fff);
 
     > span {
       padding: 0 10px;

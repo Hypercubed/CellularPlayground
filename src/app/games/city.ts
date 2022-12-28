@@ -1,4 +1,4 @@
-import { Game, CellState, GameOptions } from "./game";
+import { Game, CellState, GameOptions } from './game';
 
 interface CityState extends CellState {
   state: string;
@@ -16,11 +16,11 @@ export function createState(state: string, token = state): Readonly<CityState> {
   };
 }
 
-const EMPTY = createState("□");
-const RESIDENTIAL = createState("⌂");
-const INDUSTRIAL = createState("I");
-const COMMERCIAL = createState("C");
-const OBSTACLE = createState("■");
+const EMPTY = createState('□');
+const RESIDENTIAL = createState('⌂');
+const INDUSTRIAL = createState('I');
+const COMMERCIAL = createState('C');
+const OBSTACLE = createState('■');
 
 export class City extends Game<CityState> {
   stats = {

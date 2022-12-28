@@ -6,8 +6,8 @@
   [style.--m]="game.width"
   [style.--n]="game.height"
 >
+  <div #stats id="fpsStats" [class.show]="playing"></div>
   <aside id="left-side">
-    <div #stats id="fpsStats"></div>
     <div class="controls">
       <mat-select
         (selectionChange)="onGameChange($event)"

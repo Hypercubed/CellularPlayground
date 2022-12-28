@@ -10,8 +10,8 @@ export interface GameOptions {
   continuous: boolean;
 }
 
-export const EMPTY = createState("empty", "b");
-export const ACTIVE = createState("active", "o");
+export const EMPTY = createState('empty', 'b');
+export const ACTIVE = createState('active', 'o');
 
 const DefaultGameOptions = {
   width: 40,
@@ -29,7 +29,8 @@ export abstract class Game<
    */
   states: T[];
 
-  /* Array of states that are shown in the pallet */
+  /* Array of states that are shown in the pallet
+    Items are arranged into rows */
   pallet: T[][];
 
   width: number;
@@ -37,6 +38,7 @@ export abstract class Game<
   stats: Record<string, any>;
 
   /* If true, the grid is a torus */
+  // TODO: add UI for this
   continuous: boolean = false;
 
   /* readonly */
@@ -52,6 +54,8 @@ export abstract class Game<
     return this.states[this.states.length - 1];
   }
 
+  // TODO: replace this with a sparse matrix
+  // Update view grid when this changes
   protected currentGrid: T[][];
   protected options: O;
 
@@ -199,16 +203,16 @@ export abstract class Game<
   }
 
   getRLE() {
-    let rle = "";
+    let rle = '';
 
-    let l = "";
+    let l = '';
     let c = 0;
 
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const t = this.getCell(x, y)?.token;
         if (t !== l) {
-          if (l !== "") {
+          if (l !== '') {
             rle += c > 1 ? c + l : l;
           }
           l = t;
@@ -217,20 +221,20 @@ export abstract class Game<
           c++;
         }
       }
-      rle += (c > 1 ? c + l : l) + "$";
+      rle += (c > 1 ? c + l : l) + '$';
       c = 0;
-      l = "";
+      l = '';
     }
 
     // normalize
     const b = this.emptyCell.token;
-    rle = rle.replace(new RegExp(`${b}`, "g"), "b");
+    rle = rle.replace(new RegExp(`${b}`, 'g'), 'b');
 
     const o = this.defaultCell.token;
-    rle = rle.replace(new RegExp(`${o}`, "g"), "o");
+    rle = rle.replace(new RegExp(`${o}`, 'g'), 'o');
 
-    rle = rle.replace(/\d+b\$/g, "$"); // Remove trailing blanks
-    rle = rle.replace(/\$+$/, ""); // Remove trailing newlines
+    rle = rle.replace(/\d+b\$/g, '$'); // Remove trailing blanks
+    rle = rle.replace(/\$+$/, ''); // Remove trailing newlines
 
     return rle; // Remove trailing blanks
   }
@@ -242,7 +246,7 @@ export abstract class Game<
     let x = 0;
     let y = 0;
 
-    const r = rle.split("$");
+    const r = rle.split('$');
 
     for (const c of r) {
       const m = c.matchAll(/(\d*)(\D)/g);
@@ -260,8 +264,8 @@ export abstract class Game<
   }
 
   tokenToState(token: string) {
-    if (token === "b") return this.emptyCell;
-    if (token === "o") return this.defaultCell;
+    if (token === 'b') return this.emptyCell;
+    if (token === 'o') return this.defaultCell;
 
     return this.states.find((s) => s.token === token) || this.emptyCell;
   }
@@ -311,7 +315,7 @@ export function makeGridWith<T extends CellState = CellState>(
 ) {
   return Array.from({ length: height }, (_, y) => {
     return Array.from({ length: width }, (_, x) => {
-      return typeof c === "function" ? c(x, y) : c;
+      return typeof c === 'function' ? c(x, y) : c;
     });
   });
 }

@@ -1,15 +1,15 @@
-import { CellState, Game, GameOptions } from "./game";
+import { CellState, Game, GameOptions } from './game';
 
 enum Colors {
-  WHITE = "□",
-  BLACK = "■",
+  WHITE = '□',
+  BLACK = '■',
 }
 
 enum Directions {
-  UP = "▲",
-  RIGHT = "►",
-  DOWN = "▼",
-  LEFT = "◄",
+  UP = '▲',
+  RIGHT = '►',
+  DOWN = '▼',
+  LEFT = '◄',
 }
 
 const BLACK = {

@@ -3,20 +3,21 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   ViewChild,
   ViewEncapsulation,
-} from "@angular/core";
+} from '@angular/core';
 
-import Stats from "stats.js";
+import Stats from 'stats.js';
 
-import { MatSelectChange } from "@angular/material/select";
+import { MatSelectChange } from '@angular/material/select';
 
-import { Diodes, WireWorld } from "./games/wireworld";
-import { Ant } from "./games/ant";
-import { Life } from "./games/life";
-import { Wolfram } from "./games/wolfram";
-import { CellState, Game, GameOptions } from "./games/game";
-import { KeyValue } from "@angular/common";
+import { Diodes, WireWorld } from './games/wireworld';
+import { Ant } from './games/ant';
+import { Life } from './games/life';
+import { Wolfram } from './games/wolfram';
+import { CellState, Game, GameOptions } from './games/game';
+import { KeyValue } from '@angular/common';
 // import { Rain } from "./games/rain";
 // import { City } from "./games/city";
 
@@ -35,45 +36,45 @@ const Games: GameListItem[] = [
     title: "Conway's Life",
     Ctor: Life,
     options: [
-      { title: "Default", ruleString: "b3s23" },
-      { title: "Torus", ruleString: "b3s23", continuous: true },
-      { title: "Diamoeba", ruleString: "B35678/S5678" },
-      { title: "Maze", ruleString: "B3/S12345" },
+      { title: 'Default', ruleString: 'b3s23' },
+      { title: 'Torus', ruleString: 'b3s23', continuous: true },
+      { title: 'Diamoeba', ruleString: 'B35678/S5678' },
+      { title: 'Maze', ruleString: 'B3/S12345' },
     ],
-    patterns: [""],
+    patterns: [''],
     savedPatterns: [],
-    class: "life",
+    class: 'life',
   },
   {
     title: "Langton's Ant",
     Ctor: Ant,
     options: [
-      { title: "Default", continuous: false },
-      { title: "Torus", continuous: true },
+      { title: 'Default', continuous: false },
+      { title: 'Torus', continuous: true },
     ],
-    patterns: ["$$$$$$$$$$$$$$14b▲"],
+    patterns: ['$$$$$$$$$$$$$$14b▲'],
     savedPatterns: [],
-    class: "ant",
+    class: 'ant',
   },
   {
-    title: "WireWorld",
+    title: 'WireWorld',
     Ctor: WireWorld,
     options: [],
-    patterns: ["", Diodes],
+    patterns: ['', Diodes],
     savedPatterns: [],
-    class: "wireworld",
+    class: 'wireworld',
   },
   {
-    title: "Wolfram Rules",
+    title: 'Wolfram Rules',
     Ctor: Wolfram,
     options: [
-      { title: "Rule 30", N: 30 },
-      { title: "Rule 90", N: 90 },
-      { title: "Rule 110", N: 110 },
+      { title: 'Rule 30', N: 30 },
+      { title: 'Rule 90', N: 90 },
+      { title: 'Rule 110', N: 110 },
     ],
-    patterns: ["21bo"],
+    patterns: ['21bo'],
     savedPatterns: [],
-    class: "wolfram",
+    class: 'wolfram',
   },
   // {
   //   title: "Snow",
@@ -87,9 +88,9 @@ const Games: GameListItem[] = [
 ];
 
 @Component({
-  selector: "my-app",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.scss"],
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -110,8 +111,8 @@ export class AppComponent {
   private timeout = null;
   private stats: Stats;
 
-  @ViewChild("board", { static: true }) board: ElementRef;
-  @ViewChild("stats", { static: true }) statElement: ElementRef;
+  @ViewChild('board', { static: true }) board: ElementRef;
+  @ViewChild('stats', { static: true }) statElement: ElementRef;
 
   constructor(private readonly cdr: ChangeDetectorRef) {
     this.stats = new Stats();
@@ -201,6 +202,16 @@ export class AppComponent {
     const y = Math.floor((dy / el.clientHeight) * this.game.height);
 
     this.setCell(x, y, this.currentType);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.code === 'Space') {
+      this.onTogglePlay();
+    } else if (event.code === 'KeyS' && event.ctrlKey) {
+      this.onAddPattern();
+      event.preventDefault();
+    }
   }
 
   setCell(x: number, y: number, s: CellState) {
