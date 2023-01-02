@@ -14,9 +14,9 @@ import { MatSelectChange } from '@angular/material/select';
 
 import { Diodes, WireWorld } from './games/wireworld';
 import { Ant } from './games/ant';
-import { Life } from './games/life';
+import { Life, LifeOptions } from './games/life';
 import { Wolfram } from './games/wolfram';
-import { CellState, Game, GameOptions } from './games/game';
+import { BoundaryType, CellState, Game, GameOptions } from './games/game';
 import { KeyValue } from '@angular/common';
 // import { Rain } from "./games/rain";
 // import { City } from "./games/city";
@@ -36,8 +36,8 @@ const Games: GameListItem[] = [
     title: "Conway's Life",
     Ctor: Life,
     options: [
-      { title: 'Default', ruleString: 'b3s23' },
-      { title: 'Torus', ruleString: 'b3s23', continuous: true },
+      { title: 'Default', ruleString: 'b3s23', boundaryType: BoundaryType.Infinite },
+      { title: 'Torus', ruleString: 'b3s23', boundaryType: BoundaryType.Torus },
       { title: 'Diamoeba', ruleString: 'B35678/S5678' },
       { title: 'Maze', ruleString: 'B3/S12345' },
     ],
@@ -49,10 +49,10 @@ const Games: GameListItem[] = [
     title: "Langton's Ant",
     Ctor: Ant,
     options: [
-      { title: 'Default', continuous: false },
-      { title: 'Torus', continuous: true },
+      { title: 'Default' },
+      { title: 'Torus', boundaryType: BoundaryType.Torus },
     ],
-    patterns: ['$$$$$$$$$$$$$$14b▲'],
+    patterns: ['$$$$$$$$$$$$$$$$$$$18b▲'],
     savedPatterns: [],
     class: 'ant',
   },
@@ -173,7 +173,6 @@ export class AppComponent {
       }
 
       const s = e.buttons === 1 ? this.currentType : this.game.emptyCell;
-
       this.setCell(x, y, s);
     }
   }
@@ -262,9 +261,9 @@ export class AppComponent {
     this.stats.begin();
 
     if (this.speed > 0) {
-      this.game.doSteps(this.speed, this.playing);
+      this.game.doSteps(this.speed);
     } else {
-      this.game.doSteps(1, this.playing);
+      this.game.doSteps(1);
     }
 
     this.cdr.detectChanges();

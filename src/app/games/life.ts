@@ -1,6 +1,6 @@
 import { ACTIVE, EMPTY, Game, GameOptions } from './game';
 
-interface LifeOptions extends GameOptions {
+export interface LifeOptions extends GameOptions {
   ruleString: string;
 }
 

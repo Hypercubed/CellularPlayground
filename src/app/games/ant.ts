@@ -1,4 +1,4 @@
-import { CellState, Game, GameOptions } from './game';
+import { BoundaryType, CellState, Game, GameOptions } from './game';
 
 enum Colors {
   WHITE = '□',
@@ -14,14 +14,12 @@ enum Directions {
 
 const BLACK = {
   state: Colors.BLACK,
-  token: Colors.BLACK,
-  showInPallet: true,
+  token: Colors.BLACK
 };
 
 const WHITE = {
   state: Colors.WHITE,
-  token: Colors.WHITE,
-  showInPallet: true,
+  token: Colors.WHITE
 };
 
 function createAntState(
@@ -44,9 +42,9 @@ const WHITE_DOWN = createAntState(Directions.DOWN, Colors.WHITE);
 const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 
 const AntOptionsDefault = {
-  width: 29,
-  height: 29,
-  continuous: false,
+  width: 39,
+  height: 39,
+  boundaryType: BoundaryType.Infinite
 };
 
 export class Ant extends Game {
@@ -83,9 +81,14 @@ export class Ant extends Game {
 
   refreshStats() {
     this.stats.Ants =
-      this.width * this.height -
-      this.worldCountWhen(WHITE) -
-      this.worldCountWhen(BLACK);
+      this.worldCountWhen(BLACK_UP) +
+      this.worldCountWhen(WHITE_UP) +
+      this.worldCountWhen(BLACK_DOWN) +
+      this.worldCountWhen(WHITE_DOWN) +
+      this.worldCountWhen(BLACK_LEFT) +
+      this.worldCountWhen(WHITE_LEFT) +
+      this.worldCountWhen(BLACK_RIGHT) +
+      this.worldCountWhen(WHITE_RIGHT);
   }
 
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit

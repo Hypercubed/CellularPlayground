@@ -1,9 +1,9 @@
-import { ACTIVE, CellState, EMPTY, Game, GameOptions } from './game';
+import { ACTIVE, BoundaryType, CellState, EMPTY, Game, GameOptions } from './game';
 
 const defaultWolframOptions = {
   width: 43,
   height: 22,
-  continuous: false,
+  boundaryType: BoundaryType.Infinite,
   N: 30,
 };
 
@@ -18,7 +18,7 @@ export class Wolfram extends Game<CellState, WolframOptions> {
   };
 
   width = 86 / 2;
-  height = 44 / 2;
+  height = 86 / 2;
 
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];

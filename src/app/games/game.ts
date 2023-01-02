@@ -7,7 +7,13 @@ export interface CellState {
 export interface GameOptions {
   width: number;
   height: number;
-  continuous: boolean;
+  boundaryType: BoundaryType;
+}
+
+export enum BoundaryType {
+  Wall = 'wall',
+  Torus = 'torus',
+  Infinite = 'infinite'
 }
 
 export const EMPTY = createState('empty', 'b');
@@ -16,7 +22,7 @@ export const ACTIVE = createState('active', 'o');
 const DefaultGameOptions = {
   width: 40,
   height: 40,
-  continuous: false,
+  boundaryType: BoundaryType.Infinite,
 };
 
 export abstract class Game<
@@ -41,9 +47,13 @@ export abstract class Game<
   // TODO: add UI for this
   continuous: boolean = false;
 
+  boundaryType: BoundaryType = BoundaryType.Infinite;
+
+  protected range = 1;
+
   /* readonly */
   get grid(): Readonly<T[][]> {
-    return this.currentGrid;
+    return this.viewGrid;
   }
 
   get defaultCell() {
@@ -56,7 +66,11 @@ export abstract class Game<
 
   // TODO: replace this with a sparse matrix
   // Update view grid when this changes
-  protected currentGrid: T[][];
+  protected currentGrid: Record<number, Record<number, T>>;
+  protected viewGrid: T[][];
+
+  protected boundingBox: [number, number, number, number];
+
   protected options: O;
 
   constructor(options?: Partial<O>) {
@@ -67,7 +81,9 @@ export abstract class Game<
 
     this.width = this.options.width;
     this.height = this.options.height;
-    this.continuous = this.options.continuous;
+    this.boundaryType = this.options.boundaryType;
+
+    this.boundingBox = [0, this.width, this.height, 0];
   }
 
   refreshStats() {
@@ -82,14 +98,22 @@ export abstract class Game<
 
   fillWith(c?: T | ((x: number, y: number) => T)) {
     c ||= this.emptyCell;
-    this.currentGrid = makeGridWith(this.width, this.height, c);
+    this.viewGrid = makeGridWith(this.width, this.height, c);
+    this.currentGrid = {};
+
+    for (let x = 0; x < this.width; x++) {
+      for (let y = 0; y < this.height; y++) {
+        this.set(x, y, this.viewGrid[x][y]);
+      }
+    }
+
     this.refreshStats();
   }
 
   getWorld(): T[] {
     let c = [];
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
+    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
+      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
         c.push(this.getCell(x, y));
       }
     }
@@ -98,8 +122,8 @@ export abstract class Game<
 
   getWorldWhen(s: T): T[] {
     let c = [];
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
+    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
+      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
         const ss = this.getCell(x, y);
         if (ss?.state === s.state) c.push(ss);
       }
@@ -141,8 +165,8 @@ export abstract class Game<
 
   worldCountWhen(s: T): number {
     let c = 0;
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
+    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
+      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
         c += +(this.getCell(x, y)?.state === s.state);
       }
     }
@@ -150,31 +174,59 @@ export abstract class Game<
   }
 
   getCell(x: number, y: number): T {
-    if (this.continuous) {
+    if (this.boundaryType === BoundaryType.Torus) {
       x = (x + this.width) % this.width;
       y = (y + this.height) % this.height;
-    } else {
+    } else if (this.boundaryType === BoundaryType.Wall) {
       if (x < 0 || y < 0) return this.emptyCell;
-      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
+      if (y >= this.height || x >= this.width)
         return this.emptyCell;
     }
-    return this.currentGrid[y][x] as T;
+    return this.get(x, y) as T;
   }
 
-  immediatelySetCell(x: number, y: number, s: T) {
-    if (this.continuous) {
-      x = (x + this.width) % this.width;
-      y = (y + this.height) % this.height;
-    } else {
-      if (x < 0 || y < 0) return this.emptyCell;
-      if (y >= this.currentGrid.length || x >= this.currentGrid[y]?.length)
-        return this.emptyCell;
-    }
-    this.currentGrid[y][x] = s;
+  immediatelySetCell(x: number, y: number, s: T): void {
+    this.set(x, y, s);
     this.refreshStats();
   }
 
-  doSteps(n: number = 1, fps = false) {
+  private get(x: number, y: number): T {
+    return this.currentGrid?.[y]?.[x] || this.emptyCell;
+  }
+
+  private set(x: number, y: number, s: T) {
+    // Enforce boundary conditions
+    if (this.boundaryType === BoundaryType.Torus) {
+      x = (x + this.width) % this.width;
+      y = (y + this.height) % this.height;
+    } else if (this.boundaryType === BoundaryType.Wall) {
+      if (x < 0 || y < 0) return;
+      if (y >= this.height || x >= this.width)
+        return;
+    }
+
+    if (!this.currentGrid[y]) {
+      this.currentGrid[y] = {};
+    }
+
+    // Set the cell
+    if (s === this.emptyCell) {
+      delete this.currentGrid[y][x];
+    } else {
+      this.currentGrid[y][x] = s;
+      this.boundingBox[0] = Math.min(this.boundingBox[0], y);
+      this.boundingBox[1] = Math.max(this.boundingBox[1], x);
+      this.boundingBox[2] = Math.max(this.boundingBox[2], y);
+      this.boundingBox[3] = Math.min(this.boundingBox[3], x);
+    }
+
+    // Update the view
+    if (x < 0 || y < 0) return;
+    if (y >= this.height || x >= this.width) return;
+    this.viewGrid[y][x] = s;
+  }
+
+  doSteps(n: number = 1) {
     for (let i = 0; i < n; i++) {
       this.doStep();
     }
@@ -184,8 +236,13 @@ export abstract class Game<
   protected doStep() {
     const changes = [];
 
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
+    const minX = this.boundingBox[3] - this.range;
+    const maxX = this.boundingBox[1] + this.range;
+    const minY = this.boundingBox[0] - this.range;
+    const maxY = this.boundingBox[2] + this.range;
+
+    for (let x = minX; x <= maxX; x++) {
+      for (let y = minY; y <= maxY; y++) {
         const c = this.getCell(x, y);
         const n = this.getNextCell(x, y);
         if (n !== c) {
@@ -196,7 +253,7 @@ export abstract class Game<
 
     // Only update what has changed
     for (const [x, y, n] of changes) {
-      this.currentGrid[y][x] = n;
+      this.set(x, y, n);
     }
 
     this.stats.Step++;
@@ -271,21 +328,21 @@ export abstract class Game<
   }
 
   getGridClone() {
-    return this.currentGrid.map((row) => row.slice());
+    return this.viewGrid.map((row) => row.slice());
   }
 
   setGrid(g: T[][]) {
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        this.currentGrid[y][x] = g?.[y]?.[x] || this.emptyCell;
+        this.set(x, y, g?.[y]?.[x] || this.emptyCell);
       }
     }
     this.refreshStats();
   }
 
   protected getNextField() {
-    for (let y = 0; y < this.width; y++) {
-      for (let x = 0; x < this.height; x++) {
+    for (let x = this.boundingBox[3]; x < this.boundingBox[1]; x++) {
+      for (let y = this.boundingBox[0]; y < this.boundingBox[2]; y++) {
         return this.getNextCell(x, y);
       }
     }
