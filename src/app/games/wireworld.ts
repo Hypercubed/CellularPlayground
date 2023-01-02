@@ -5,7 +5,7 @@ and other digital circuits. */
 import { ACTIVE, createState, EMPTY, Game, GameOptions } from './game';
 
 const HEAD = createState('electron', 'e', '⚡︎');
-const TAIL = createState('tail', '■');
+const TAIL = createState('tail', '■', '');
 
 const States = [ACTIVE, HEAD, TAIL, EMPTY];
 const Pallet = [

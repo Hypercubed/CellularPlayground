@@ -1,4 +1,4 @@
-import { BoundaryType, CellState, Game, GameOptions } from './game';
+import { BoundaryType, CellState, Game, GameOptions, createState } from './game';
 
 enum Colors {
   WHITE = '□',
@@ -12,15 +12,8 @@ enum Directions {
   LEFT = '◄',
 }
 
-const BLACK = {
-  state: Colors.BLACK,
-  token: Colors.BLACK
-};
-
-const WHITE = {
-  state: Colors.WHITE,
-  token: Colors.WHITE
-};
+const BLACK = createState(Colors.BLACK, Colors.BLACK, '');
+const WHITE = createState(Colors.WHITE, Colors.WHITE, '');
 
 function createAntState(
   direction: Directions,
@@ -29,6 +22,7 @@ function createAntState(
   return {
     state: color + direction,
     token: direction,
+    display: direction
   };
 }
 

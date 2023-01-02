@@ -41,6 +41,8 @@ export class Wolfram extends Game<CellState, WolframOptions> {
   }
 
   getNextCell(x: number, y: number) {
+    if (y !== this.stats.Step + 1) return; // Optimization for 1d machines
+
     const c = this.getCell(x, y);
 
     if (c?.state === EMPTY.state) {

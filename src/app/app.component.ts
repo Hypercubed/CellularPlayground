@@ -18,6 +18,7 @@ import { Life, LifeOptions } from './games/life';
 import { Wolfram } from './games/wolfram';
 import { BoundaryType, CellState, Game, GameOptions } from './games/game';
 import { KeyValue } from '@angular/common';
+import { BB, bb2, bb3, bb4 } from './games/bb';
 // import { Rain } from "./games/rain";
 // import { City } from "./games/city";
 
@@ -85,6 +86,18 @@ const Games: GameListItem[] = [
   //   savedPatterns: [],
   //   class: "snow",
   // },
+  {
+    title: 'Busy Beaver',
+    Ctor: BB,
+    options: [
+      { title: '2-state busy beaver', BoundaryType: BoundaryType.Wall, rules: bb2 },
+      { title: '3-state busy beaver', rules: bb3, BoundaryType: BoundaryType.Wall },
+      { title: '4-state busy beaver', height: 120, rules: bb4, BoundaryType: BoundaryType.Wall },
+    ],
+    patterns: ['14bA'],
+    savedPatterns: [],
+    class: 'busybeaver',
+  }
 ];
 
 @Component({

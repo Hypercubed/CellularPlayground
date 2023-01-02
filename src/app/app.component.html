@@ -56,10 +56,11 @@
           [title]="type.state"
           class="cell"
           [class]="'cell--' + type.state"
+          [attr.data-state]="type.state"
           [class.active]="currentType.state === type.state"
           (click)="currentType = type"
         >
-          <span>{{ type.display || type.token }}</span>
+          <span>{{ type.display }}</span>
         </button>
       </div>
     </div>
@@ -93,8 +94,9 @@
           (mouseup)="onMouseLeave()"
           class="cell"
           [class]="'cell--' + cell.state"
+          [attr.data-state]="cell.state"
         >
-          <span>{{ cell.display || cell.token }}</span>
+          <span>{{ cell.display }}</span>
         </td>
       </tr>
     </table>
@@ -136,8 +138,9 @@
         *ngFor="let cell of pattern[y]; let x = index; trackBy: trackByMethod"
         class="cell"
         [class]="'cell--' + cell.state"
+        [attr.data-state]="cell.state"
       >
-        <span>{{ cell.display || cell.token }}</span>
+        <span>{{ cell.display }}</span>
       </td>
     </tr>
   </table>

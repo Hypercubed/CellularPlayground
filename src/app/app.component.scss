@@ -205,43 +205,21 @@
   }
 
   .cell {
-    color: transparent;
+    color: black;
     background-color: white;
 
-    &--active {
+    &--active,
+    &[data-state$="■"],
+    &[data-state$="1"] {
+      color: white;
       background-color: black;
     }
 
-    &--empty {
+    &--empty,
+    &[data-state$="□"],
+    &[data-state$="0"] {
+      color: black;
       background-color: white;
-    }
-  }
-
-  &.game--ant {
-    .cell {
-      &--■ {
-        background-color: black;
-      }
-
-      &--□ {
-        background-color: white;
-      }
-
-      &--■▲,
-      &--■►,
-      &--■▼,
-      &--■◄ {
-        color: white;
-        background-color: black;
-      }
-
-      &--□▲,
-      &--□►,
-      &--□▼,
-      &--□◄ {
-        color: black;
-        background-color: white;
-      }
     }
   }
 

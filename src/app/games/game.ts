@@ -16,8 +16,8 @@ export enum BoundaryType {
   Infinite = 'infinite'
 }
 
-export const EMPTY = createState('empty', 'b');
-export const ACTIVE = createState('active', 'o');
+export const EMPTY = createState('empty', 'b', '');
+export const ACTIVE = createState('active', 'o', '');
 
 const DefaultGameOptions = {
   width: 40,
@@ -244,7 +244,7 @@ export abstract class Game<
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         const c = this.getCell(x, y);
-        const n = this.getNextCell(x, y);
+        const n = this.getNextCell(x, y) || c;
         if (n !== c) {
           changes.push([x, y, n]);
         }
