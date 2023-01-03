@@ -1,4 +1,10 @@
-import { BoundaryType, CellState, Game, GameOptions, createState } from './game';
+import {
+  BoundaryType,
+  CellState,
+  Game,
+  GameOptions,
+  createState,
+} from './game';
 
 enum Colors {
   WHITE = '□',
@@ -22,7 +28,7 @@ function createAntState(
   return {
     state: color + direction,
     token: direction,
-    display: direction
+    display: direction,
   };
 }
 
@@ -38,7 +44,7 @@ const WHITE_LEFT = createAntState(Directions.LEFT, Colors.WHITE);
 const AntOptionsDefault = {
   width: 39,
   height: 39,
-  boundaryType: BoundaryType.Infinite
+  boundaryType: BoundaryType.Infinite,
 };
 
 export class Ant extends Game {

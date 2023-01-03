@@ -14,7 +14,7 @@ export interface GameOptions {
 export enum BoundaryType {
   Wall = 'wall',
   Torus = 'torus',
-  Infinite = 'infinite'
+  Infinite = 'infinite',
 }
 
 export const EMPTY = createState('empty', 'b', '');
@@ -99,7 +99,10 @@ export abstract class Game<
   refreshStats() {
     this.stats.Generation = this.step;
     this.stats.Alive = this.worldCountWhen(ACTIVE as T);
-    this.stats.Size = String(this.boundingBox[1] - this.boundingBox[3] + 1) + 'x' + String(this.boundingBox[2] - this.boundingBox[0] + 1);
+    this.stats.Size =
+      String(this.boundingBox[1] - this.boundingBox[3] + 1) +
+      'x' +
+      String(this.boundingBox[2] - this.boundingBox[0] + 1);
     this.stats.BoundingBox = this.boundingBox;
   }
 
@@ -189,7 +192,7 @@ export abstract class Game<
 
   getCell(x: number, y: number): T {
     [x, y] = this.getPosition(x, y);
-    return this.currentGrid?.[y]?.[x] || this.emptyCell as T;
+    return this.currentGrid?.[y]?.[x] || (this.emptyCell as T);
   }
 
   immediatelySetCell(x: number, y: number, s: T): void {
@@ -242,7 +245,7 @@ export abstract class Game<
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         const [xx, yy] = this.getPosition(x, y);
-        
+
         const c = this.getCell(xx, yy);
         const n = this.getNextCell(xx, yy) || c;
         if (n !== c) {

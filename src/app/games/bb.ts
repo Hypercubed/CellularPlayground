@@ -1,4 +1,12 @@
-import { ACTIVE, BoundaryType, CellState, createState, EMPTY, Game, GameOptions } from "./game";
+import {
+  ACTIVE,
+  BoundaryType,
+  CellState,
+  createState,
+  EMPTY,
+  Game,
+  GameOptions,
+} from './game';
 
 type TuringRules = Record<string, string>;
 
@@ -9,57 +17,57 @@ interface BBOptions extends GameOptions {
 }
 
 export const bb2 = {
-  A0: "1RB",
-  A1: "1LB",
-  B0: "1LA",
-  B1: "1RH",
+  A0: '1RB',
+  A1: '1LB',
+  B0: '1LA',
+  B1: '1RH',
 };
 
 export const bb3 = {
-  A0: "1RB",
-  A1: "1RH",
-  B0: "0RC",
-  B1: "1RB",
-  C0: "1LC",
-  C1: "1LA"
-}
+  A0: '1RB',
+  A1: '1RH',
+  B0: '0RC',
+  B1: '1RB',
+  C0: '1LC',
+  C1: '1LA',
+};
 
 export const bb4 = {
-  A0: "1RB",
-  A1: "1LB",
-  B0: "1LA",
-  B1: "0LC",
-  C0: "1RH",
-  C1: "1LD",
-  D0: "1RD",
-  D1: "0RA",
-}
+  A0: '1RB',
+  A1: '1LB',
+  B0: '1LA',
+  B1: '0LC',
+  C0: '1RH',
+  C1: '1LD',
+  D0: '1RD',
+  D1: '0RA',
+};
 
 export const bb5 = {
-  A0: "1RB",
-  A1: "1LC",
-  B0: "1RC",
-  B1: "1RB",
-  C0: "1RD",
-  C1: "0LE",
-  D0: "1LA",
-  D1: "1LD",
-  E0: "1RH",
-  E1: "0LA",
-}
+  A0: '1RB',
+  A1: '1LC',
+  B0: '1RC',
+  B1: '1RB',
+  C0: '1RD',
+  C1: '0LE',
+  D0: '1LA',
+  D1: '1LD',
+  E0: '1RH',
+  E1: '0LA',
+};
 
 const BBOptionsDefault = {
   oneDimensional: true,
   width: 29,
   height: 29,
   boundaryType: BoundaryType.Infinite,
-  rules: bb2
-}
+  rules: bb2,
+};
 
 export class BB extends Game<CellState, BBOptions> {
   stats = {
     S: 0,
-    Σ: 0
+    Σ: 0,
   };
 
   protected rules: TuringRules;
@@ -76,8 +84,12 @@ export class BB extends Game<CellState, BBOptions> {
 
     const ruleKeys = Object.keys(this.rules);
 
-    this.headStates = this.options.headStates || ruleKeys.map(k => k[0]).filter((v, i, a) => a.indexOf(v) === i);
-    this.tapeStates = this.options.tapeStates || ruleKeys.map(k => k[1]).filter((v, i, a) => a.indexOf(v) === i);
+    this.headStates =
+      this.options.headStates ||
+      ruleKeys.map((k) => k[0]).filter((v, i, a) => a.indexOf(v) === i);
+    this.tapeStates =
+      this.options.tapeStates ||
+      ruleKeys.map((k) => k[1]).filter((v, i, a) => a.indexOf(v) === i);
 
     this.headStates.push('H');
 
@@ -85,15 +97,25 @@ export class BB extends Game<CellState, BBOptions> {
     const tapeStates = [];
 
     this.tapeStates.forEach((t, j) => {
-      tapeStates.unshift(createState(t, String(j), " "));
+      tapeStates.unshift(createState(t, String(j), ' '));
       this.headStates.forEach((h, i) => {
         h = h.toUpperCase();
-        headStates.push(createState(h + t, String.fromCharCode(65 + i + j*this.headStates.length), h));
+        headStates.push(
+          createState(
+            h + t,
+            String.fromCharCode(65 + i + j * this.headStates.length),
+            h
+          )
+        );
       });
     });
 
     this.pallet = [tapeStates, [headStates[0]]];
-    this.states = [...tapeStates.slice(0, -1), ...headStates, tapeStates[tapeStates.length - 1]];
+    this.states = [
+      ...tapeStates.slice(0, -1),
+      ...headStates,
+      tapeStates[tapeStates.length - 1],
+    ];
 
     this.rules = this.options.rules;
   }
@@ -114,7 +136,7 @@ export class BB extends Game<CellState, BBOptions> {
     const up_right = this.getCell(x + 1, y - 1);
     if (isHead(up_right)) {
       const next = this.rules[up_right.state];
-      if (next?.[1] === "L") {
+      if (next?.[1] === 'L') {
         return this.findState(next[2] + this.getTapeState(up));
       }
       return up;
@@ -123,7 +145,7 @@ export class BB extends Game<CellState, BBOptions> {
     const up_left = this.getCell(x - 1, y - 1);
     if (isHead(up_left)) {
       const next = this.rules[up_left.state];
-      if (next?.[1] === "R") {
+      if (next?.[1] === 'R') {
         return this.findState(next[2] + this.getTapeState(up));
       }
       return up;
@@ -150,8 +172,8 @@ export class BB extends Game<CellState, BBOptions> {
 
       for (let x = 0; x < this.width; x++) {
         const c = this.getCell(x, y);
-        Σ += c.state.endsWith("1") ? 1 : 0;
-        if (c.state.startsWith("H")) H = true;
+        Σ += c.state.endsWith('1') ? 1 : 0;
+        if (c.state.startsWith('H')) H = true;
       }
 
       this.stats.S = y;

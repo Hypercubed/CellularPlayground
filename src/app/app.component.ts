@@ -37,7 +37,11 @@ const Games: GameListItem[] = [
     title: "Conway's Life",
     Ctor: Life,
     options: [
-      { title: 'Default', ruleString: 'b3s23', boundaryType: BoundaryType.Infinite },
+      {
+        title: 'Default',
+        ruleString: 'b3s23',
+        boundaryType: BoundaryType.Infinite,
+      },
       { title: 'Torus', ruleString: 'b3s23', boundaryType: BoundaryType.Torus },
       { title: 'Diamoeba', ruleString: 'B35678/S5678' },
       { title: 'Maze', ruleString: 'B3/S12345' },
@@ -90,15 +94,28 @@ const Games: GameListItem[] = [
     title: 'Busy Beaver',
     Ctor: BB,
     options: [
-      { title: '2-state busy beaver', BoundaryType: BoundaryType.Wall, rules: bb2 },
-      { title: '3-state busy beaver', rules: bb3, BoundaryType: BoundaryType.Wall },
-      { title: '4-state busy beaver', height: 120, rules: bb4, BoundaryType: BoundaryType.Wall },
+      {
+        title: '2-state busy beaver',
+        BoundaryType: BoundaryType.Wall,
+        rules: bb2,
+      },
+      {
+        title: '3-state busy beaver',
+        rules: bb3,
+        BoundaryType: BoundaryType.Wall,
+      },
+      {
+        title: '4-state busy beaver',
+        height: 120,
+        rules: bb4,
+        BoundaryType: BoundaryType.Wall,
+      },
       // { title: '5-state busy beaver', height: 240, width: 120, rules: bb5, BoundaryType: BoundaryType.Infinite },
     ],
     patterns: ['14bA'],
     savedPatterns: [],
     class: 'busybeaver',
-  }
+  },
 ];
 
 @Component({

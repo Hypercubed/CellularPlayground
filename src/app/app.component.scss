@@ -9,7 +9,7 @@
 
   --background-color: #ddd;
   --control-background-color: #fff;
-  --control-border-color: #bdbdbd;;
+  --control-border-color: #bdbdbd;
 
   width: 100vw;
   height: 100vh;
@@ -208,15 +208,15 @@
     background-color: white;
 
     &--active,
-    &[data-state$="■"],
-    &[data-state$="1"] {
+    &[data-state$='■'],
+    &[data-state$='1'] {
       color: white;
       background-color: black;
     }
 
     &--empty,
-    &[data-state$="□"],
-    &[data-state$="0"] {
+    &[data-state$='□'],
+    &[data-state$='0'] {
       color: black;
       background-color: white;
     }

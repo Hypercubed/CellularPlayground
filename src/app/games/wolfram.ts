@@ -1,4 +1,11 @@
-import { ACTIVE, BoundaryType, CellState, EMPTY, Game, GameOptions } from './game';
+import {
+  ACTIVE,
+  BoundaryType,
+  CellState,
+  EMPTY,
+  Game,
+  GameOptions,
+} from './game';
 
 const defaultWolframOptions = {
   oneDimensional: true,
