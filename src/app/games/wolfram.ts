@@ -1,6 +1,7 @@
 import { ACTIVE, BoundaryType, CellState, EMPTY, Game, GameOptions } from './game';
 
 const defaultWolframOptions = {
+  oneDimensional: true,
   width: 43,
   height: 22,
   boundaryType: BoundaryType.Infinite,
@@ -12,8 +13,8 @@ interface WolframOptions extends GameOptions {
 }
 
 export class Wolfram extends Game<CellState, WolframOptions> {
-  stats = {
-    Step: 0,
+  stats: Record<string, any> = {
+    Generation: 0,
     Alive: 0,
   };
 
@@ -41,22 +42,10 @@ export class Wolfram extends Game<CellState, WolframOptions> {
   }
 
   getNextCell(x: number, y: number) {
-    if (y !== this.stats.Step + 1) return; // Optimization for 1d machines
-
-    const c = this.getCell(x, y);
-
-    if (c?.state === EMPTY.state) {
-      const b0 = +(this.getCell(x + 1, y - 1)?.state === ACTIVE.state);
-      const b1 = +(this.getCell(x, y - 1)?.state === ACTIVE.state);
-      const b2 = +(this.getCell(x - 1, y - 1)?.state === ACTIVE.state);
-      const s = b0 + (b1 << 1) + (b2 << 2);
-      return this.rule[s];
-    }
-
-    return c;
-  }
-
-  refreshStats() {
-    this.stats.Alive = this.worldCountWhen(ACTIVE);
+    const b0 = +(this.getCell(x + 1, y - 1)?.state === ACTIVE.state);
+    const b1 = +(this.getCell(x, y - 1)?.state === ACTIVE.state);
+    const b2 = +(this.getCell(x - 1, y - 1)?.state === ACTIVE.state);
+    const s = b0 + (b1 << 1) + (b2 << 2);
+    return this.rule[s];
   }
 }

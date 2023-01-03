@@ -12,8 +12,7 @@ const LifeDefaultOptions = {
 };
 
 export class Life extends Game {
-  stats = {
-    Step: 0,
+  stats: Record<string, any> = {
     Alive: 0,
   };
 
@@ -47,9 +46,5 @@ export class Life extends Game {
     } else if (c.state === ACTIVE.state) {
       return this.survive.includes(s) ? ACTIVE : EMPTY;
     }
-  }
-
-  refreshStats() {
-    this.stats.Alive = this.worldCountWhen(ACTIVE);
   }
 }

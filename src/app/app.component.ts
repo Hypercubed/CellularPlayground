@@ -14,11 +14,11 @@ import { MatSelectChange } from '@angular/material/select';
 
 import { Diodes, WireWorld } from './games/wireworld';
 import { Ant } from './games/ant';
-import { Life, LifeOptions } from './games/life';
+import { Life } from './games/life';
 import { Wolfram } from './games/wolfram';
 import { BoundaryType, CellState, Game, GameOptions } from './games/game';
 import { KeyValue } from '@angular/common';
-import { BB, bb2, bb3, bb4 } from './games/bb';
+import { BB, bb2, bb3, bb4, bb5 } from './games/bb';
 // import { Rain } from "./games/rain";
 // import { City } from "./games/city";
 
@@ -93,6 +93,7 @@ const Games: GameListItem[] = [
       { title: '2-state busy beaver', BoundaryType: BoundaryType.Wall, rules: bb2 },
       { title: '3-state busy beaver', rules: bb3, BoundaryType: BoundaryType.Wall },
       { title: '4-state busy beaver', height: 120, rules: bb4, BoundaryType: BoundaryType.Wall },
+      // { title: '5-state busy beaver', height: 240, width: 120, rules: bb5, BoundaryType: BoundaryType.Infinite },
     ],
     patterns: ['14bA'],
     savedPatterns: [],
@@ -271,16 +272,17 @@ export class AppComponent {
   doStep() {
     this.timeout = null;
 
-    this.stats.begin();
-
     if (this.speed > 0) {
-      this.game.doSteps(this.speed);
+      for (let i = 0; i < this.speed; i++) {
+        this.stats.begin();
+        this.game.doStep();
+        this.stats.end();
+      }
     } else {
-      this.game.doSteps(1);
+      this.game.doStep();
     }
-
+    this.game.refreshStats();
     this.cdr.detectChanges();
-    this.stats.end();
 
     if (this.playing && !this.paused) {
       const next = () => {

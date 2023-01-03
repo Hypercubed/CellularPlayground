@@ -1,10 +1,5 @@
 import { ACTIVE, BoundaryType, CellState, createState, EMPTY, Game, GameOptions } from "./game";
 
-const A0 = createState("A0", "a", "A");
-const A1 = createState("A1", "A", "A");
-const B0 = createState("B0", "b", "B");
-const B1 = createState("B1", "B", "B");
-
 type TuringRules = Record<string, string>;
 
 interface BBOptions extends GameOptions {
@@ -40,7 +35,21 @@ export const bb4 = {
   D1: "0RA",
 }
 
+export const bb5 = {
+  A0: "1RB",
+  A1: "1LC",
+  B0: "1RC",
+  B1: "1RB",
+  C0: "1RD",
+  C1: "0LE",
+  D0: "1LA",
+  D1: "1LD",
+  E0: "1RH",
+  E1: "0LA",
+}
+
 const BBOptionsDefault = {
+  oneDimensional: true,
   width: 29,
   height: 29,
   boundaryType: BoundaryType.Infinite,
@@ -49,7 +58,6 @@ const BBOptionsDefault = {
 
 export class BB extends Game<CellState, BBOptions> {
   stats = {
-    Step: 0,
     S: 0,
     Σ: 0
   };
@@ -90,45 +98,38 @@ export class BB extends Game<CellState, BBOptions> {
     this.rules = this.options.rules;
   }
 
-  // 2-state busy beaver
+  // 2-symbol busy beaver
   getNextCell(x: number, y: number) {
-    if (y !== this.stats.Step + 1) return; // Optimization for turning machines
-
     const c = this.getCell(x, y);
 
-    if (c === this.emptyCell) {
-      const up = this.getCell(x, y - 1);
-
-      if (isHead(up)) {
-        const rule = this.rules?.[up.state];
-        if (rule) {
-          const write = String(this.rules[up.state][0]);
-          return this.states.find((s) => s.state === write);
-        }
+    const up = this.getCell(x, y - 1);
+    if (isHead(up)) {
+      const rule = this.rules?.[up.state];
+      if (rule) {
+        const write = String(this.rules[up.state][0]);
+        return this.states.find((s) => s.state === write);
       }
+    }
 
-      const up_right = this.getCell(x + 1, y - 1);
-      if (isHead(up_right)) {
-        const next = this.rules[up_right.state];
-        if (next?.[1] === "L") {
-          return this.findState(next[2] + this.getTapeState(up));
-        }
-        return up;
+    const up_right = this.getCell(x + 1, y - 1);
+    if (isHead(up_right)) {
+      const next = this.rules[up_right.state];
+      if (next?.[1] === "L") {
+        return this.findState(next[2] + this.getTapeState(up));
       }
-
-      const up_left = this.getCell(x - 1, y - 1);
-      if (isHead(up_left)) {
-        const next = this.rules[up_left.state];
-        if (next?.[1] === "R") {
-          return this.findState(next[2] + this.getTapeState(up));
-        }
-        return up;
-      }
-
       return up;
     }
 
-    return c;
+    const up_left = this.getCell(x - 1, y - 1);
+    if (isHead(up_left)) {
+      const next = this.rules[up_left.state];
+      if (next?.[1] === "R") {
+        return this.findState(next[2] + this.getTapeState(up));
+      }
+      return up;
+    }
+
+    return up;
   }
 
   findState(state: string) {
@@ -140,7 +141,10 @@ export class BB extends Game<CellState, BBOptions> {
   }
 
   refreshStats() {
-    for (let y = 0; y < this.height; y++) {
+    const yMin = this.stats.S;
+    const yMax = this.step;
+
+    for (let y = yMin; y < yMax; y++) {
       let Σ = 0;
       let H = false;
 
@@ -150,9 +154,10 @@ export class BB extends Game<CellState, BBOptions> {
         if (c.state.startsWith("H")) H = true;
       }
 
+      this.stats.S = y;
+      this.stats.Σ = Σ;
+
       if (H) {
-        this.stats.S = y;
-        this.stats.Σ = Σ;
         break;
       }
     }

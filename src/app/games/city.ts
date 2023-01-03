@@ -44,7 +44,7 @@ export class City extends Game<CityState> {
 
   reset() {
     this.fillWith(EMPTY);
-    this.stats.Step = 0;
+    this.step = 0;
     this.refreshStats();
   }
 

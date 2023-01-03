@@ -43,7 +43,7 @@ const AntOptionsDefault = {
 
 export class Ant extends Game {
   stats = {
-    Step: 0,
+    Generation: 0,
     Ants: 0,
   };
 
@@ -74,6 +74,7 @@ export class Ant extends Game {
   }
 
   refreshStats() {
+    this.stats.Generation = this.step;
     this.stats.Ants =
       this.worldCountWhen(BLACK_UP) +
       this.worldCountWhen(WHITE_UP) +

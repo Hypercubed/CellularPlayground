@@ -18,7 +18,6 @@ export const Diodes =
 
 export class WireWorld extends Game {
   stats = {
-    Step: 0,
     Electrons: 0,
   };
 

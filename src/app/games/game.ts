@@ -8,6 +8,7 @@ export interface GameOptions {
   width: number;
   height: number;
   boundaryType: BoundaryType;
+  oneDimensional: boolean;
 }
 
 export enum BoundaryType {
@@ -24,6 +25,8 @@ const DefaultGameOptions = {
   height: 40,
   boundaryType: BoundaryType.Infinite,
 };
+
+const MaxSize = 65536;
 
 export abstract class Game<
   T extends CellState = CellState,
@@ -49,10 +52,16 @@ export abstract class Game<
 
   boundaryType: BoundaryType = BoundaryType.Infinite;
 
+  oneDimensional: boolean = false;
+  step = 0;
+
   protected range = 1;
 
   /* readonly */
   get grid(): Readonly<T[][]> {
+    // if (this.oneDimensional) {
+    //   return this.viewGrid.slice(0, this.step + 1);
+    // }
     return this.viewGrid;
   }
 
@@ -82,17 +91,21 @@ export abstract class Game<
     this.width = this.options.width;
     this.height = this.options.height;
     this.boundaryType = this.options.boundaryType;
+    this.oneDimensional = this.options.oneDimensional;
 
-    this.boundingBox = [0, this.width, this.height, 0];
+    this.boundingBox = [0, this.width - 1, this.height - 1, 0];
   }
 
   refreshStats() {
+    this.stats.Generation = this.step;
     this.stats.Alive = this.worldCountWhen(ACTIVE as T);
+    this.stats.Size = String(this.boundingBox[1] - this.boundingBox[3] + 1) + 'x' + String(this.boundingBox[2] - this.boundingBox[0] + 1);
+    this.stats.BoundingBox = this.boundingBox;
   }
 
   reset() {
     this.fillWith(EMPTY as T);
-    this.stats.Step = 0;
+    this.step = 0;
     this.refreshStats();
   }
 
@@ -100,6 +113,7 @@ export abstract class Game<
     c ||= this.emptyCell;
     this.viewGrid = makeGridWith(this.width, this.height, c);
     this.currentGrid = {};
+    this.boundingBox = [0, this.width - 1, this.height - 1, 0];
 
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
@@ -174,15 +188,8 @@ export abstract class Game<
   }
 
   getCell(x: number, y: number): T {
-    if (this.boundaryType === BoundaryType.Torus) {
-      x = (x + this.width) % this.width;
-      y = (y + this.height) % this.height;
-    } else if (this.boundaryType === BoundaryType.Wall) {
-      if (x < 0 || y < 0) return this.emptyCell;
-      if (y >= this.height || x >= this.width)
-        return this.emptyCell;
-    }
-    return this.get(x, y) as T;
+    [x, y] = this.getPosition(x, y);
+    return this.currentGrid?.[y]?.[x] || this.emptyCell as T;
   }
 
   immediatelySetCell(x: number, y: number, s: T): void {
@@ -190,20 +197,8 @@ export abstract class Game<
     this.refreshStats();
   }
 
-  private get(x: number, y: number): T {
-    return this.currentGrid?.[y]?.[x] || this.emptyCell;
-  }
-
   private set(x: number, y: number, s: T) {
-    // Enforce boundary conditions
-    if (this.boundaryType === BoundaryType.Torus) {
-      x = (x + this.width) % this.width;
-      y = (y + this.height) % this.height;
-    } else if (this.boundaryType === BoundaryType.Wall) {
-      if (x < 0 || y < 0) return;
-      if (y >= this.height || x >= this.width)
-        return;
-    }
+    [x, y] = this.getPosition(x, y);
 
     if (!this.currentGrid[y]) {
       this.currentGrid[y] = {};
@@ -226,37 +221,74 @@ export abstract class Game<
     this.viewGrid[y][x] = s;
   }
 
-  doSteps(n: number = 1) {
-    for (let i = 0; i < n; i++) {
-      this.doStep();
-    }
-    this.refreshStats();
-  }
-
-  protected doStep() {
+  doStep() {
     const changes = [];
 
-    const minX = this.boundingBox[3] - this.range;
-    const maxX = this.boundingBox[1] + this.range;
-    const minY = this.boundingBox[0] - this.range;
-    const maxY = this.boundingBox[2] + this.range;
+    let minX = this.boundingBox[3] - this.range;
+    let maxX = this.boundingBox[1] + this.range;
+    let minY = this.boundingBox[0] - this.range;
+    let maxY = this.boundingBox[2] + this.range;
+
+    if (this.oneDimensional) {
+      minY = this.step + 1;
+      maxY = this.step + 1;
+    }
+
+    let nextMinX = Infinity;
+    let nextMaxX = -Infinity;
+    let nextMinY = Infinity;
+    let nextMaxY = -Infinity;
 
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
-        const c = this.getCell(x, y);
-        const n = this.getNextCell(x, y) || c;
+        const [xx, yy] = this.getPosition(x, y);
+        
+        const c = this.getCell(xx, yy);
+        const n = this.getNextCell(xx, yy) || c;
         if (n !== c) {
-          changes.push([x, y, n]);
+          changes.push([xx, yy, n]);
+        }
+        if (c !== this.emptyCell) {
+          nextMinX = Math.min(nextMinX, xx);
+          nextMinY = Math.min(nextMinY, yy);
+          nextMaxX = Math.max(nextMaxX, xx);
+          nextMaxY = Math.max(nextMaxY, yy);
         }
       }
     }
+
+    this.boundingBox[0] = nextMinY;
+    this.boundingBox[1] = nextMaxX;
+    this.boundingBox[2] = nextMaxY;
+    this.boundingBox[3] = nextMinX;
 
     // Only update what has changed
     for (const [x, y, n] of changes) {
       this.set(x, y, n);
     }
 
-    this.stats.Step++;
+    this.step++;
+  }
+
+  private getPosition(x: number, y: number): [number, number] {
+    // Enforce boundary conditions
+    if (this.boundaryType === BoundaryType.Torus) {
+      x = mod(x, this.width);
+      y = mod(y, this.height);
+    } else if (this.boundaryType === BoundaryType.Wall) {
+      if (x < 0) x = 0;
+      if (y < 0) y = 0;
+      if (y >= this.height) y = this.height - 1;
+      if (x >= this.width) x = this.width - 1;
+    }
+
+    // Enforce maximum compute size
+    if (x < -MaxSize) x = -MaxSize;
+    if (y < -MaxSize) y = -MaxSize;
+    if (y >= MaxSize) y = MaxSize;
+    if (x >= MaxSize) x = MaxSize;
+
+    return [x, y];
   }
 
   getRLE() {
@@ -340,16 +372,8 @@ export abstract class Game<
     this.refreshStats();
   }
 
-  protected getNextField() {
-    for (let x = this.boundingBox[3]; x < this.boundingBox[1]; x++) {
-      for (let y = this.boundingBox[0]; y < this.boundingBox[2]; y++) {
-        return this.getNextCell(x, y);
-      }
-    }
-  }
-
-  protected getNextCell(y: number, x: number) {
-    return this.getCell(x, y);
+  protected getNextCell(y: number, x: number): T | void {
+    return;
   }
 }
 
@@ -375,4 +399,8 @@ export function makeGridWith<T extends CellState = CellState>(
       return typeof c === 'function' ? c(x, y) : c;
     });
   });
+}
+
+function mod(n: number, m: number): number {
+  return ((n % m) + m) % m;
 }
