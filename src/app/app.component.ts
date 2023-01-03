@@ -162,7 +162,7 @@ export class AppComponent {
   }
 
   onClear() {
-    this.game.fillWith(() => this.game.emptyCell);
+    this.game.fillWith(this.game.emptyCell);
   }
 
   onRandom() {

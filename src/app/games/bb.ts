@@ -50,7 +50,8 @@ const BBOptionsDefault = {
 export class BB extends Game<CellState, BBOptions> {
   stats = {
     Step: 0,
-    Alive: 0,
+    S: 0,
+    Σ: 0
   };
 
   protected rules: TuringRules;
@@ -136,6 +137,25 @@ export class BB extends Game<CellState, BBOptions> {
 
   getTapeState(c: CellState): string {
     return c.state[c.state.length - 1];
+  }
+
+  refreshStats() {
+    for (let y = 0; y < this.height; y++) {
+      let Σ = 0;
+      let H = false;
+
+      for (let x = 0; x < this.width; x++) {
+        const c = this.getCell(x, y);
+        Σ += c.state.endsWith("1") ? 1 : 0;
+        if (c.state.startsWith("H")) H = true;
+      }
+
+      if (H) {
+        this.stats.S = y;
+        this.stats.Σ = Σ;
+        break;
+      }
+    }
   }
 }
 

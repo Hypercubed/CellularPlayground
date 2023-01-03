@@ -103,7 +103,7 @@ export abstract class Game<
 
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        this.set(x, y, this.viewGrid[x][y]);
+        this.set(x, y, this.viewGrid[y][x]);
       }
     }
 
