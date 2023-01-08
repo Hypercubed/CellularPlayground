@@ -60,6 +60,8 @@ export const Games: GameListItem[] = [
     options: [
       { title: 'Rule 30', ruleNumber: 30 },
       { title: 'Rule 90', ruleNumber: 90 },
+      // { title: 'Rule 73', ruleNumber: 73 },
+      // { title: 'Rule 74', ruleNumber: 74 },
       { title: 'Rule 110', ruleNumber: 110 },
     ],
     patterns: [],

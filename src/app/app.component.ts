@@ -38,11 +38,14 @@ export class AppComponent {
   rle: string;
   grid: CellState[][];
 
-  private timeout = null;
+  private timeoutId = null;
+  private requestId = null;
   private stats: Stats;
 
   @ViewChild('board', { static: true }) board: ElementRef;
   @ViewChild('stats', { static: true }) statElement: ElementRef;
+  timeoutMs: number;
+  frameSkip: number;
 
   constructor(private readonly cdr: ChangeDetectorRef) {
     this.stats = new Stats();
@@ -68,8 +71,8 @@ export class AppComponent {
 
   onTogglePlay() {
     this.playing = !this.playing;
-    if (this.playing && !this.timeout) {
-      this.doStep();
+    if (this.playing) {
+      this.play();
     } else {
       this.stop();
     }
@@ -85,10 +88,17 @@ export class AppComponent {
   }
 
   onRandom() {
-    this.game.fillWith(() => {
-      const i = Math.floor(Math.random() * this.game.states.length);
-      return this.game.states[i];
-    });
+    if (this.game.oneDimensional) {
+      this.game.fillWith((x, y) => {
+        if (y !== this.game.step) return this.game.emptyCell;
+        return Math.random() < 0.5 ? this.game.defaultCell : this.game.emptyCell;
+      });
+    } else {
+      this.game.fillWith(() => {
+        const i = Math.floor(Math.random() * this.game.states.length);
+        return this.game.states[i];
+      });
+    }
     this.updateView();
   }
 
@@ -96,7 +106,7 @@ export class AppComponent {
     this.updateView();
     if (this.playing && this.paused) {
       this.paused = false;
-      this.doStep();
+      this.play();
     }
   }
 
@@ -162,7 +172,7 @@ export class AppComponent {
     this.currentType = this.game.defaultCell;
   }
 
-  resetGame(gameOptions: GameOptions = this.gameItem.options[0]) {
+  resetGame(gameOptions: GameOptions = this.gameOptions || this.gameItem.options[0]) {
     this.stop();
 
     this.gameOptions = gameOptions;
@@ -181,36 +191,56 @@ export class AppComponent {
     this.updateView();
   }
 
-  doStep() {
-    clearTimeout(this.timeout);
-    cancelAnimationFrame(this.timeout);
-    this.timeout = null;
+  play() {
+    clearTimeout(this.timeoutId);
+    cancelAnimationFrame(this.requestId);
 
-    if (this.speed > 0) {
-      for (let i = 0; i < 2 ** this.speed; i++) {
-        this.stats.begin();
-        this.game.doStep();
-        this.stats.end();
-      }
-    } else {
-      this.game.doStep();
-    }
+    this.timeoutMs = Math.max(0, Math.abs(this.speed) * 150);
+    this.frameSkip = Math.min(Math.max(1, 4 ** this.speed), 1000);
+    
+    this.runSimulationLoop();
+    this.runAnimationLoop();
+  }
 
+  private runAnimationLoop() {
     this.updateView();
     this.cdr.markForCheck();
 
-    if (this.playing && !this.paused) {
-      if (this.speed < 0) {
-        const ms = Math.max(0, -this.speed * 100);
-        this.timeout = setTimeout(() => {
-          this.doStep();
-        }, ms);
-      } else {
-        this.timeout = requestAnimationFrame(() => {
-          this.doStep();
-        });
+    this.timeoutId = setTimeout(() => {
+      if (this.playing && !this.paused) {
+        this.play();
       }
+    }, this.timeoutMs);
+  }
+
+  private runSimulationLoop() {
+    for (let i = 0; i < this.frameSkip; i++) {
+      this.stats.begin();
+      this.game.doStep();
+      this.stats.end();
     }
+
+    this.requestId = requestAnimationFrame(() => {
+      if (this.playing && !this.paused && this.speed > 0) {
+        this.runSimulationLoop();
+      }
+    });
+  }
+
+  stop() {
+    this.playing = false;
+    clearTimeout(this.timeoutId);
+    cancelAnimationFrame(this.requestId);
+    this.timeoutId = null;
+    this.requestId = null;
+  }
+
+  pause() {
+    this.paused = true;
+    clearTimeout(this.timeoutId);
+    cancelAnimationFrame(this.requestId);
+    this.timeoutId = null;
+    this.requestId = null;
   }
 
   updateView() {
@@ -222,19 +252,6 @@ export class AppComponent {
       0
     );
     this.game.refreshStats();
-  }
-
-  stop() {
-    this.playing = false;
-    clearTimeout(this.timeout);
-    cancelAnimationFrame(this.timeout);
-    this.timeout = null;
-  }
-
-  pause() {
-    clearTimeout(this.timeout);
-    this.timeout = null;
-    this.paused = true;
   }
 
   trackByIndex(index: number): number {

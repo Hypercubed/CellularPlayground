@@ -1,4 +1,5 @@
 import { RouteConfigLoadStart } from "@angular/router";
+import { UnboundedGrid } from "./utils/grid";
 import { readRle } from "./utils/rle";
 
 export interface CellState {
@@ -29,9 +30,7 @@ const DefaultGameOptions = {
   boundaryType: BoundaryType.Infinite
 };
 
-type SparseGrid<T extends CellState = CellState> = Record<number, Record<number, T>>;
-
-const MaxSize = 65_536;
+const MaxSize = 200_000;
 
 export abstract class Game<
   T extends CellState = CellState,
@@ -67,8 +66,8 @@ export abstract class Game<
   }
   
   protected neighborhoodRange = 1;
-  protected currentGrid: SparseGrid<T>;
-  protected changedGrid: SparseGrid<T>;
+  protected currentGrid = new UnboundedGrid<T>();
+  protected changedGrid = new UnboundedGrid<T>();
   protected options: O;
 
   constructor(options?: Partial<O>) {
@@ -90,21 +89,25 @@ export abstract class Game<
   }
 
   clearGrid() {
-    this.currentGrid = {};
+    this.currentGrid.clear();
   }
 
   refreshStats() {
     this.stats.Generation = this.step;
     if (this.oneDimensional) {
       this.stats.Generation = this.step;
-      this.stats.Alive = Object.keys(this.currentGrid[this.step] || {}).length;
+      this.stats.Alive = this.currentGrid.reduce((c, cell, x, y) => {
+        if (y !== this.step) return c;
+        return c + +(cell?.state !== this.emptyCell.state);
+      }, 0);
     } else {
       this.stats.Alive = this.worldCountWhen(ACTIVE as T);
       if (this.boundaryType === BoundaryType.Infinite) {
-        const boundingBox = this.getBoundingBox();
+        const boundingBox = this.currentGrid.getBoundingBox();
         this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${boundingBox[2] - boundingBox[0] + 1}`;
       }
-      this.stats.Changes = this.countChanges();
+      this.stats.Births = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state !== this.emptyCell.state), 0);
+      this.stats.Deaths = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state === this.emptyCell.state), 0);
     }
   }
 
@@ -127,33 +130,21 @@ export abstract class Game<
    * Gets an array of all non empty cells in the world
    */
   getWorld(): T[] {
-    let world = [];
-    this.forEach(cell => {
-      world.push(cell);
-    });
-    return world;
+    return this.currentGrid.toArray();
   }
 
   /**
    * Gets an array of all cells in the world that match the given state 
    */
   getWorldWhen(s: T): T[] {
-    let c = [];
-    this.forEach(cell => {
-      if (cell?.state === s.state) c.push(cell);
-    });
-    return c;
+    return this.currentGrid.filter(cell => cell?.state === s.state);
   }
 
   /*
     * Gets the number of cells in the world that match the given state
     */
   worldCountWhen(s: T): number {
-    let c = 0;
-    this.forEach(cell => {
-      c += +(cell?.state === s.state);
-    });
-    return c;
+    return this.currentGrid.reduce((c, cell) => c + +(cell?.state === s.state), 0);
   }
 
   /*
@@ -196,7 +187,7 @@ export abstract class Game<
 
   get(x: number, y: number): T {
     [x, y] = this.getPosition(x, y);
-    return this.currentGrid?.[y]?.[x] || this.emptyCell;
+    return this.currentGrid.get(x, y) || this.emptyCell;
   }
 
   set(x: number, y: number, s: T) {
@@ -205,60 +196,43 @@ export abstract class Game<
     const c = this.get(x, y);
     if (s === c) return;
 
-    this.changedGrid ??= Object.create(null);
-    this.changedGrid[y] ??= Object.create(null);
-    this.changedGrid[y][x] = s;
+    this.changedGrid.set(x, y, s);
     
     // Set the cell
     if (s === this.emptyCell) {
-      if (this.currentGrid?.[y]?.[x]) {
-        delete this.currentGrid[y][x];
-        if (!Object.keys(this.currentGrid[y]).length) {
-          delete this.currentGrid[y];
-        }
-      }
+      this.currentGrid.remove(x, y);
     } else {
-      this.currentGrid ??= Object.create(null);
-      this.currentGrid[y] ??= Object.create(null);
-      this.currentGrid[y][x] = s;
+      this.currentGrid.set(x, y, s);
     }
   }
 
   doStep() {
-    const updates: SparseGrid<T> = {};
+    const updates = new UnboundedGrid<T>();
 
     // For each cell that changed on the previous tick
-    for (let y in this.changedGrid) {
-      for (let x in this.changedGrid[y]) {
-
+    this.changedGrid.forEach((_, x, y) => {
         // for each neighbor in range
         for (let q =-this.neighborhoodRange; q <= this.neighborhoodRange; q++) {
           for (let p =-this.neighborhoodRange; p <= this.neighborhoodRange; p++) {
-            const [xx, yy] = this.getPosition(+x + p, +y + q);
+            const [xx, yy] = this.getPosition(x + p, y + q);
 
             if (this.oneDimensional && yy !== this.step + 1) continue;
 
             // Cell was already visited, skip
-            if (updates?.[yy]?.[xx]) continue;
+            if (updates.has(xx, yy)) continue;
 
             const c = this.get(xx, yy);
             const n = this.getNextCell(xx, yy) || c;
     
-            updates[yy] ??= Object.create(null);
-            updates[yy][xx] = n;
+            updates.set(xx, yy, n);
           }
         }
-      }
-    }
-
-    this.changedGrid = {};
+    });
+    
+    this.changedGrid.clear();
 
     // Only update what has changed
-    for (let y in updates) {
-      for (let x in updates[y]) {
-        this.set(+x, +y, updates[y][x]);
-      }
-    }
+    updates.forEach((s, x, y) => this.set(x, y, s));
 
     this.step++;
   }
@@ -290,12 +264,12 @@ export abstract class Game<
     let l = '';
     let c = 0;
 
-    const boundingBox = this.boundaryType === BoundaryType.Infinite ?
-      this.getBoundingBox() :
+    const [yMin, xMax, yMax, xMin] = this.boundaryType === BoundaryType.Infinite ?
+      this.currentGrid.getBoundingBox() :
       [0, this.width - 1, this.height - 1, 0];
 
-    for (let y = boundingBox[0]; y <= boundingBox[2]; y++) {
-      for (let x = boundingBox[3]; x <= boundingBox[1]; x++) {
+    for (let y = yMin; y <= yMax; y++) {
+      for (let x = xMin; x <= xMax; x++) {
         const t = this.get(x, y)?.token;
         if (t !== l) {
           if (l !== '') {
@@ -363,39 +337,6 @@ export abstract class Game<
       for (let x = xMin; x <= xMax; x++) {
         viewGrid[y - yMin] ??= [];
         viewGrid[y - yMin][x - xMin] = this.get(x, y);
-      }
-    }
-  }
-
-  getBoundingBox(): [number, number, number, number] {
-    const boundingBox: [number, number, number, number] = [null, null, null, null];
-
-    for (let y in this.currentGrid) {
-      for (let x in this.currentGrid[y]) {
-        if (this.get(+x, +y) !== this.emptyCell) {
-          boundingBox[0] = Math.min(boundingBox[0] ?? +y, +y);
-          boundingBox[1] = Math.max(boundingBox[1] ?? +x, +x);
-          boundingBox[2] = Math.max(boundingBox[2] ?? +y, +y);
-          boundingBox[3] = Math.min(boundingBox[3] ?? +x, +x);
-        }
-      }
-    }
-
-    return boundingBox;
-  }
-
-  countChanges(): number {
-    let count = 0;
-    this.forEach(() => {
-      count++;
-    });
-    return count;
-  }
-
-  forEach(fn: (cell: T) => void) {
-    for (let y in this.changedGrid) {
-      for (let x in this.changedGrid[y]) {
-        fn(this.get(+x, +y));
       }
     }
   }
