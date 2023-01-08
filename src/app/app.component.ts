@@ -93,7 +93,7 @@ export class AppComponent {
   }
 
   onMouseLeave() {
-    this.game.refreshStats();
+    this.updateView();
     if (this.playing && this.paused) {
       this.paused = false;
       this.doStep();
@@ -197,7 +197,7 @@ export class AppComponent {
     }
 
     this.updateView();
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
 
     if (this.playing && !this.paused) {
       if (this.speed < 0) {
