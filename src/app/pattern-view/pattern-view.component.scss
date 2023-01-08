@@ -1,0 +1,16 @@
+app-pattern-view {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  
+  .pattern-board {
+    --cell-size: calc(100px / max(var(--m), var(--n)));
+    
+    --board-width: calc(var(--m) * var(--cell-size));
+    --board-height: calc(var(--n) * var(--cell-size));
+    
+    .cell {
+      border: none !important;
+    }
+  }
+}

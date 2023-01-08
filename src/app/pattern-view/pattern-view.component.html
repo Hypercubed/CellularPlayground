@@ -1,0 +1,12 @@
+<table class="pattern-board">
+  <tr *ngFor="let row of grid; let y = index; trackBy: trackByIndex">
+    <td
+      *ngFor="let cell of grid[y]; let x = index; trackBy: trackByIndex"
+      class="cell"
+      [class]="'cell--' + cell.state"
+      [attr.data-state]="cell.state"
+    >
+      <span>{{ cell.display }}</span>
+    </td>
+  </tr>
+</table>

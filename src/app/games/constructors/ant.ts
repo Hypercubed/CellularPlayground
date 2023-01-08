@@ -4,7 +4,7 @@ import {
   Game,
   GameOptions,
   createState,
-} from './game';
+} from '../game';
 
 enum Colors {
   WHITE = '□',
@@ -96,7 +96,7 @@ export class Ant extends Game {
   // At a black square, turn 90° counter-clockwise, flip the color of the square, move forward one unit
 
   getNextCell(x: number, y: number) {
-    const t = this.getCell(x, y);
+    const t = this.get(x, y);
     const currentColor = this.getColor(t);
 
     if (this.getDirection(t)) {
@@ -105,25 +105,25 @@ export class Ant extends Game {
       return currentColor === Colors.BLACK ? WHITE : BLACK;
     }
 
-    const up = this.getCell(x, y - 1);
+    const up = this.get(x, y - 1);
     if (this.getDirection(up) === Directions.DOWN) {
       const newDirection = this.getNextDirection(Directions.DOWN, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const right = this.getCell(x + 1, y);
+    const right = this.get(x + 1, y);
     if (this.getDirection(right) === Directions.LEFT) {
       const newDirection = this.getNextDirection(Directions.LEFT, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const down = this.getCell(x, y + 1);
+    const down = this.get(x, y + 1);
     if (this.getDirection(down) === Directions.UP) {
       const newDirection = this.getNextDirection(Directions.UP, currentColor);
       return this.getState(newDirection, currentColor);
     }
 
-    const left = this.getCell(x - 1, y);
+    const left = this.get(x - 1, y);
     if (this.getDirection(left) === Directions.RIGHT) {
       const newDirection = this.getNextDirection(
         Directions.RIGHT,

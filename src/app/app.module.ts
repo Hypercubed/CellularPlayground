@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSliderModule } from '@angular/material/slider';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { PatternViewComponent } from './pattern-view/pattern-view.component';
 
 @NgModule({
   imports: [
@@ -27,7 +28,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
-  declarations: [AppComponent],
+  declarations: [AppComponent, PatternViewComponent],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -7,116 +7,14 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import { KeyValue } from '@angular/common';
 
 import Stats from 'stats.js';
 
-import { MatSelectChange } from '@angular/material/select';
+import { GameListItem, Games } from './games/games';
 
-import { Diodes, WireWorld } from './games/wireworld';
-import { Ant } from './games/ant';
-import { Life } from './games/life';
-import { Wolfram } from './games/wolfram';
-import { BoundaryType, CellState, Game, GameOptions } from './games/game';
-import { KeyValue } from '@angular/common';
-import { BB, bb2, bb3, bb4, bb5 } from './games/bb';
-// import { Rain } from "./games/rain";
-// import { City } from "./games/city";
-
-/* Defining the interface for the pattern. */
-interface GameListItem {
-  title: string;
-  Ctor: any;
-  options?: any;
-  patterns: string[];
-  savedPatterns: Array<CellState[][]>;
-  class?: string;
-}
-
-const Games: GameListItem[] = [
-  {
-    title: "Conway's Life",
-    Ctor: Life,
-    options: [
-      {
-        title: 'Default',
-        ruleString: 'b3s23',
-        boundaryType: BoundaryType.Infinite,
-      },
-      { title: 'Torus', ruleString: 'b3s23', boundaryType: BoundaryType.Torus },
-      { title: 'Diamoeba', ruleString: 'B35678/S5678' },
-      { title: 'Maze', ruleString: 'B3/S12345' },
-    ],
-    patterns: [''],
-    savedPatterns: [],
-    class: 'life',
-  },
-  {
-    title: "Langton's Ant",
-    Ctor: Ant,
-    options: [
-      { title: 'Default' },
-      { title: 'Torus', boundaryType: BoundaryType.Torus },
-    ],
-    patterns: ['$$$$$$$$$$$$$$$$$$$18b▲'],
-    savedPatterns: [],
-    class: 'ant',
-  },
-  {
-    title: 'WireWorld',
-    Ctor: WireWorld,
-    options: [],
-    patterns: ['', Diodes],
-    savedPatterns: [],
-    class: 'wireworld',
-  },
-  {
-    title: 'Wolfram Rules',
-    Ctor: Wolfram,
-    options: [
-      { title: 'Rule 30', N: 30 },
-      { title: 'Rule 90', N: 90 },
-      { title: 'Rule 110', N: 110 },
-    ],
-    patterns: ['21bo'],
-    savedPatterns: [],
-    class: 'wolfram',
-  },
-  // {
-  //   title: "Snow",
-  //   Ctor: Rain,
-  //   options: [
-  //   ],
-  //   patterns: [],
-  //   savedPatterns: [],
-  //   class: "snow",
-  // },
-  {
-    title: 'Busy Beaver',
-    Ctor: BB,
-    options: [
-      {
-        title: '2-state busy beaver',
-        BoundaryType: BoundaryType.Wall,
-        rules: bb2,
-      },
-      {
-        title: '3-state busy beaver',
-        rules: bb3,
-        BoundaryType: BoundaryType.Wall,
-      },
-      {
-        title: '4-state busy beaver',
-        height: 120,
-        rules: bb4,
-        BoundaryType: BoundaryType.Wall,
-      },
-      // { title: '5-state busy beaver', height: 240, width: 120, rules: bb5, BoundaryType: BoundaryType.Infinite },
-    ],
-    patterns: ['14bA'],
-    savedPatterns: [],
-    class: 'busybeaver',
-  },
-];
+import type { MatSelectChange } from '@angular/material/select';
+import { CellState, Game, GameOptions, makeGridWith } from './games/game';
 
 @Component({
   selector: 'my-app',
@@ -138,6 +36,7 @@ export class AppComponent {
   currentType: CellState;
   speed = -2;
   rle: string;
+  grid: CellState[][];
 
   private timeout = null;
   private stats: Stats;
@@ -159,6 +58,7 @@ export class AppComponent {
   onGameChange(e: MatSelectChange) {
     this.stop();
     this.setupGame(e.value);
+    this.loadPatternsFromStore();
   }
 
   onOptionsChange(e: MatSelectChange) {
@@ -180,7 +80,8 @@ export class AppComponent {
   }
 
   onClear() {
-    this.game.fillWith(this.game.emptyCell);
+    this.game.clearGrid();
+    this.updateView();
   }
 
   onRandom() {
@@ -188,9 +89,11 @@ export class AppComponent {
       const i = Math.floor(Math.random() * this.game.states.length);
       return this.game.states[i];
     });
+    this.updateView();
   }
 
   onMouseLeave() {
+    this.game.refreshStats();
     if (this.playing && this.paused) {
       this.paused = false;
       this.doStep();
@@ -204,7 +107,8 @@ export class AppComponent {
       }
 
       const s = e.buttons === 1 ? this.currentType : this.game.emptyCell;
-      this.setCell(x, y, s);
+      this.game.set(x, y, s);
+      this.grid[y][x] = s;
     }
   }
 
@@ -212,7 +116,9 @@ export class AppComponent {
     e.preventDefault();
     e.stopPropagation();
 
-    this.setCell(x, y, this.currentType);
+    this.game.set(x, y, this.currentType);
+    this.game.refreshStats();
+    this.updateView();
   }
 
   onTouch(e: TouchEvent) {
@@ -231,7 +137,8 @@ export class AppComponent {
     const x = Math.floor((dx / el.clientWidth) * this.game.width);
     const y = Math.floor((dy / el.clientHeight) * this.game.height);
 
-    this.setCell(x, y, this.currentType);
+    this.game.set(x, y, this.currentType);
+    this.updateView();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -244,14 +151,6 @@ export class AppComponent {
     }
   }
 
-  setCell(x: number, y: number, s: CellState) {
-    const c = this.game.getCell(x, y);
-    if (c !== s) {
-      this.game.immediatelySetCell(x, y, s);
-      this.game.refreshStats();
-    }
-  }
-
   setupGame(
     gameItem: GameListItem,
     gameOptions: GameOptions = gameItem.options[0]
@@ -260,14 +159,6 @@ export class AppComponent {
 
     this.gameItem = gameItem;
     this.resetGame(gameOptions);
-
-    if (this.gameItem.patterns && !this.gameItem.savedPatterns.length) {
-      this.gameItem.patterns.forEach((pattern: string) => {
-        if (pattern) {
-          this.gameItem.savedPatterns.push(this.game.rleToGrid(pattern));
-        }
-      });
-    }
     this.currentType = this.game.defaultCell;
   }
 
@@ -279,18 +170,24 @@ export class AppComponent {
     this.game = new Ctor(gameOptions);
     this.game.reset();
 
-    if (this.gameItem.patterns && this.gameItem.patterns.length > 0) {
-      const g = this.gameItem.patterns[0];
-      const gg = this.game.rleToGrid(g);
-      this.game.setGrid(gg);
+    this.grid = makeGridWith(
+      this.game.width,
+      this.game.height,
+      this.game.emptyCell
+    );
+    if (this.gameItem.startingPattern) {
+      this.loadPattern(this.gameItem.startingPattern);
     }
+    this.updateView();
   }
 
   doStep() {
+    clearTimeout(this.timeout);
+    cancelAnimationFrame(this.timeout);
     this.timeout = null;
 
     if (this.speed > 0) {
-      for (let i = 0; i < this.speed; i++) {
+      for (let i = 0; i < 2 ** this.speed; i++) {
         this.stats.begin();
         this.game.doStep();
         this.stats.end();
@@ -298,27 +195,40 @@ export class AppComponent {
     } else {
       this.game.doStep();
     }
-    this.game.refreshStats();
+
+    this.updateView();
     this.cdr.detectChanges();
 
     if (this.playing && !this.paused) {
-      const next = () => {
-        this.doStep();
-      };
-
       if (this.speed < 0) {
         const ms = Math.max(0, -this.speed * 100);
-        this.timeout = setTimeout(next, ms);
+        this.timeout = setTimeout(() => {
+          this.doStep();
+        }, ms);
       } else {
-        requestAnimationFrame(next);
+        this.timeout = requestAnimationFrame(() => {
+          this.doStep();
+        });
       }
     }
   }
 
+  updateView() {
+    this.game.updateViewGrid(
+      this.grid,
+      0,
+      this.game.width,
+      this.game.height,
+      0
+    );
+    this.game.refreshStats();
+  }
+
   stop() {
-    clearTimeout(this.timeout);
-    this.timeout = null;
     this.playing = false;
+    clearTimeout(this.timeout);
+    cancelAnimationFrame(this.timeout);
+    this.timeout = null;
   }
 
   pause() {
@@ -327,7 +237,7 @@ export class AppComponent {
     this.paused = true;
   }
 
-  trackByMethod(index: number): number {
+  trackByIndex(index: number): number {
     return index;
   }
 
@@ -339,17 +249,39 @@ export class AppComponent {
   }
 
   onAddPattern() {
-    this.gameItem.savedPatterns.push(this.game.getGridClone());
-    console.log(this.game.getRLE());
+    const pattern = this.game.getRLE();
+    this.gameItem.savedPatterns.push(pattern);
+    this.savePatternsToStore();
   }
 
-  onUsePattern(g: CellState[][]) {
-    this.game.setGrid(g);
-  }
-
-  onRemovePattern(pattern: CellState[][]) {
+  onRemovePattern(pattern: string) {
     this.gameItem.savedPatterns = this.gameItem.savedPatterns.filter(
       (p) => p !== pattern
     );
+    this.savePatternsToStore();
+  }
+
+  loadPattern(pattern: string) {
+    this.game.loadRLE(pattern);
+    this.updateView();
+  }
+
+  private savePatternsToStore() {
+    localStorage.setItem(
+      `patterns-${this.gameItem.class}`,
+      JSON.stringify(this.gameItem.savedPatterns)
+    );
+  }
+
+  private loadPatternsFromStore() {
+    const patterns = localStorage.getItem(`patterns-${this.gameItem.class}`);
+    if (patterns) {
+      try {
+        this.gameItem.savedPatterns = JSON.parse(patterns);
+      } catch (e) {
+        this.gameItem.savedPatterns = [];
+        console.log(e);
+      }
+    }
   }
 }

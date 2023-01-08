@@ -3,6 +3,7 @@
   class="game"
   [class]="'game--' + gameItem.class"
   [class.playing]="playing"
+  [class.paused]="paused"
   [style.--m]="game.width"
   [style.--n]="game.height"
 >
@@ -49,10 +50,10 @@
       </mat-slider>
     </div>
     <div id="pallet" class="controls">
-      <div class="set" *ngFor="let set of game.pallet; trackBy: trackByMethod">
+      <div class="set" *ngFor="let set of game.pallet; trackBy: trackByIndex">
         <button
           mat-fab
-          *ngFor="let type of set; trackBy: trackByMethod"
+          *ngFor="let type of set; trackBy: trackByIndex"
           [title]="type.state"
           class="cell"
           [class]="'cell--' + type.state"
@@ -81,12 +82,12 @@
       (touchend)="onMouseLeave()"
       (touchcancel)="onMouseLeave()"
     >
-      <tr *ngFor="let row of game.grid; let y = index; trackBy: trackByMethod">
+      <tr *ngFor="let row of grid; let y = index; trackBy: trackByIndex">
         <td
           *ngFor="
-            let cell of game.grid[y];
+            let cell of grid[y];
             let x = index;
-            trackBy: trackByMethod
+            trackBy: trackByIndex
           "
           (mousedown)="onMouseEnter($event, x, y)"
           (mouseenter)="onMouseEnter($event, x, y)"
@@ -109,39 +110,22 @@
     <div class="controls">
       <div
         class="pattern-container"
-        *ngFor="
-          let pattern of gameItem.savedPatterns;
-          let i = index;
-          trackBy: trackByMethod
-        "
+        *ngFor="let pattern of gameItem.patterns"
+        (click)="loadPattern(pattern)"
       >
-        <button
-          mat-mini-fab
-          (click)="onRemovePattern(pattern)"
-          *ngIf="i >= gameItem.patterns.length - 1"
-        >
+        <app-pattern-view [pattern]="pattern" [states]="game.states"></app-pattern-view>
+      </div>
+      <div
+        class="pattern-container"
+        *ngFor="let pattern of gameItem.savedPatterns"
+        (click)="loadPattern(pattern)"
+      >
+        <button mat-mini-fab (click)="onRemovePattern(pattern)">
           <mat-icon>close</mat-icon>
         </button>
-        <ng-container
-          *ngTemplateOutlet="miniBoard; context: { pattern }"
-        ></ng-container>
+        <app-pattern-view [pattern]="pattern" [states]="game.states"></app-pattern-view>
       </div>
       <button mat-button (click)="onAddPattern()">+ Save Pattern</button>
     </div>
   </aside>
 </div>
-
-<ng-template #miniBoard let-pattern="pattern">
-  <table class="pattern-board" (click)="onUsePattern(pattern)">
-    <tr *ngFor="let row of pattern; let y = index; trackBy: trackByMethod">
-      <td
-        *ngFor="let cell of pattern[y]; let x = index; trackBy: trackByMethod"
-        class="cell"
-        [class]="'cell--' + cell.state"
-        [attr.data-state]="cell.state"
-      >
-        <span>{{ cell.display }}</span>
-      </td>
-    </tr>
-  </table>
-</ng-template>

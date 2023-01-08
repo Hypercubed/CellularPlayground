@@ -101,7 +101,9 @@
   .pattern-container {
     position: relative;
     width: 100px;
+    height: 100px;
     margin: 0 auto;
+    cursor: pointer;
 
     [mat-mini-fab] {
       position: absolute;
@@ -109,18 +111,6 @@
       right: -10px;
       width: 26px;
       height: 26px;
-    }
-  }
-
-  .pattern-board {
-    cursor: pointer;
-    --board-width: 100px;
-    --cell-size: calc(var(--board-width) / var(--m));
-    --board-height: calc(var(--n) * var(--cell-size));
-
-    .cell {
-      border: none;
-      // font-size: 0;
     }
   }
 
@@ -197,7 +187,7 @@
     }
   }
 
-  &.playing {
+  &.playing:not(.paused) {
     .cell {
       transition: background 0.2s ease-in-out;
     }
@@ -223,6 +213,10 @@
   }
 
   &.game--wireworld {
+    .pattern-board {
+      background-color: black !important;
+    }
+
     .cell {
       transition: unset;
 

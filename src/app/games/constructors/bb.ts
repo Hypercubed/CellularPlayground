@@ -1,12 +1,10 @@
 import {
-  ACTIVE,
   BoundaryType,
   CellState,
   createState,
-  EMPTY,
   Game,
   GameOptions,
-} from './game';
+} from '../game';
 
 type TuringRules = Record<string, string>;
 
@@ -122,9 +120,9 @@ export class BB extends Game<CellState, BBOptions> {
 
   // 2-symbol busy beaver
   getNextCell(x: number, y: number) {
-    const c = this.getCell(x, y);
+    const c = this.get(x, y);
 
-    const up = this.getCell(x, y - 1);
+    const up = this.get(x, y - 1);
     if (isHead(up)) {
       const rule = this.rules?.[up.state];
       if (rule) {
@@ -133,7 +131,7 @@ export class BB extends Game<CellState, BBOptions> {
       }
     }
 
-    const up_right = this.getCell(x + 1, y - 1);
+    const up_right = this.get(x + 1, y - 1);
     if (isHead(up_right)) {
       const next = this.rules[up_right.state];
       if (next?.[1] === 'L') {
@@ -142,7 +140,7 @@ export class BB extends Game<CellState, BBOptions> {
       return up;
     }
 
-    const up_left = this.getCell(x - 1, y - 1);
+    const up_left = this.get(x - 1, y - 1);
     if (isHead(up_left)) {
       const next = this.rules[up_left.state];
       if (next?.[1] === 'R') {
@@ -164,14 +162,14 @@ export class BB extends Game<CellState, BBOptions> {
 
   refreshStats() {
     const yMin = this.stats.S;
-    const yMax = this.step;
+    const yMax = this.step + 1;
 
     for (let y = yMin; y < yMax; y++) {
       let Σ = 0;
       let H = false;
 
-      for (let x = 0; x < this.width; x++) {
-        const c = this.getCell(x, y);
+      for (let x in this.currentGrid[y]) {
+        const c = this.get(+x, +y);
         Σ += c.state.endsWith('1') ? 1 : 0;
         if (c.state.startsWith('H')) H = true;
       }

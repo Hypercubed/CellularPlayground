@@ -2,7 +2,7 @@
 currents in wires and makes it relatively easy to build logic gates
 and other digital circuits. */
 
-import { ACTIVE, createState, EMPTY, Game, GameOptions } from './game';
+import { ACTIVE, createState, EMPTY, Game, GameOptions } from '../game';
 
 const HEAD = createState('electron', 'e', '⚡︎');
 const TAIL = createState('tail', '■', '');
@@ -13,8 +13,7 @@ const Pallet = [
   [HEAD, TAIL],
 ];
 
-export const Diodes =
-  '$$$$$$3b2o■eo7b2o$2bo5b8ob3o$3b5o7b2o3bo$20bo$20bo$20bo$20bo$21bo$20b10o$21bo$20bo$20bo$20bo$20bo$3b2o■eo7b2o3bo$2bo5b7ob5o$3b5o7b2o';
+export const Diodes = '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
 
 export class WireWorld extends Game {
   stats = {
@@ -38,7 +37,7 @@ export class WireWorld extends Game {
   Conductor → Electron head if exactly one or two of the neighboring cells are electron heads, or remains Conductor otherwise.
   */
   getNextCell(x: number, y: number) {
-    const a = this.getCell(x, y);
+    const a = this.get(x, y);
     if (a.state === HEAD.state) return TAIL;
     if (a.state === TAIL.state) return ACTIVE;
     if (a.state === ACTIVE.state) {

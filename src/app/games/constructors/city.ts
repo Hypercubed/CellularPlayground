@@ -1,4 +1,4 @@
-import { Game, CellState, GameOptions } from './game';
+import { Game, CellState, GameOptions } from '../game';
 
 interface CityState extends CellState {
   state: string;
@@ -49,7 +49,7 @@ export class City extends Game<CityState> {
   }
 
   getNextCell(y: number, x: number): CityState {
-    const c = this.getCell(y, x);
+    const c = this.get(y, x);
 
     const rNeighbors = this.getNeighborsWhen(y, x, RESIDENTIAL);
     const iNeighbors = this.getNeighborsWhen(y, x, INDUSTRIAL);

@@ -1,3 +1,6 @@
+import { RouteConfigLoadStart } from "@angular/router";
+import { readRle } from "./utils/rle";
+
 export interface CellState {
   state: string; // state name
   token: string; // token used for saving
@@ -23,10 +26,12 @@ export const ACTIVE = createState('active', 'o', '');
 const DefaultGameOptions = {
   width: 40,
   height: 40,
-  boundaryType: BoundaryType.Infinite,
+  boundaryType: BoundaryType.Infinite
 };
 
-const MaxSize = 65536;
+type SparseGrid<T extends CellState = CellState> = Record<number, Record<number, T>>;
+
+const MaxSize = 65_536;
 
 export abstract class Game<
   T extends CellState = CellState,
@@ -39,47 +44,31 @@ export abstract class Game<
   states: T[];
 
   /* Array of states that are shown in the pallet
-    Items are arranged into rows */
+  * Items are arranged into rows
+  */
   pallet: T[][];
 
+  /* Width and height of the view grid,
+  * For bounded girds also the border size */
   width: number;
   height: number;
   stats: Record<string, any>;
 
-  /* If true, the grid is a torus */
-  // TODO: add UI for this
-  continuous: boolean = false;
-
   boundaryType: BoundaryType = BoundaryType.Infinite;
-
   oneDimensional: boolean = false;
   step = 0;
-
-  protected range = 1;
-
-  /* readonly */
-  get grid(): Readonly<T[][]> {
-    // if (this.oneDimensional) {
-    //   return this.viewGrid.slice(0, this.step + 1);
-    // }
-    return this.viewGrid;
-  }
 
   get defaultCell() {
     return this.states[0];
   }
-
+  
   get emptyCell() {
     return this.states[this.states.length - 1];
   }
-
-  // TODO: replace this with a sparse matrix
-  // Update view grid when this changes
-  protected currentGrid: Record<number, Record<number, T>>;
-  protected viewGrid: T[][];
-
-  protected boundingBox: [number, number, number, number];
-
+  
+  protected neighborhoodRange = 1;
+  protected currentGrid: SparseGrid<T>;
+  protected changedGrid: SparseGrid<T>;
   protected options: O;
 
   constructor(options?: Partial<O>) {
@@ -92,182 +81,183 @@ export abstract class Game<
     this.height = this.options.height;
     this.boundaryType = this.options.boundaryType;
     this.oneDimensional = this.options.oneDimensional;
+    this.stats = {};
+  }
+  
+  reset() {
+    this.clearGrid();
+    this.step = 0;
+  }
 
-    this.boundingBox = [0, this.width - 1, this.height - 1, 0];
+  clearGrid() {
+    this.currentGrid = {};
   }
 
   refreshStats() {
     this.stats.Generation = this.step;
-    this.stats.Alive = this.worldCountWhen(ACTIVE as T);
-    this.stats.Size =
-      String(this.boundingBox[1] - this.boundingBox[3] + 1) +
-      'x' +
-      String(this.boundingBox[2] - this.boundingBox[0] + 1);
-    this.stats.BoundingBox = this.boundingBox;
-  }
-
-  reset() {
-    this.fillWith(EMPTY as T);
-    this.step = 0;
-    this.refreshStats();
+    if (this.oneDimensional) {
+      this.stats.Generation = this.step;
+      this.stats.Alive = Object.keys(this.currentGrid[this.step] || {}).length;
+    } else {
+      this.stats.Alive = this.worldCountWhen(ACTIVE as T);
+      if (this.boundaryType === BoundaryType.Infinite) {
+        const boundingBox = this.getBoundingBox();
+        this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${boundingBox[2] - boundingBox[0] + 1}`;
+      }
+      this.stats.Changes = this.countChanges();
+    }
   }
 
   fillWith(c?: T | ((x: number, y: number) => T)) {
     c ||= this.emptyCell;
-    this.viewGrid = makeGridWith(this.width, this.height, c);
-    this.currentGrid = {};
-    this.boundingBox = [0, this.width - 1, this.height - 1, 0];
+    
+    this.clearGrid();
+    if (c === this.emptyCell) return;
+
+    const grid = makeGridWith(this.width, this.height, c);
 
     for (let x = 0; x < this.width; x++) {
       for (let y = 0; y < this.height; y++) {
-        this.set(x, y, this.viewGrid[y][x]);
+        this.set(x, y, grid[y][x]);
       }
     }
-
-    this.refreshStats();
   }
 
+  /**
+   * Gets an array of all non empty cells in the world
+   */
   getWorld(): T[] {
-    let c = [];
-    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
-      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
-        c.push(this.getCell(x, y));
-      }
-    }
-    return c;
+    let world = [];
+    this.forEach(cell => {
+      world.push(cell);
+    });
+    return world;
   }
 
+  /**
+   * Gets an array of all cells in the world that match the given state 
+   */
   getWorldWhen(s: T): T[] {
     let c = [];
-    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
-      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
-        const ss = this.getCell(x, y);
-        if (ss?.state === s.state) c.push(ss);
-      }
-    }
+    this.forEach(cell => {
+      if (cell?.state === s.state) c.push(cell);
+    });
     return c;
   }
 
-  // Moore neighborhood
+  /*
+    * Gets the number of cells in the world that match the given state
+    */
+  worldCountWhen(s: T): number {
+    let c = 0;
+    this.forEach(cell => {
+      c += +(cell?.state === s.state);
+    });
+    return c;
+  }
+
+  /*
+    * Gets an array of all cells in the Moore neighborhood of the given cell
+  */
   getNeighborsWhen(x: number, y: number, s: T): T[] {
     let c = [];
     for (let p = x - 1; p <= x + 1; p++) {
       for (let q = y - 1; q <= y + 1; q++) {
         if (p === x && q === y) continue;
-        const ss = this.getCell(p, q);
+        const ss = this.get(p, q);
         if (ss?.state === s.state) c.push(ss);
       }
     }
     return c;
   }
 
-  // Moore neighborhood
+  /*
+    * Gets the number of cells in the Moore neighborhood of the given cell that match the given state
+    */
   neighborhoodCountWhen(x: number, y: number, s: T): number {
     return this.getNeighborsWhen(x, y, s).length;
   }
 
-  // von Neumann neighborhood
+  /*
+    * Gets an array of all cells in the von Neumann neighborhood of the given cell
+    */
   regionCountWhen(x: number, y: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
       for (let q = y - R; q <= y + R; q++) {
         const r = Math.abs(p - x) + Math.abs(q - y); // Manhattan distance
         if (r <= R) {
-          c += +(this.getCell(p, q)?.state === s.state);
+          c += +(this.get(p, q)?.state === s.state);
         }
       }
     }
     return c;
   }
 
-  worldCountWhen(s: T): number {
-    let c = 0;
-    for (let x = this.boundingBox[3]; x <= this.boundingBox[1]; x++) {
-      for (let y = this.boundingBox[0]; y <= this.boundingBox[2]; y++) {
-        c += +(this.getCell(x, y)?.state === s.state);
-      }
-    }
-    return c;
-  }
-
-  getCell(x: number, y: number): T {
+  get(x: number, y: number): T {
     [x, y] = this.getPosition(x, y);
-    return this.currentGrid?.[y]?.[x] || (this.emptyCell as T);
+    return this.currentGrid?.[y]?.[x] || this.emptyCell;
   }
 
-  immediatelySetCell(x: number, y: number, s: T): void {
-    this.set(x, y, s);
-    this.refreshStats();
-  }
-
-  private set(x: number, y: number, s: T) {
+  set(x: number, y: number, s: T) {
     [x, y] = this.getPosition(x, y);
 
-    if (!this.currentGrid[y]) {
-      this.currentGrid[y] = {};
-    }
+    const c = this.get(x, y);
+    if (s === c) return;
 
+    this.changedGrid ??= Object.create(null);
+    this.changedGrid[y] ??= Object.create(null);
+    this.changedGrid[y][x] = s;
+    
     // Set the cell
     if (s === this.emptyCell) {
-      delete this.currentGrid[y][x];
+      if (this.currentGrid?.[y]?.[x]) {
+        delete this.currentGrid[y][x];
+        if (!Object.keys(this.currentGrid[y]).length) {
+          delete this.currentGrid[y];
+        }
+      }
     } else {
+      this.currentGrid ??= Object.create(null);
+      this.currentGrid[y] ??= Object.create(null);
       this.currentGrid[y][x] = s;
-      this.boundingBox[0] = Math.min(this.boundingBox[0], y);
-      this.boundingBox[1] = Math.max(this.boundingBox[1], x);
-      this.boundingBox[2] = Math.max(this.boundingBox[2], y);
-      this.boundingBox[3] = Math.min(this.boundingBox[3], x);
     }
-
-    // Update the view
-    if (x < 0 || y < 0) return;
-    if (y >= this.height || x >= this.width) return;
-    this.viewGrid[y][x] = s;
   }
 
   doStep() {
-    const changes = [];
+    const updates: SparseGrid<T> = {};
 
-    let minX = this.boundingBox[3] - this.range;
-    let maxX = this.boundingBox[1] + this.range;
-    let minY = this.boundingBox[0] - this.range;
-    let maxY = this.boundingBox[2] + this.range;
+    // For each cell that changed on the previous tick
+    for (let y in this.changedGrid) {
+      for (let x in this.changedGrid[y]) {
 
-    if (this.oneDimensional) {
-      minY = this.step + 1;
-      maxY = this.step + 1;
-    }
+        // for each neighbor in range
+        for (let q =-this.neighborhoodRange; q <= this.neighborhoodRange; q++) {
+          for (let p =-this.neighborhoodRange; p <= this.neighborhoodRange; p++) {
+            const [xx, yy] = this.getPosition(+x + p, +y + q);
 
-    let nextMinX = Infinity;
-    let nextMaxX = -Infinity;
-    let nextMinY = Infinity;
-    let nextMaxY = -Infinity;
+            if (this.oneDimensional && yy !== this.step + 1) continue;
 
-    for (let x = minX; x <= maxX; x++) {
-      for (let y = minY; y <= maxY; y++) {
-        const [xx, yy] = this.getPosition(x, y);
+            // Cell was already visited, skip
+            if (updates?.[yy]?.[xx]) continue;
 
-        const c = this.getCell(xx, yy);
-        const n = this.getNextCell(xx, yy) || c;
-        if (n !== c) {
-          changes.push([xx, yy, n]);
-        }
-        if (c !== this.emptyCell) {
-          nextMinX = Math.min(nextMinX, xx);
-          nextMinY = Math.min(nextMinY, yy);
-          nextMaxX = Math.max(nextMaxX, xx);
-          nextMaxY = Math.max(nextMaxY, yy);
+            const c = this.get(xx, yy);
+            const n = this.getNextCell(xx, yy) || c;
+    
+            updates[yy] ??= Object.create(null);
+            updates[yy][xx] = n;
+          }
         }
       }
     }
 
-    this.boundingBox[0] = nextMinY;
-    this.boundingBox[1] = nextMaxX;
-    this.boundingBox[2] = nextMaxY;
-    this.boundingBox[3] = nextMinX;
+    this.changedGrid = {};
 
     // Only update what has changed
-    for (const [x, y, n] of changes) {
-      this.set(x, y, n);
+    for (let y in updates) {
+      for (let x in updates[y]) {
+        this.set(+x, +y, updates[y][x]);
+      }
     }
 
     this.step++;
@@ -300,9 +290,13 @@ export abstract class Game<
     let l = '';
     let c = 0;
 
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        const t = this.getCell(x, y)?.token;
+    const boundingBox = this.boundaryType === BoundaryType.Infinite ?
+      this.getBoundingBox() :
+      [0, this.width - 1, this.height - 1, 0];
+
+    for (let y = boundingBox[0]; y <= boundingBox[2]; y++) {
+      for (let x = boundingBox[3]; x <= boundingBox[1]; x++) {
+        const t = this.get(x, y)?.token;
         if (t !== l) {
           if (l !== '') {
             rle += c > 1 ? c + l : l;
@@ -325,34 +319,36 @@ export abstract class Game<
     const o = this.defaultCell.token;
     rle = rle.replace(new RegExp(`${o}`, 'g'), 'o');
 
-    rle = rle.replace(/\d+b\$/g, '$'); // Remove trailing blanks
-    rle = rle.replace(/\$+$/, ''); // Remove trailing newlines
+    if (this.boundaryType === BoundaryType.Infinite) {
+      rle = rle.replace(/\d+b\$/g, '$'); // Remove trailing blanks
+      rle = rle.replace(/\$+$/, ''); // Remove trailing newlines
+    }
 
-    return rle; // Remove trailing blanks
+    return rle.trim();
   }
 
-  rleToGrid(rle: string) {
-    // TODO: sparse grids
-    const g = makeGridWith<any>(this.width, this.height, this.emptyCell);
+  loadRLE(rle: string) {
+    this.clearGrid();
+    if (!rle) return;
 
-    let x = 0;
-    let y = 0;
+    const { grid, height, width } = readRle(rle);
 
-    const r = rle.split('$');
+    // Center the pattern
+    let dx = Math.floor((this.width - width) / 2);
+    let dy = 0;
 
-    for (const c of r) {
-      const m = c.matchAll(/(\d*)(\D)/g);
-      for (let [_, count, token] of m) {
-        const s = this.tokenToState(token);
-        for (let i = 0; i < +(count || 1); i++) {
-          g[y][x++] = s;
+    if (!this.oneDimensional) {
+      dy = Math.floor((this.height - height) / 2);
+    }
+
+    for (let j = 0; j < grid.length; j++) {
+      for (let i = 0; i <= grid[j].length; i++) {
+        if (grid?.[j]?.[i]) {
+          const state = this.tokenToState(grid[j][i]);
+          this.set(i + dx, j + dy, state);
         }
       }
-
-      x = 0;
-      y++;
     }
-    return g;
   }
 
   tokenToState(token: string) {
@@ -362,17 +358,46 @@ export abstract class Game<
     return this.states.find((s) => s.token === token) || this.emptyCell;
   }
 
-  getGridClone() {
-    return this.viewGrid.map((row) => row.slice());
-  }
-
-  setGrid(g: T[][]) {
-    for (let x = 0; x < this.width; x++) {
-      for (let y = 0; y < this.height; y++) {
-        this.set(x, y, g?.[y]?.[x] || this.emptyCell);
+  updateViewGrid(viewGrid: T[][], yMin: number, xMax: number, yMax: number, xMin: number) {
+    for (let y = yMin; y <= yMax; y++) {
+      for (let x = xMin; x <= xMax; x++) {
+        viewGrid[y - yMin] ??= [];
+        viewGrid[y - yMin][x - xMin] = this.get(x, y);
       }
     }
-    this.refreshStats();
+  }
+
+  getBoundingBox(): [number, number, number, number] {
+    const boundingBox: [number, number, number, number] = [null, null, null, null];
+
+    for (let y in this.currentGrid) {
+      for (let x in this.currentGrid[y]) {
+        if (this.get(+x, +y) !== this.emptyCell) {
+          boundingBox[0] = Math.min(boundingBox[0] ?? +y, +y);
+          boundingBox[1] = Math.max(boundingBox[1] ?? +x, +x);
+          boundingBox[2] = Math.max(boundingBox[2] ?? +y, +y);
+          boundingBox[3] = Math.min(boundingBox[3] ?? +x, +x);
+        }
+      }
+    }
+
+    return boundingBox;
+  }
+
+  countChanges(): number {
+    let count = 0;
+    this.forEach(() => {
+      count++;
+    });
+    return count;
+  }
+
+  forEach(fn: (cell: T) => void) {
+    for (let y in this.changedGrid) {
+      for (let x in this.changedGrid[y]) {
+        fn(this.get(+x, +y));
+      }
+    }
   }
 
   protected getNextCell(y: number, x: number): T | void {
