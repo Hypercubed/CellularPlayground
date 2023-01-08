@@ -212,7 +212,7 @@
     }
   }
 
-  &.game--wireworld {
+  &.ca--wireworld {
     .pattern-board {
       background-color: black !important;
     }
@@ -239,16 +239,16 @@
     }
   }
 
-  &.game--rule30,
-  &.game--rule110 {
-    #board {
-      .cell {
-        line-height: 0;
-      }
-    }
-  }
+  // &.ca--rule30,
+  // &.ca--rule110 {
+  //   #board {
+  //     .cell {
+  //       line-height: 0;
+  //     }
+  //   }
+  // }
 
-  &.game--snow {
+  &.ca--snow {
     .cell {
       &--drop {
         background-color: white;

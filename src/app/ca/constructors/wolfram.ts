@@ -1,12 +1,12 @@
-import parseRuleString from 'cellular-automata-rule-parser/formats/wolfram';
 import {
   ACTIVE,
   BoundaryType,
-  CellState,
   EMPTY,
-  Game,
-  GameOptions,
-} from '../game';
+  CAOptions,
+} from '../classes/base';
+import { ElementaryCA } from '../classes/elementary';
+
+import type { CellState } from '../classes/states';
 
 const defaultWolframOptions = {
   oneDimensional: true,
@@ -16,11 +16,11 @@ const defaultWolframOptions = {
   ruleNumber: 30
 };
 
-interface WolframOptions extends GameOptions {
+interface WolframOptions extends CAOptions {
   ruleNumber: number;
 }
 
-export class Wolfram extends Game<CellState, WolframOptions> {
+export class Wolfram extends ElementaryCA<CellState, WolframOptions> {
   width = 86 / 2;
   height = 86 / 2;
 

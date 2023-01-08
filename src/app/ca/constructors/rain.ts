@@ -1,4 +1,5 @@
-import { ACTIVE, createState, EMPTY, Game, GameOptions } from '../game';
+import { ACTIVE, EMPTY, CA, CAOptions } from '../classes/base';
+import { createState } from '../classes/states';
 
 const RainDefaultOptions = {
   width: 40,
@@ -8,7 +9,7 @@ const RainDefaultOptions = {
 
 const DROP = createState('drop', '*');
 
-export class Rain extends Game {
+export class Rain extends CA {
   readonly patterns = [''];
 
   stats = {
@@ -19,7 +20,7 @@ export class Rain extends Game {
   states = [ACTIVE, DROP, EMPTY];
   pallet = [[ACTIVE, DROP, EMPTY]];
 
-  constructor(options?: Partial<GameOptions>) {
+  constructor(options?: Partial<CAOptions>) {
     super({
       ...RainDefaultOptions,
       ...options,

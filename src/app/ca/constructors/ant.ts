@@ -1,10 +1,11 @@
 import {
   BoundaryType,
-  CellState,
-  Game,
-  GameOptions,
-  createState,
-} from '../game';
+  CA,
+  CAOptions,
+} from '../classes/base';
+import { createState } from '../classes/states';
+
+import { type CellState } from '../classes/states';
 
 enum Colors {
   WHITE = '□',
@@ -47,7 +48,7 @@ const AntOptionsDefault = {
   boundaryType: BoundaryType.Infinite,
 };
 
-export class Ant extends Game {
+export class Ant extends CA {
   stats = {
     Generation: 0,
     Ants: 0,
@@ -72,7 +73,7 @@ export class Ant extends Game {
     [BLACK, WHITE],
   ];
 
-  constructor(options?: Partial<GameOptions>) {
+  constructor(options?: Partial<CAOptions>) {
     super({
       ...AntOptionsDefault,
       ...options,

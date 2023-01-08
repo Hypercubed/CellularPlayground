@@ -1,4 +1,4 @@
-import { BoundaryType } from './game';
+import { BoundaryType } from './classes/base';
 
 import { Diodes, WireWorld } from './constructors/wireworld';
 import { Ant } from './constructors/ant';
@@ -6,7 +6,7 @@ import { Life, Glider, GosperGliderGun, StillsAndOscillators } from './construct
 import { Wolfram } from './constructors/wolfram';
 import { BB, bb2, bb3, bb4, bb5 } from './constructors/bb';
 
-export interface GameListItem {
+export interface CAListItem {
   title: string;
   Ctor: any;
   options?: any;
@@ -16,7 +16,7 @@ export interface GameListItem {
   class: string;
 }
 
-export const Games: GameListItem[] = [
+export const CAList: CAListItem[] = [
   {
     title: "Conway's Life",
     Ctor: Life,

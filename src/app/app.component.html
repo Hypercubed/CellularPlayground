@@ -1,29 +1,29 @@
 <div
   id="container"
-  class="game"
-  [class]="'game--' + gameItem.class"
+  class="ca"
+  [class]="'ca--' + caItem.class"
   [class.playing]="playing"
   [class.paused]="paused"
-  [style.--m]="game.width"
-  [style.--n]="game.height"
+  [style.--m]="ca.width"
+  [style.--n]="ca.height"
 >
   <div #stats id="fpsStats" [class.show]="playing"></div>
   <aside id="left-side">
     <div class="controls">
       <mat-select
         (selectionChange)="onGameChange($event)"
-        [(ngModel)]="gameItem"
+        [(ngModel)]="caItem"
       >
-        <mat-option *ngFor="let game of Games" [value]="game">
-          {{ game.title }}
+        <mat-option *ngFor="let item of CAList" [value]="item">
+          {{ item.title }}
         </mat-option>
       </mat-select>
       <mat-select
         (selectionChange)="onOptionsChange($event)"
-        [(ngModel)]="gameOptions"
-        *ngIf="gameItem.options?.length"
+        [(ngModel)]="caOptions"
+        *ngIf="caItem.options?.length"
       >
-        <mat-option *ngFor="let option of gameItem.options" [value]="option">
+        <mat-option *ngFor="let option of caItem.options" [value]="option">
           {{ option.title }}
         </mat-option>
       </mat-select>
@@ -50,7 +50,7 @@
       </mat-slider>
     </div>
     <div id="pallet" class="controls">
-      <div class="set" *ngFor="let set of game.pallet; trackBy: trackByIndex">
+      <div class="set" *ngFor="let set of ca.pallet; trackBy: trackByIndex">
         <button
           mat-fab
           *ngFor="let type of set; trackBy: trackByIndex"
@@ -68,7 +68,7 @@
   </aside>
   <div id="content">
     <div id="stats">
-      <span *ngFor="let stat of game.stats | keyvalue">
+      <span *ngFor="let stat of ca.stats | keyvalue">
         {{ stat.key }}: {{ stat.value }}
       </span>
     </div>
@@ -110,20 +110,20 @@
     <div class="controls">
       <div
         class="pattern-container"
-        *ngFor="let pattern of gameItem.patterns"
+        *ngFor="let pattern of caItem.patterns"
         (click)="loadPattern(pattern)"
       >
-        <app-pattern-view [pattern]="pattern" [states]="game.states"></app-pattern-view>
+        <app-pattern-view [pattern]="pattern" [states]="ca.states"></app-pattern-view>
       </div>
       <div
         class="pattern-container"
-        *ngFor="let pattern of gameItem.savedPatterns"
+        *ngFor="let pattern of caItem.savedPatterns"
         (click)="loadPattern(pattern)"
       >
         <button mat-mini-fab (click)="onRemovePattern(pattern)">
           <mat-icon>close</mat-icon>
         </button>
-        <app-pattern-view [pattern]="pattern" [states]="game.states"></app-pattern-view>
+        <app-pattern-view [pattern]="pattern" [states]="ca.states"></app-pattern-view>
       </div>
       <button mat-button (click)="onAddPattern()">+ Save Pattern</button>
     </div>

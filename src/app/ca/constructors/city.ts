@@ -1,4 +1,6 @@
-import { Game, CellState, GameOptions } from '../game';
+import { CA, CAOptions } from '../classes/base';
+
+import type { CellState } from '../classes/states';
 
 interface CityState extends CellState {
   state: string;
@@ -22,7 +24,7 @@ const INDUSTRIAL = createState('I');
 const COMMERCIAL = createState('C');
 const OBSTACLE = createState('■');
 
-export class City extends Game<CityState> {
+export class City extends CA<CityState> {
   stats = {
     Step: 0,
     $: 0,
@@ -37,7 +39,7 @@ export class City extends Game<CityState> {
   states = [RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL, EMPTY];
   pallet = [[RESIDENTIAL, OBSTACLE, COMMERCIAL, INDUSTRIAL], [EMPTY]];
 
-  constructor(options?: Partial<GameOptions>) {
+  constructor(options?: Partial<CAOptions>) {
     super(options);
     this.fillWith(EMPTY);
   }

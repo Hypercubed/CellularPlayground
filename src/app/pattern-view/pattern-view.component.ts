@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input, OnInit, ViewEncapsulation } from '@angular/core';
 
-import { CellState, Game, makeGridWith } from '../games/game';
-import { readRle } from '../games/utils/rle';
+import { readRle } from '../ca/utils/rle';
+
+import type { CellState } from '../ca/classes/states';
 
 const maxHeight = 100;
 const maxWidth = 100;

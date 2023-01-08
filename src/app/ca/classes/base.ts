@@ -1,18 +1,13 @@
-import { RouteConfigLoadStart } from "@angular/router";
-import { UnboundedGrid } from "./utils/grid";
-import { readRle } from "./utils/rle";
+import { UnboundedGrid } from "./grid";
+import { readRle } from "../utils/rle";
+import { CellState, createState } from "./states";
+import { makeGridWith } from "../utils/grid";
+import { mod } from "../utils/math";
 
-export interface CellState {
-  state: string; // state name
-  token: string; // token used for saving
-  display?: string; // token for display
-}
-
-export interface GameOptions {
+export interface CAOptions {
   width: number;
   height: number;
   boundaryType: BoundaryType;
-  oneDimensional: boolean;
 }
 
 export enum BoundaryType {
@@ -24,7 +19,7 @@ export enum BoundaryType {
 export const EMPTY = createState('empty', 'b', '');
 export const ACTIVE = createState('active', 'o', '');
 
-const DefaultGameOptions = {
+const DefaultCAOptions = {
   width: 40,
   height: 40,
   boundaryType: BoundaryType.Infinite
@@ -32,9 +27,9 @@ const DefaultGameOptions = {
 
 const MaxSize = 200_000;
 
-export abstract class Game<
+export abstract class CA<
   T extends CellState = CellState,
-  O extends GameOptions = GameOptions
+  O extends CAOptions = CAOptions
 > {
   /* Array of all possible states
    * The first state is the default state
@@ -54,7 +49,6 @@ export abstract class Game<
   stats: Record<string, any>;
 
   boundaryType: BoundaryType = BoundaryType.Infinite;
-  oneDimensional: boolean = false;
   step = 0;
 
   get defaultCell() {
@@ -72,14 +66,13 @@ export abstract class Game<
 
   constructor(options?: Partial<O>) {
     this.options = {
-      ...DefaultGameOptions,
+      ...DefaultCAOptions,
       ...options,
     } as O;
 
     this.width = this.options.width;
     this.height = this.options.height;
     this.boundaryType = this.options.boundaryType;
-    this.oneDimensional = this.options.oneDimensional;
     this.stats = {};
   }
   
@@ -93,22 +86,13 @@ export abstract class Game<
   }
 
   refreshStats() {
-    this.stats.Generation = this.step;
-    if (this.oneDimensional) {
-      this.stats.Generation = this.step;
-      this.stats.Alive = this.currentGrid.reduce((c, cell, x, y) => {
-        if (y !== this.step) return c;
-        return c + +(cell?.state !== this.emptyCell.state);
-      }, 0);
-    } else {
-      this.stats.Alive = this.worldCountWhen(ACTIVE as T);
-      if (this.boundaryType === BoundaryType.Infinite) {
-        const boundingBox = this.currentGrid.getBoundingBox();
-        this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${boundingBox[2] - boundingBox[0] + 1}`;
-      }
-      this.stats.Births = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state !== this.emptyCell.state), 0);
-      this.stats.Deaths = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state === this.emptyCell.state), 0);
+    this.stats.Alive = this.worldCountWhen(ACTIVE as T);
+    if (this.boundaryType === BoundaryType.Infinite) {
+      const boundingBox = this.currentGrid.getBoundingBox();
+      this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${boundingBox[2] - boundingBox[0] + 1}`;
     }
+    this.stats.Births = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state !== this.emptyCell.state), 0);
+    this.stats.Deaths = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state === this.emptyCell.state), 0);
   }
 
   fillWith(c?: T | ((x: number, y: number) => T)) {
@@ -216,8 +200,6 @@ export abstract class Game<
           for (let p =-this.neighborhoodRange; p <= this.neighborhoodRange; p++) {
             const [xx, yy] = this.getPosition(x + p, y + q);
 
-            if (this.oneDimensional && yy !== this.step + 1) continue;
-
             // Cell was already visited, skip
             if (updates.has(xx, yy)) continue;
 
@@ -237,7 +219,7 @@ export abstract class Game<
     this.step++;
   }
 
-  private getPosition(x: number, y: number): [number, number] {
+  protected getPosition(x: number, y: number): [number, number] {
     // Enforce boundary conditions
     if (this.boundaryType === BoundaryType.Torus) {
       x = mod(x, this.width);
@@ -309,11 +291,7 @@ export abstract class Game<
 
     // Center the pattern
     let dx = Math.floor((this.width - width) / 2);
-    let dy = 0;
-
-    if (!this.oneDimensional) {
-      dy = Math.floor((this.height - height) / 2);
-    }
+    let dy = Math.floor((this.height - height) / 2);
 
     for (let j = 0; j < grid.length; j++) {
       for (let i = 0; i <= grid[j].length; i++) {
@@ -344,32 +322,4 @@ export abstract class Game<
   protected getNextCell(y: number, x: number): T | void {
     return;
   }
-}
-
-export function createState<T extends CellState = CellState>(
-  state: string,
-  token = state,
-  display = token
-): Readonly<T> {
-  return Object.freeze({
-    state,
-    token: token[0], // ensure token is one character
-    display,
-  }) as T;
-}
-
-export function makeGridWith<T extends CellState = CellState>(
-  width: number,
-  height: number,
-  c: T | ((x: number, y: number) => T)
-) {
-  return Array.from({ length: height }, (_, y) => {
-    return Array.from({ length: width }, (_, x) => {
-      return typeof c === 'function' ? c(x, y) : c;
-    });
-  });
-}
-
-function mod(n: number, m: number): number {
-  return ((n % m) + m) % m;
 }

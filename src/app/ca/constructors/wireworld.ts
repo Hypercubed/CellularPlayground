@@ -2,7 +2,8 @@
 currents in wires and makes it relatively easy to build logic gates
 and other digital circuits. */
 
-import { ACTIVE, createState, EMPTY, Game, GameOptions } from '../game';
+import { ACTIVE,EMPTY, CA, CAOptions } from '../classes/base';
+import { createState } from '../classes/states';
 
 const HEAD = createState('electron', 'e', '⚡︎');
 const TAIL = createState('tail', '■', '');
@@ -15,7 +16,7 @@ const Pallet = [
 
 export const Diodes = '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
 
-export class WireWorld extends Game {
+export class WireWorld extends CA {
   stats = {
     Electrons: 0,
   };
@@ -26,7 +27,7 @@ export class WireWorld extends Game {
   readonly states = States;
   readonly pallet = Pallet;
 
-  constructor(options?: Partial<GameOptions>) {
+  constructor(options?: Partial<CAOptions>) {
     super(options);
   }
 

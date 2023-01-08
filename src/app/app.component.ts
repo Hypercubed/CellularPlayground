@@ -11,10 +11,13 @@ import { KeyValue } from '@angular/common';
 
 import Stats from 'stats.js';
 
-import { GameListItem, Games } from './games/games';
+import { CAListItem, CAList } from './ca/list';
+import { ElementaryCA } from './ca/classes/elementary';
+import { CA, CAOptions } from './ca/classes/base';
+import { makeGridWith } from './ca/utils/grid';
 
 import type { MatSelectChange } from '@angular/material/select';
-import { CellState, Game, GameOptions, makeGridWith } from './games/game';
+import type { CellState } from './ca/classes/states';
 
 @Component({
   selector: 'my-app',
@@ -24,14 +27,14 @@ import { CellState, Game, GameOptions, makeGridWith } from './games/game';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
-  readonly Games = Games;
+  readonly CAList = CAList;
 
   playing = false;
   paused = false;
 
-  gameItem: GameListItem;
-  game: Game;
-  gameOptions: GameOptions;
+  caItem: CAListItem;
+  ca: CA;
+  caOptions: CAOptions;
 
   currentType: CellState;
   speed = -2;
@@ -52,7 +55,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.setupGame(this.Games[0], this.Games[0].options[0]);
+    this.setupCA(this.CAList[0], this.CAList[0].options[0]);
 
     this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     this.statElement.nativeElement.appendChild(this.stats.dom);
@@ -60,13 +63,13 @@ export class AppComponent {
 
   onGameChange(e: MatSelectChange) {
     this.stop();
-    this.setupGame(e.value);
+    this.setupCA(e.value);
     this.loadPatternsFromStore();
   }
 
   onOptionsChange(e: MatSelectChange) {
     this.stop();
-    this.setupGame(this.gameItem, e.value);
+    this.setupCA(this.caItem, e.value);
   }
 
   onTogglePlay() {
@@ -79,24 +82,24 @@ export class AppComponent {
   }
 
   onReset() {
-    this.resetGame();
+    this.resetCA();
   }
 
   onClear() {
-    this.game.clearGrid();
+    this.ca.clearGrid();
     this.updateView();
   }
 
   onRandom() {
-    if (this.game.oneDimensional) {
-      this.game.fillWith((x, y) => {
-        if (y !== this.game.step) return this.game.emptyCell;
-        return Math.random() < 0.5 ? this.game.defaultCell : this.game.emptyCell;
+    if (this.ca instanceof ElementaryCA) {
+      this.ca.fillWith((x, y) => {
+        if (y !== this.ca.step) return this.ca.emptyCell;
+        return Math.random() < 0.5 ? this.ca.defaultCell : this.ca.emptyCell;
       });
     } else {
-      this.game.fillWith(() => {
-        const i = Math.floor(Math.random() * this.game.states.length);
-        return this.game.states[i];
+      this.ca.fillWith(() => {
+        const i = Math.floor(Math.random() * this.ca.states.length);
+        return this.ca.states[i];
       });
     }
     this.updateView();
@@ -116,8 +119,8 @@ export class AppComponent {
         this.pause();
       }
 
-      const s = e.buttons === 1 ? this.currentType : this.game.emptyCell;
-      this.game.set(x, y, s);
+      const s = e.buttons === 1 ? this.currentType : this.ca.emptyCell;
+      this.ca.set(x, y, s);
       this.grid[y][x] = s;
     }
   }
@@ -126,8 +129,8 @@ export class AppComponent {
     e.preventDefault();
     e.stopPropagation();
 
-    this.game.set(x, y, this.currentType);
-    this.game.refreshStats();
+    this.ca.set(x, y, this.currentType);
+    this.ca.refreshStats();
     this.updateView();
   }
 
@@ -144,10 +147,10 @@ export class AppComponent {
     const dx = e.touches[0].clientX - el.offsetLeft;
     const dy = e.touches[0].clientY - el.offsetTop;
 
-    const x = Math.floor((dx / el.clientWidth) * this.game.width);
-    const y = Math.floor((dy / el.clientHeight) * this.game.height);
+    const x = Math.floor((dx / el.clientWidth) * this.ca.width);
+    const y = Math.floor((dy / el.clientHeight) * this.ca.height);
 
-    this.game.set(x, y, this.currentType);
+    this.ca.set(x, y, this.currentType);
     this.updateView();
   }
 
@@ -161,32 +164,32 @@ export class AppComponent {
     }
   }
 
-  setupGame(
-    gameItem: GameListItem,
-    gameOptions: GameOptions = gameItem.options[0]
+  setupCA(
+    caItem: CAListItem,
+    caOptions: CAOptions = caItem.options[0]
   ) {
     this.stop();
 
-    this.gameItem = gameItem;
-    this.resetGame(gameOptions);
-    this.currentType = this.game.defaultCell;
+    this.caItem = caItem;
+    this.resetCA(caOptions);
+    this.currentType = this.ca.defaultCell;
   }
 
-  resetGame(gameOptions: GameOptions = this.gameOptions || this.gameItem.options[0]) {
+  resetCA(caOptions: CAOptions = this.caOptions || this.caItem.options[0]) {
     this.stop();
 
-    this.gameOptions = gameOptions;
-    const { Ctor } = this.gameItem;
-    this.game = new Ctor(gameOptions);
-    this.game.reset();
+    this.caOptions = caOptions;
+    const { Ctor } = this.caItem;
+    this.ca = new Ctor(caOptions);
+    this.ca.reset();
 
     this.grid = makeGridWith(
-      this.game.width,
-      this.game.height,
-      this.game.emptyCell
+      this.ca.width,
+      this.ca.height,
+      this.ca.emptyCell
     );
-    if (this.gameItem.startingPattern) {
-      this.loadPattern(this.gameItem.startingPattern);
+    if (this.caItem.startingPattern) {
+      this.loadPattern(this.caItem.startingPattern);
     }
     this.updateView();
   }
@@ -216,7 +219,7 @@ export class AppComponent {
   private runSimulationLoop() {
     for (let i = 0; i < this.frameSkip; i++) {
       this.stats.begin();
-      this.game.doStep();
+      this.ca.doStep();
       this.stats.end();
     }
 
@@ -244,14 +247,14 @@ export class AppComponent {
   }
 
   updateView() {
-    this.game.updateViewGrid(
+    this.ca.updateViewGrid(
       this.grid,
       0,
-      this.game.width,
-      this.game.height,
+      this.ca.width,
+      this.ca.height,
       0
     );
-    this.game.refreshStats();
+    this.ca.refreshStats();
   }
 
   trackByIndex(index: number): number {
@@ -259,44 +262,44 @@ export class AppComponent {
   }
 
   titleAscOrder(
-    a: KeyValue<string, GameListItem>,
-    b: KeyValue<string, GameListItem>
+    a: KeyValue<string, CAListItem>,
+    b: KeyValue<string, CAListItem>
   ): number {
     return a.value.title.localeCompare(b.value.title);
   }
 
   onAddPattern() {
-    const pattern = this.game.getRLE();
-    this.gameItem.savedPatterns.push(pattern);
+    const pattern = this.ca.getRLE();
+    this.caItem.savedPatterns.push(pattern);
     this.savePatternsToStore();
   }
 
   onRemovePattern(pattern: string) {
-    this.gameItem.savedPatterns = this.gameItem.savedPatterns.filter(
+    this.caItem.savedPatterns = this.caItem.savedPatterns.filter(
       (p) => p !== pattern
     );
     this.savePatternsToStore();
   }
 
   loadPattern(pattern: string) {
-    this.game.loadRLE(pattern);
+    this.ca.loadRLE(pattern);
     this.updateView();
   }
 
   private savePatternsToStore() {
     localStorage.setItem(
-      `patterns-${this.gameItem.class}`,
-      JSON.stringify(this.gameItem.savedPatterns)
+      `patterns-${this.caItem.class}`,
+      JSON.stringify(this.caItem.savedPatterns)
     );
   }
 
   private loadPatternsFromStore() {
-    const patterns = localStorage.getItem(`patterns-${this.gameItem.class}`);
+    const patterns = localStorage.getItem(`patterns-${this.caItem.class}`);
     if (patterns) {
       try {
-        this.gameItem.savedPatterns = JSON.parse(patterns);
+        this.caItem.savedPatterns = JSON.parse(patterns);
       } catch (e) {
-        this.gameItem.savedPatterns = [];
+        this.caItem.savedPatterns = [];
         console.log(e);
       }
     }

@@ -1,14 +1,13 @@
 import {
   BoundaryType,
-  CellState,
-  createState,
-  Game,
-  GameOptions,
-} from '../game';
+  CAOptions,
+} from '../classes/base';
+import { ElementaryCA } from '../classes/elementary';
+import { createState, CellState } from '../classes/states';
 
 type TuringRules = Record<string, string>;
 
-interface BBOptions extends GameOptions {
+interface BBOptions extends CAOptions {
   rules: TuringRules;
   headStates: string[];
   tapeStates: string[];
@@ -62,7 +61,7 @@ const BBOptionsDefault = {
   rules: bb2,
 };
 
-export class BB extends Game<CellState, BBOptions> {
+export class BB extends ElementaryCA<CellState, BBOptions> {
   stats = {
     S: 0,
     Σ: 0,
@@ -188,5 +187,3 @@ function isHead(c: CellState): boolean {
   return c.state.length > 1;
 }
 
-// TODO: Abstract the rules
-// TODO: Add Σ and S to stats
