@@ -1,11 +1,14 @@
-import { BoundaryType, CA } from "./base";
-import { UnboundedGrid } from "./grid";
+import { BoundaryType, CA } from './base';
+import { UnboundedGrid } from './grid';
 
-import type { CAOptions } from "./base";
-import type { CellState } from "./states";
-import { readRle } from "../utils/rle";
+import type { CAOptions } from './base';
+import type { CellState } from './states';
+import { readRle } from '../utils/rle';
 
-export abstract class ElementaryCA<T extends CellState = CellState, O extends CAOptions = CAOptions> extends CA<T, O> {
+export abstract class OCA<
+  T extends CellState = CellState,
+  O extends CAOptions = CAOptions
+> extends CA<T, O> {
   boundaryType: BoundaryType = BoundaryType.Infinite;
 
   refreshStats() {
@@ -16,33 +19,20 @@ export abstract class ElementaryCA<T extends CellState = CellState, O extends CA
     }, 0);
   }
 
-  doStep() {
-    const updates = new UnboundedGrid<T>();
+  protected doCell(x: number, y: number, R: number) {
+    if (y !== this.step) return;
 
-    // For each cell that changed on the previous tick
-    this.changedGrid.forEach((_, x, y) => {
-      if (y !== this.step) return;
+    // for each neighbor in range
+    for (let p = -R; p <= R; p++) {
+      const [xx, yy] = this.getPosition(x + p, this.step + 1);
 
-        // for each neighbor in range
-        for (let p =-this.neighborhoodRange; p <= this.neighborhoodRange; p++) {
-          const [xx, yy] = this.getPosition(x + p, this.step + 1);
+      // Cell was already visited, skip
+      if (this.changedGrid.has(xx, yy)) continue;
 
-          // Cell was already visited, skip
-          if (updates.has(xx, yy)) continue;
-
-          const c = this.get(xx, yy);
-          const n = this.getNextCell(xx, yy) || c;
-  
-          updates.set(xx, yy, n);
-        }
-    });
-    
-    this.changedGrid.clear();
-
-    // Only update what has changed
-    updates.forEach((s, x, y) => this.set(x, y, s));
-
-    this.step++;
+      const c = this.get(xx, yy);
+      const n = this.getNextCell(c, xx, yy) || c;
+      this.setNext(xx, yy, n);
+    }
   }
 
   loadRLE(rle: string) {

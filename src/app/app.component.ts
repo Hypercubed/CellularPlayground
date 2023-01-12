@@ -12,7 +12,7 @@ import { KeyValue } from '@angular/common';
 import Stats from 'stats.js';
 
 import { CAListItem, CAList } from './ca/list';
-import { ElementaryCA } from './ca/classes/elementary';
+import { OCA } from './ca/classes/elementary';
 import { CA, CAOptions } from './ca/classes/base';
 import { makeGridWith } from './ca/utils/grid';
 
@@ -82,7 +82,7 @@ export class AppComponent {
   }
 
   onReset() {
-    this.resetCA();
+    this.resetCA(this.caOptions);
   }
 
   onClear() {
@@ -91,7 +91,7 @@ export class AppComponent {
   }
 
   onRandom() {
-    if (this.ca instanceof ElementaryCA) {
+    if (this.ca instanceof OCA) {
       this.ca.fillWith((x, y) => {
         if (y !== this.ca.step) return this.ca.emptyCell;
         return Math.random() < 0.5 ? this.ca.defaultCell : this.ca.emptyCell;
@@ -164,30 +164,25 @@ export class AppComponent {
     }
   }
 
-  setupCA(
-    caItem: CAListItem,
-    caOptions: CAOptions = caItem.options[0]
-  ) {
+  setupCA(caItem: CAListItem, caOptions?: CAOptions) {
     this.stop();
 
     this.caItem = caItem;
+    caOptions ??= caItem.options?.[0];
     this.resetCA(caOptions);
     this.currentType = this.ca.defaultCell;
+    this.loadPatternsFromStore();
   }
 
-  resetCA(caOptions: CAOptions = this.caOptions || this.caItem.options[0]) {
+  resetCA(caOptions: CAOptions) {
     this.stop();
 
     this.caOptions = caOptions;
     const { Ctor } = this.caItem;
-    this.ca = new Ctor(caOptions);
+    this.ca = new Ctor(caOptions || {});
     this.ca.reset();
 
-    this.grid = makeGridWith(
-      this.ca.width,
-      this.ca.height,
-      this.ca.emptyCell
-    );
+    this.grid = makeGridWith(this.ca.width, this.ca.height, this.ca.emptyCell);
     if (this.caItem.startingPattern) {
       this.loadPattern(this.caItem.startingPattern);
     }
@@ -200,7 +195,7 @@ export class AppComponent {
 
     this.timeoutMs = Math.max(0, Math.abs(this.speed) * 150);
     this.frameSkip = Math.min(Math.max(1, 4 ** this.speed), 1000);
-    
+
     this.runSimulationLoop();
     this.runAnimationLoop();
   }
@@ -247,13 +242,7 @@ export class AppComponent {
   }
 
   updateView() {
-    this.ca.updateViewGrid(
-      this.grid,
-      0,
-      this.ca.width,
-      this.ca.height,
-      0
-    );
+    this.ca.updateViewGrid(this.grid, 0, this.ca.width, this.ca.height, 0);
     this.ca.refreshStats();
   }
 

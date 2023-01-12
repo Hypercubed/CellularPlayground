@@ -8,9 +8,8 @@ describe('PatternViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PatternViewComponent ]
-    })
-    .compileComponents();
+      declarations: [PatternViewComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PatternViewComponent);
     component = fixture.componentInstance;

@@ -1,8 +1,5 @@
-import {
-  BoundaryType,
-  CAOptions,
-} from '../classes/base';
-import { ElementaryCA } from '../classes/elementary';
+import { BoundaryType, CAOptions } from '../classes/base';
+import { OCA } from '../classes/elementary';
 import { createState, CellState } from '../classes/states';
 
 type TuringRules = Record<string, string>;
@@ -61,7 +58,7 @@ const BBOptionsDefault = {
   rules: bb2,
 };
 
-export class BB extends ElementaryCA<CellState, BBOptions> {
+export class BB extends OCA<CellState, BBOptions> {
   stats = {
     S: 0,
     Σ: 0,
@@ -118,9 +115,7 @@ export class BB extends ElementaryCA<CellState, BBOptions> {
   }
 
   // 2-symbol busy beaver
-  getNextCell(x: number, y: number) {
-    const c = this.get(x, y);
-
+  getNextCell(c: CellState, x: number, y: number) {
     const up = this.get(x, y - 1);
     if (isHead(up)) {
       const rule = this.rules?.[up.state];
@@ -167,11 +162,12 @@ export class BB extends ElementaryCA<CellState, BBOptions> {
       let Σ = 0;
       let H = false;
 
-      for (let x in this.currentGrid[y]) {
-        const c = this.get(+x, +y);
+      this.currentGrid.forEach((c, _, yy) => {
+        if (y !== yy) return;
+
         Σ += c.state.endsWith('1') ? 1 : 0;
         if (c.state.startsWith('H')) H = true;
-      }
+      });
 
       this.stats.S = y;
       this.stats.Σ = Σ;
@@ -186,4 +182,3 @@ export class BB extends ElementaryCA<CellState, BBOptions> {
 function isHead(c: CellState): boolean {
   return c.state.length > 1;
 }
-

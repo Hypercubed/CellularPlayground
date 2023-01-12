@@ -50,9 +50,7 @@ export class City extends CA<CityState> {
     this.refreshStats();
   }
 
-  getNextCell(y: number, x: number): CityState {
-    const c = this.get(y, x);
-
+  getNextCell(c: CityState, y: number, x: number): CityState {
     const rNeighbors = this.getNeighborsWhen(y, x, RESIDENTIAL);
     const iNeighbors = this.getNeighborsWhen(y, x, INDUSTRIAL);
     const cNeighbors = this.getNeighborsWhen(y, x, COMMERCIAL);

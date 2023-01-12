@@ -2,7 +2,7 @@
   --n: 19;
   --m: 19;
 
-  --board-width: calc(100vw - 540px);
+  --board-width: min(100vw - 540px, 100vh - 100px);
   --cell-size: calc(var(--board-width) / var(--m));
   --board-height: auto;
   --board-grid-color: #bdbdbd;
@@ -250,16 +250,37 @@
 
   &.ca--snow {
     .cell {
-      &--drop {
+      &--water,
+      &--water-l,
+      &--water-r {
+        background-color: blue;
+      }
+
+      &--rock {
+        background-color: green !important;
+      }
+
+      &--snow {
         background-color: white;
       }
 
-      &--active {
-        background-color: green !important;
+      &--sand,
+      &--sand-l,
+      &--sand-r {
+        background-color: tan !important;
       }
 
       &--empty {
         background-color: black;
+      }
+    }
+  }
+
+  &.ca--brain {
+    .cell {
+      &--refractory {
+        color: blue;
+        background-color: blue;
       }
     }
   }

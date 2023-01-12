@@ -1,6 +1,8 @@
 export class UnboundedGrid<T> {
   private _grid: Record<number, Record<number, T>> = Object.create(null);
 
+  constructor(private readonly _defaultValue: T = null) {}
+
   has(x: number, y: number) {
     return this._grid?.[y]?.[x] !== undefined;
   }
@@ -10,6 +12,10 @@ export class UnboundedGrid<T> {
   }
 
   set(x: number, y: number, value: T) {
+    if (value === this._defaultValue) {
+      this.remove(x, y);
+      return;
+    }
     this._grid[y] ??= Object.create(null);
     this._grid[y][x] = value;
   }
@@ -26,7 +32,12 @@ export class UnboundedGrid<T> {
   }
 
   getBoundingBox(): [number, number, number, number] {
-    const boundingBox: [number, number, number, number] = [Infinity, -Infinity, -Infinity, Infinity];
+    const boundingBox: [number, number, number, number] = [
+      Infinity,
+      -Infinity,
+      -Infinity,
+      Infinity,
+    ];
 
     this.forEach((_, x, y) => {
       boundingBox[0] = Math.min(boundingBox[0] ?? y, y);
@@ -51,27 +62,44 @@ export class UnboundedGrid<T> {
 
   toArray(): T[] {
     let arr: T[] = [];
-    this.forEach(cell => {
+    this.forEach((cell) => {
       arr.push(cell);
     });
     return arr;
   }
 
-  filter(fn: (cell: T, x: number, y: number) => boolean): T[] {
-    let arr: T[] = [];
+  filter(fn: (cell: T, x: number, y: number) => boolean): UnboundedGrid<T> {
+    let g = new UnboundedGrid<T>();
     this.forEach((cell, x, y) => {
       if (fn(cell, x, y)) {
-        arr.push(cell);
+        g.set(x, y, cell);
       }
     });
-    return arr;
+    return g;
   }
 
-  reduce<U>(fn: (acc: U, cell: T, x: number, y: number) => U, initialValue: U): U {
+  map(fn: (cell: T, x: number, y: number) => T): UnboundedGrid<T> {
+    let g = new UnboundedGrid<T>();
+    this.forEach((cell, x, y) => {
+      g.set(x, y, fn(cell, x, y));
+    });
+    return g;
+  }
+
+  reduce<U>(
+    fn: (acc: U, cell: T, x: number, y: number) => U,
+    initialValue: U
+  ): U {
     let acc = initialValue;
     this.forEach((cell, x, y) => {
       acc = fn(acc, cell, x, y);
     });
     return acc;
+  }
+
+  assign(g: UnboundedGrid<T>) {
+    g.forEach((s, x, y) => {
+      this.set(x, y, s);
+    });
   }
 }

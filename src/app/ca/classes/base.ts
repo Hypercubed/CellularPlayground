@@ -1,8 +1,8 @@
-import { UnboundedGrid } from "./grid";
-import { readRle } from "../utils/rle";
-import { CellState, createState } from "./states";
-import { makeGridWith } from "../utils/grid";
-import { mod } from "../utils/math";
+import { UnboundedGrid } from './grid';
+import { readRle } from '../utils/rle';
+import { CellState, createState } from './states';
+import { makeGridWith } from '../utils/grid';
+import { mod } from '../utils/math';
 
 export interface CAOptions {
   width: number;
@@ -22,7 +22,7 @@ export const ACTIVE = createState('active', 'o', '');
 const DefaultCAOptions = {
   width: 40,
   height: 40,
-  boundaryType: BoundaryType.Infinite
+  boundaryType: BoundaryType.Infinite,
 };
 
 const MaxSize = 200_000;
@@ -38,30 +38,31 @@ export abstract class CA<
   states: T[];
 
   /* Array of states that are shown in the pallet
-  * Items are arranged into rows
-  */
+   * Items are arranged into rows
+   */
   pallet: T[][];
 
   /* Width and height of the view grid,
-  * For bounded girds also the border size */
+   * For bounded girds also the border size */
   width: number;
   height: number;
   stats: Record<string, any>;
 
   boundaryType: BoundaryType = BoundaryType.Infinite;
   step = 0;
+  stochastic = false;
 
   get defaultCell() {
     return this.states[0];
   }
-  
+
   get emptyCell() {
     return this.states[this.states.length - 1];
   }
-  
+
   protected neighborhoodRange = 1;
-  protected currentGrid = new UnboundedGrid<T>();
-  protected changedGrid = new UnboundedGrid<T>();
+  protected currentGrid: UnboundedGrid<T>;
+  protected changedGrid: UnboundedGrid<T>;
   protected options: O;
 
   constructor(options?: Partial<O>) {
@@ -75,29 +76,39 @@ export abstract class CA<
     this.boundaryType = this.options.boundaryType;
     this.stats = {};
   }
-  
+
   reset() {
     this.clearGrid();
     this.step = 0;
   }
 
   clearGrid() {
-    this.currentGrid.clear();
+    this.currentGrid = new UnboundedGrid<T>(this.emptyCell);
+    this.changedGrid = new UnboundedGrid<T>(null);
   }
 
   refreshStats() {
+    this.stats.Generation = this.step;
     this.stats.Alive = this.worldCountWhen(ACTIVE as T);
     if (this.boundaryType === BoundaryType.Infinite) {
       const boundingBox = this.currentGrid.getBoundingBox();
-      this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${boundingBox[2] - boundingBox[0] + 1}`;
+      this.stats.Size = `${boundingBox[1] - boundingBox[3] + 1}x${
+        boundingBox[2] - boundingBox[0] + 1
+      }`;
     }
-    this.stats.Births = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state !== this.emptyCell.state), 0);
-    this.stats.Deaths = this.changedGrid.reduce((acc, cell) => acc + +(cell?.state === this.emptyCell.state), 0);
+    this.stats.Births = this.changedGrid.reduce(
+      (acc, cell) => acc + +(cell?.state !== this.emptyCell.state),
+      0
+    );
+    this.stats.Deaths = this.changedGrid.reduce(
+      (acc, cell) => acc + +(cell?.state === this.emptyCell.state),
+      0
+    );
   }
 
   fillWith(c?: T | ((x: number, y: number) => T)) {
     c ||= this.emptyCell;
-    
+
     this.clearGrid();
     if (c === this.emptyCell) return;
 
@@ -118,22 +129,54 @@ export abstract class CA<
   }
 
   /**
-   * Gets an array of all cells in the world that match the given state 
+   * Gets an array of all cells in the world that match the given state
    */
   getWorldWhen(s: T): T[] {
-    return this.currentGrid.filter(cell => cell?.state === s.state);
+    return this.currentGrid.toArray().filter((cell) => cell?.state === s.state);
   }
 
   /*
-    * Gets the number of cells in the world that match the given state
-    */
+   * Gets the number of cells in the world that match the given state
+   */
   worldCountWhen(s: T): number {
-    return this.currentGrid.reduce((c, cell) => c + +(cell?.state === s.state), 0);
+    return this.currentGrid.reduce(
+      (c, cell) => c + +(cell?.state === s.state),
+      0
+    );
   }
 
   /*
-    * Gets an array of all cells in the Moore neighborhood of the given cell
-  */
+   * Gets an array of all cells in the Moore neighborhood of the given cell, including self
+   */
+  neighborhoodCountWhen(x: number, y: number, s: T): number {
+    let c = 0;
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        const ss = this.get(p, q);
+        if (ss?.state === s.state) c++;
+      }
+    }
+    return c;
+  }
+
+  /*
+   * Gets an array of all cells in the Moore neighborhood of the given cell, excluding self
+   */
+  getNeighbors(x: number, y: number): T[] {
+    let c = [];
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        if (p === x && q === y) continue;
+        const ss = this.get(p, q);
+        c.push(ss);
+      }
+    }
+    return c;
+  }
+
+  /*
+   * Gets an array of all cells in the Moore neighborhood of the given cell, excluding self
+   */
   getNeighborsWhen(x: number, y: number, s: T): T[] {
     let c = [];
     for (let p = x - 1; p <= x + 1; p++) {
@@ -147,15 +190,23 @@ export abstract class CA<
   }
 
   /*
-    * Gets the number of cells in the Moore neighborhood of the given cell that match the given state
-    */
-  neighborhoodCountWhen(x: number, y: number, s: T): number {
-    return this.getNeighborsWhen(x, y, s).length;
+   * Gets the number of cells in the Moore neighborhood of the given cell that match the given state
+   */
+  neighborsCountWhen(x: number, y: number, s: T): number {
+    let c = 0;
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        if (p === x && q === y) continue;
+        const ss = this.get(p, q);
+        if (ss?.state === s.state) c++;
+      }
+    }
+    return c;
   }
 
   /*
-    * Gets an array of all cells in the von Neumann neighborhood of the given cell
-    */
+   * Gets an array of all cells in the von Neumann neighborhood of the given cell
+   */
   regionCountWhen(x: number, y: number, R: number, s: T): number {
     let c = 0;
     for (let p = x - R; p <= x + R; p++) {
@@ -181,7 +232,7 @@ export abstract class CA<
     if (s === c) return;
 
     this.changedGrid.set(x, y, s);
-    
+
     // Set the cell
     if (s === this.emptyCell) {
       this.currentGrid.remove(x, y);
@@ -190,32 +241,45 @@ export abstract class CA<
     }
   }
 
+  protected setNext(x: number, y: number, s: T) {
+    [x, y] = this.getPosition(x, y);
+
+    const c = this.get(x, y);
+    if (s === c) return;
+
+    this.changedGrid.set(x, y, s);
+  }
+
+  protected doCell(x: number, y: number, R: number) {
+    // for each neighbor in range
+    for (let q = -R; q <= R; q++) {
+      for (let p = -R; p <= R; p++) {
+        const [xx, yy] = this.getPosition(x + p, y + q);
+
+        // Cell was already visited, skip
+        if (this.changedGrid.has(xx, yy)) continue;
+
+        const c = this.get(xx, yy);
+        const n = this.getNextCell(c, xx, yy) || c;
+        this.setNext(xx, yy, n);
+      }
+    }
+  }
+
   doStep() {
-    const updates = new UnboundedGrid<T>();
+    const lastChanges = this.changedGrid;
+    this.changedGrid = new UnboundedGrid<T>();
 
-    // For each cell that changed on the previous tick
-    this.changedGrid.forEach((_, x, y) => {
-        // for each neighbor in range
-        for (let q =-this.neighborhoodRange; q <= this.neighborhoodRange; q++) {
-          for (let p =-this.neighborhoodRange; p <= this.neighborhoodRange; p++) {
-            const [xx, yy] = this.getPosition(x + p, y + q);
+    const doCell = (_: T, x: number, y: number) =>
+      this.doCell(x, y, this.neighborhoodRange);
 
-            // Cell was already visited, skip
-            if (updates.has(xx, yy)) continue;
+    // For each cell that changed on the previous tick (and neighbors)
+    lastChanges.forEach(doCell);
 
-            const c = this.get(xx, yy);
-            const n = this.getNextCell(xx, yy) || c;
-    
-            updates.set(xx, yy, n);
-          }
-        }
-    });
-    
-    this.changedGrid.clear();
+    // If stochastic, do also do all non-empty cells (and neighbors)
+    if (this.stochastic) this.currentGrid.forEach(doCell);
 
-    // Only update what has changed
-    updates.forEach((s, x, y) => this.set(x, y, s));
-
+    this.currentGrid.assign(this.changedGrid);
     this.step++;
   }
 
@@ -246,9 +310,10 @@ export abstract class CA<
     let l = '';
     let c = 0;
 
-    const [yMin, xMax, yMax, xMin] = this.boundaryType === BoundaryType.Infinite ?
-      this.currentGrid.getBoundingBox() :
-      [0, this.width - 1, this.height - 1, 0];
+    const [yMin, xMax, yMax, xMin] =
+      this.boundaryType !== BoundaryType.Wall
+        ? this.currentGrid.getBoundingBox()
+        : [0, this.width - 1, this.height - 1, 0];
 
     for (let y = yMin; y <= yMax; y++) {
       for (let x = xMin; x <= xMax; x++) {
@@ -310,7 +375,13 @@ export abstract class CA<
     return this.states.find((s) => s.token === token) || this.emptyCell;
   }
 
-  updateViewGrid(viewGrid: T[][], yMin: number, xMax: number, yMax: number, xMin: number) {
+  updateViewGrid(
+    viewGrid: T[][],
+    yMin: number,
+    xMax: number,
+    yMax: number,
+    xMin: number
+  ) {
     for (let y = yMin; y <= yMax; y++) {
       for (let x = xMin; x <= xMax; x++) {
         viewGrid[y - yMin] ??= [];
@@ -319,7 +390,7 @@ export abstract class CA<
     }
   }
 
-  protected getNextCell(y: number, x: number): T | void {
+  protected getNextCell(c: T, y: number, x: number): T | void {
     return;
   }
 }

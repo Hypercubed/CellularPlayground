@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostBinding,
+  Input,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { readRle } from '../ca/utils/rle';
 
@@ -12,7 +20,7 @@ const maxWidth = 100;
   templateUrl: './pattern-view.component.html',
   styleUrls: ['./pattern-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class PatternViewComponent {
   @HostBinding('attr.title')
@@ -23,15 +31,14 @@ export class PatternViewComponent {
   states: CellState[];
 
   grid: CellState[][] = [];
-  
+
   @HostBinding('style.--n')
   height: number = maxHeight;
 
   @HostBinding('style.--m')
   width: number = maxWidth;
 
-  constructor(private readonly cdr: ChangeDetectorRef) {
-  }
+  constructor(private readonly cdr: ChangeDetectorRef) {}
 
   ngOnChanges() {
     this.updateView();
@@ -57,7 +64,9 @@ export class PatternViewComponent {
         this.grid[i] ??= [];
         for (let j = 0; j < Math.min(width, maxWidth); j++) {
           if (grid?.[i]?.[j]) {
-            this.grid[i][j] = this.tokenToState(grid[i][j]) as unknown as CellState;
+            this.grid[i][j] = this.tokenToState(
+              grid[i][j]
+            ) as unknown as CellState;
           }
         }
       }
@@ -73,6 +82,9 @@ export class PatternViewComponent {
     if (token === 'b') return this.states[this.states.length - 1];
     if (token === 'o') return this.states[0];
 
-    return this.states.find((s) => s.token === token) || this.states[this.states.length - 1];
+    return (
+      this.states.find((s) => s.token === token) ||
+      this.states[this.states.length - 1]
+    );
   }
 }

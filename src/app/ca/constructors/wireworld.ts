@@ -2,8 +2,8 @@
 currents in wires and makes it relatively easy to build logic gates
 and other digital circuits. */
 
-import { ACTIVE,EMPTY, CA, CAOptions } from '../classes/base';
-import { createState } from '../classes/states';
+import { ACTIVE, EMPTY, CA, CAOptions } from '../classes/base';
+import { CellState, createState } from '../classes/states';
 
 const HEAD = createState('electron', 'e', '⚡︎');
 const TAIL = createState('tail', '■', '');
@@ -14,7 +14,8 @@ const Pallet = [
   [HEAD, TAIL],
 ];
 
-export const Diodes = '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
+export const Diodes =
+  '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
 
 export class WireWorld extends CA {
   stats = {
@@ -37,12 +38,11 @@ export class WireWorld extends CA {
   Electron tail → Conductor
   Conductor → Electron head if exactly one or two of the neighboring cells are electron heads, or remains Conductor otherwise.
   */
-  getNextCell(x: number, y: number) {
-    const a = this.get(x, y);
+  getNextCell(a: CellState, x: number, y: number) {
     if (a.state === HEAD.state) return TAIL;
     if (a.state === TAIL.state) return ACTIVE;
     if (a.state === ACTIVE.state) {
-      const c = this.neighborhoodCountWhen(x, y, HEAD);
+      const c = this.neighborsCountWhen(x, y, HEAD);
       if (c === 1 || c === 2) {
         return HEAD;
       }

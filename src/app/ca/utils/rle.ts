@@ -1,4 +1,8 @@
-export function readRle(rle: string): { grid: string[][], height: number, width: number } {
+export function readRle(rle: string): {
+  grid: string[][];
+  height: number;
+  width: number;
+} {
   let height = 0;
   let width = 0;
 
@@ -6,10 +10,11 @@ export function readRle(rle: string): { grid: string[][], height: number, width:
   let y = 0;
   let grid = [[]];
 
-  const lines = rle.split(/\n/)
-    .filter(l => !l.startsWith('#'))
-    .filter(l => l.length > 0)
-    .map(l => l.trim().replace(/\!$/, ''))
+  const lines = rle
+    .split(/\n/)
+    .filter((l) => !l.startsWith('#'))
+    .filter((l) => l.length > 0)
+    .map((l) => l.trim().replace(/\!$/, ''))
     .join('$');
 
   const r = lines.split('$');

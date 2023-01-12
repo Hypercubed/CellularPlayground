@@ -2,9 +2,18 @@ import { BoundaryType } from './classes/base';
 
 import { Diodes, WireWorld } from './constructors/wireworld';
 import { Ant } from './constructors/ant';
-import { Life, Glider, GosperGliderGun, StillsAndOscillators } from './constructors/life';
-import { Wolfram } from './constructors/wolfram';
+import {
+  Life,
+  Glider,
+  GosperGliderGun,
+  StillsAndOscillators,
+} from './constructors/life';
+import { ECA } from './constructors/wolfram';
 import { BB, bb2, bb3, bb4, bb5 } from './constructors/bb';
+// import { Rain } from './constructors/rain';
+import { OSCILLATOR, Vote } from './constructors/vote';
+import { Dendrite } from './constructors/dendrite';
+import { Brain, BRIAN_OSCILLATOR } from './constructors/brain';
 
 export interface CAListItem {
   title: string;
@@ -18,21 +27,62 @@ export interface CAListItem {
 
 export const CAList: CAListItem[] = [
   {
-    title: "Conway's Life",
+    title: 'Life',
     Ctor: Life,
     options: [
       {
-        title: 'Default',
+        title: "Conway's Life",
         ruleString: 'S23/B3',
         boundaryType: BoundaryType.Infinite,
       },
-      { title: 'Torus', ruleString: 'S23/B3', boundaryType: BoundaryType.Torus },
+      {
+        title: 'Torus',
+        ruleString: 'S23/B3',
+        boundaryType: BoundaryType.Torus,
+      },
       { title: 'Diamoeba', ruleString: 'S5678/B35678' },
       { title: 'Maze', ruleString: 'S12345/B3' },
+      { title: 'Day & Night', ruleString: 'S34678/B3678' },
+      { title: 'HighLife', ruleString: 'S23/B36' },
+      { title: 'Assimilation', ruleString: 'S4567/B345' },
+      { title: 'Coagulations', ruleString: 'B378/S235678' },
+      { title: 'Coral', ruleString: 'S45678/B3' },
+      { title: 'Replicator', ruleString: 'B1357/S1357' },
+      { title: 'Serviettes', ruleString: 'B234/S' },
+      { title: 'Walled Cities', ruleString: 'B45678/S2345' },
+      { title: 'AntiLife', ruleString: 'B0123478/S01234678' },
     ],
     patterns: [Glider, StillsAndOscillators, GosperGliderGun],
     savedPatterns: [],
     class: 'life',
+  },
+  {
+    title: 'Vote',
+    Ctor: Vote,
+    options: [
+      { title: 'Majority' },
+      { title: 'Anneal', ruleString: '46789' },
+      { title: 'Fredkin', ruleString: '13579' },
+    ],
+    patterns: [OSCILLATOR],
+    savedPatterns: [],
+    class: 'vote',
+  },
+  {
+    title: 'Dendrite',
+    Ctor: Dendrite,
+    options: [],
+    patterns: [],
+    savedPatterns: [],
+    class: 'dendrite',
+  },
+  {
+    title: 'Brain',
+    Ctor: Brain,
+    options: [],
+    patterns: [BRIAN_OSCILLATOR],
+    savedPatterns: [],
+    class: 'brain',
   },
   {
     title: "Langton's Ant",
@@ -55,8 +105,8 @@ export const CAList: CAListItem[] = [
     class: 'wireworld',
   },
   {
-    title: 'Wolfram Rules',
-    Ctor: Wolfram,
+    title: 'Wolfram',
+    Ctor: ECA,
     options: [
       { title: 'Rule 30', ruleNumber: 30 },
       { title: 'Rule 90', ruleNumber: 90 },
@@ -98,11 +148,19 @@ export const CAList: CAListItem[] = [
         rules: bb4,
         BoundaryType: BoundaryType.Wall,
       },
-      { title: '5-state busy beaver', height: 59, width: 59, rules: bb5, BoundaryType: BoundaryType.Infinite },
+      {
+        title: '5-state busy beaver',
+        height: 59,
+        width: 59,
+        rules: bb5,
+        BoundaryType: BoundaryType.Infinite,
+      },
     ],
     patterns: [],
     savedPatterns: [],
     startingPattern: 'A',
     class: 'busybeaver',
-  }
+  },
 ];
+
+// TODO: Sharks and Fish on the Planet Wa-Tor

@@ -1,8 +1,4 @@
-import {
-  BoundaryType,
-  CA,
-  CAOptions,
-} from '../classes/base';
+import { BoundaryType, CA, CAOptions } from '../classes/base';
 import { createState } from '../classes/states';
 
 import { type CellState } from '../classes/states';
@@ -96,8 +92,7 @@ export class Ant extends CA {
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit
   // At a black square, turn 90° counter-clockwise, flip the color of the square, move forward one unit
 
-  getNextCell(x: number, y: number) {
-    const t = this.get(x, y);
+  getNextCell(t: CellState, x: number, y: number) {
     const currentColor = this.getColor(t);
 
     if (this.getDirection(t)) {

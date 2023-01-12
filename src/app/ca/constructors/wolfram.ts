@@ -1,26 +1,21 @@
-import {
-  ACTIVE,
-  BoundaryType,
-  EMPTY,
-  CAOptions,
-} from '../classes/base';
-import { ElementaryCA } from '../classes/elementary';
+import { ACTIVE, BoundaryType, EMPTY, CAOptions } from '../classes/base';
+import { OCA } from '../classes/elementary';
 
 import type { CellState } from '../classes/states';
 
-const defaultWolframOptions = {
+const defaultECAOptions = {
   oneDimensional: true,
   width: 43,
   height: 22,
   boundaryType: BoundaryType.Infinite,
-  ruleNumber: 30
+  ruleNumber: 30,
 };
 
-interface WolframOptions extends CAOptions {
+interface ECAOptions extends CAOptions {
   ruleNumber: number;
 }
 
-export class Wolfram extends ElementaryCA<CellState, WolframOptions> {
+export class ECA extends OCA<CellState, ECAOptions> {
   width = 86 / 2;
   height = 86 / 2;
 
@@ -29,9 +24,9 @@ export class Wolfram extends ElementaryCA<CellState, WolframOptions> {
 
   private ruleNumber: number;
 
-  constructor(options?: Partial<WolframOptions>) {
+  constructor(options?: Partial<ECAOptions>) {
     super({
-      ...defaultWolframOptions,
+      ...defaultECAOptions,
       ...options,
     });
 
@@ -40,14 +35,14 @@ export class Wolfram extends ElementaryCA<CellState, WolframOptions> {
 
   refreshStats() {
     this.stats.n = this.step;
-    this.stats['a(n)'] = this.getValue(this.step)
+    this.stats['a(n)'] = this.getValue(this.step);
   }
 
-  getNextCell(x: number, y: number) {
+  getNextCell(_: CellState, x: number, y: number) {
     const b0 = +(this.get(x + 1, y - 1)?.state === ACTIVE.state);
     const b1 = +(this.get(x, y - 1)?.state === ACTIVE.state);
     const b2 = +(this.get(x - 1, y - 1)?.state === ACTIVE.state);
-    return (this.ruleNumber & 2**(b2*4 + b1*2 + b0) ? ACTIVE : EMPTY);
+    return this.ruleNumber & (2 ** (b2 * 4 + b1 * 2 + b0)) ? ACTIVE : EMPTY;
   }
 
   private getValue(y: number): number {
@@ -58,7 +53,7 @@ export class Wolfram extends ElementaryCA<CellState, WolframOptions> {
       return acc;
     }, []);
 
-    const length = 2*this.step + 1;
+    const length = 2 * this.step + 1;
     let bin = Array.from({ length }).fill(0);
 
     bits.forEach(([x, v]) => {
