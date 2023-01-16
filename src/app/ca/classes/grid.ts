@@ -1,4 +1,8 @@
 export class UnboundedGrid<T> {
+  get grid(): Readonly<Record<number, Record<number, T>>> {
+    return this._grid;
+  }
+
   private _grid: Record<number, Record<number, T>> = Object.create(null);
 
   constructor(private readonly _defaultValue: T = null) {}
@@ -22,7 +26,7 @@ export class UnboundedGrid<T> {
 
   remove(x: number, y: number) {
     delete this._grid[y]?.[x];
-    if (Object.keys(this._grid[y]).length === 0) {
+    if (this._grid[y] && Object.keys(this._grid[y]).length === 0) {
       delete this._grid[y];
     }
   }

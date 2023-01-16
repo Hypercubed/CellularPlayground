@@ -60,6 +60,10 @@ export abstract class CA<
     return this.states[this.states.length - 1];
   }
 
+  get grid() {
+    return this.currentGrid.grid;
+  }
+
   protected neighborhoodRange = 1;
   protected currentGrid: UnboundedGrid<T>;
   protected changedGrid: UnboundedGrid<T>;
@@ -222,12 +226,19 @@ export abstract class CA<
 
   get(x: number, y: number): T {
     [x, y] = this.getPosition(x, y);
+    return this._get(x, y)
+  }
+
+  _get(x: number, y: number): T {
     return this.currentGrid.get(x, y) || this.emptyCell;
   }
 
   set(x: number, y: number, s: T) {
     [x, y] = this.getPosition(x, y);
+    this._set(x, y, s);
+  }
 
+  _set(x: number, y: number, s: T) {
     const c = this.get(x, y);
     if (s === c) return;
 
@@ -243,7 +254,10 @@ export abstract class CA<
 
   protected setNext(x: number, y: number, s: T) {
     [x, y] = this.getPosition(x, y);
+    this._setNext(x, y, s);
+  }
 
+  protected _setNext(x: number, y: number, s: T) {
     const c = this.get(x, y);
     if (s === c) return;
 
@@ -259,9 +273,9 @@ export abstract class CA<
         // Cell was already visited, skip
         if (this.changedGrid.has(xx, yy)) continue;
 
-        const c = this.get(xx, yy);
+        const c = this._get(xx, yy);
         const n = this.getNextCell(c, xx, yy) || c;
-        this.setNext(xx, yy, n);
+        this._setNext(xx, yy, n);
       }
     }
   }
@@ -311,7 +325,7 @@ export abstract class CA<
     let c = 0;
 
     const [yMin, xMax, yMax, xMin] =
-      this.boundaryType !== BoundaryType.Wall
+      this.boundaryType === BoundaryType.Infinite
         ? this.currentGrid.getBoundingBox()
         : [0, this.width - 1, this.height - 1, 0];
 
@@ -354,9 +368,14 @@ export abstract class CA<
 
     const { grid, height, width } = readRle(rle);
 
-    // Center the pattern
-    let dx = Math.floor((this.width - width) / 2);
-    let dy = Math.floor((this.height - height) / 2);
+    let dx = 0;
+    let dy = 0;
+
+    if (this.boundaryType === BoundaryType.Infinite) {
+      // Center the pattern
+      dx = Math.floor((this.width - width) / 2);
+      dy = Math.floor((this.height - height) / 2);
+    }
 
     for (let j = 0; j < grid.length; j++) {
       for (let i = 0; i <= grid[j].length; i++) {
@@ -366,6 +385,10 @@ export abstract class CA<
         }
       }
     }
+  }
+
+  findState(state: string) {
+    return this.states.find((s) => s.state === state);
   }
 
   tokenToState(token: string) {

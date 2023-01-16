@@ -39,7 +39,9 @@ export class AppComponent {
   currentType: CellState;
   speed = -2;
   rle: string;
-  grid: CellState[][];
+
+  // This is an array of empty cells... used to draw the grid
+  grid: Readonly<CellState[][]>;
 
   private timeoutId = null;
   private requestId = null;
@@ -55,7 +57,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.setupCA(this.CAList[0], this.CAList[0].options[0]);
+    this.setupCA(this.CAList[0], this.CAList[0]?.options[0]);
 
     this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     this.statElement.nativeElement.appendChild(this.stats.dom);
@@ -87,7 +89,7 @@ export class AppComponent {
 
   onClear() {
     this.ca.clearGrid();
-    this.updateView();
+    this.ca.refreshStats();
   }
 
   onRandom() {
@@ -102,11 +104,11 @@ export class AppComponent {
         return this.ca.states[i];
       });
     }
-    this.updateView();
+    this.ca.refreshStats();
   }
 
   onMouseLeave() {
-    this.updateView();
+    this.ca.refreshStats();
     if (this.playing && this.paused) {
       this.paused = false;
       this.play();
@@ -121,7 +123,6 @@ export class AppComponent {
 
       const s = e.buttons === 1 ? this.currentType : this.ca.emptyCell;
       this.ca.set(x, y, s);
-      this.grid[y][x] = s;
     }
   }
 
@@ -131,7 +132,6 @@ export class AppComponent {
 
     this.ca.set(x, y, this.currentType);
     this.ca.refreshStats();
-    this.updateView();
   }
 
   onTouch(e: TouchEvent) {
@@ -151,7 +151,7 @@ export class AppComponent {
     const y = Math.floor((dy / el.clientHeight) * this.ca.height);
 
     this.ca.set(x, y, this.currentType);
-    this.updateView();
+    this.ca.refreshStats();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -186,7 +186,7 @@ export class AppComponent {
     if (this.caItem.startingPattern) {
       this.loadPattern(this.caItem.startingPattern);
     }
-    this.updateView();
+    this.ca.refreshStats();
   }
 
   play() {
@@ -201,7 +201,7 @@ export class AppComponent {
   }
 
   private runAnimationLoop() {
-    this.updateView();
+    this.ca.refreshStats();
     this.cdr.markForCheck();
 
     this.timeoutId = setTimeout(() => {
@@ -241,11 +241,6 @@ export class AppComponent {
     this.requestId = null;
   }
 
-  updateView() {
-    this.ca.updateViewGrid(this.grid, 0, this.ca.width, this.ca.height, 0);
-    this.ca.refreshStats();
-  }
-
   trackByIndex(index: number): number {
     return index;
   }
@@ -272,7 +267,7 @@ export class AppComponent {
 
   loadPattern(pattern: string) {
     this.ca.loadRLE(pattern);
-    this.updateView();
+    this.ca.refreshStats();
   }
 
   private savePatternsToStore() {

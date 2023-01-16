@@ -1,74 +1,47 @@
-import { ACTIVE, EMPTY, CA, CAOptions } from '../classes/base';
+import { EMPTY, CA, CAOptions, BoundaryType } from '../classes/base';
 import { CellState, createState } from '../classes/states';
 
 const RainDefaultOptions = {
-  width: 40,
-  height: 40,
+  width: 60,
+  height: 60,
   continuous: false,
 };
 
-const SNOW = createState('drop', '*');
-const ROCK = createState('rock', 'o');
+const WALL = createState('wall', 'W', '');
+const ICE = createState('ice', 'I', '');
+const ROCK = createState('rock', 'R', '');
 
-const SAND = createState('sand', '.');
-const SAND_L = createState('sand-l', '◀');
-const SAND_R = createState('sand-r', '▶');
-
-const WATER = createState('water', '-');
-const WATER_L = createState('water', '<');
-const WATER_R = createState('water', '>');
-
-function isSand(s: CellState) {
-  return s === SAND || s === SAND_L || s === SAND_R;
-}
-
-function isWater(s: CellState) {
-  return s === WATER || s === WATER_L || s === WATER_R;
-}
-
-function moveDown(s: CellState) {
-  if (isWater(s)) return WATER;
-  if (isSand(s)) return SAND;
-  return s;
-}
-
-function moveLeft(s: CellState) {
-  if (isWater(s)) return WATER_L;
-  if (isSand(s)) return SAND_L;
-  return s;
-}
-
-function moveRight(s: CellState) {
-  if (isWater(s)) return WATER_R;
-  if (isSand(s)) return SAND_R;
-  return s;
-}
+const SAND = createState('sand', 'S', '');
+const WATER = createState('water', 'A', '');
+const VAPOR = createState('vapor', 'V', '');
 
 const density = [
   EMPTY,
-  SNOW,
+  VAPOR,
+  ICE,
   WATER,
-  WATER_L,
-  WATER_R,
   SAND,
-  SAND_L,
-  SAND_R,
   ROCK,
+  WALL
 ];
+
+function getDensity(s: CellState) {
+  return density.indexOf(s);
+}
 
 export class Rain extends CA {
   readonly patterns = [''];
 
   stats = {
-    Step: 0,
-    Drops: 0,
+    H2O: 0,
   };
 
-  states = [ROCK, SAND, SAND_L, SAND_R, WATER, WATER_L, WATER_R, SNOW, EMPTY];
-  pallet = [[ROCK, SAND], [SNOW, WATER], [EMPTY]];
+  states = [WALL, ROCK, SAND, WATER, ICE, VAPOR, EMPTY];
+  pallet = [[ROCK, SAND], [ICE, WATER, VAPOR], [WALL, EMPTY]];
 
   neighborhoodRange = 2;
   stochastic = true;
+  boundaryType = BoundaryType.Wall;
 
   constructor(options?: Partial<CAOptions>) {
     super({
@@ -77,85 +50,179 @@ export class Rain extends CA {
     });
   }
 
-  getNextCell(c: CellState, x: number, y: number): CellState {
-    const down = this.get(x, y + 1);
-    const down_left = this.get(x - 1, y + 1);
-    const down_right = this.get(x + 1, y + 1);
+  raises(c: CellState, x: number, y: number) {
+    if (y > 0) {
+      const yy = y - 1;
+      const up = this.get(x, yy);
 
-    const left = this.get(x - 1, y);
-    const right = this.get(x + 1, y);
-
-    if (this.step % 2) {
-      const s = moveDown(c);
-      switch (s) {
-        case WATER:
-          if (density.indexOf(down_right) > density.indexOf(s))
-            return moveRight(s);
-          if (density.indexOf(down_left) > density.indexOf(s))
-            return moveLeft(s);
-          if (left === EMPTY) return moveLeft(s);
-          if (right === EMPTY) return moveRight(s);
-          return WATER;
-        case SAND:
-          if (density.indexOf(down_right) > density.indexOf(s))
-            return moveRight(s);
-          if (density.indexOf(down_left) > density.indexOf(s))
-            return moveLeft(s);
-          return WATER;
+      if (up !== WALL && !this.changedGrid.has(x, yy)) {
+        this.setNext(x, yy, c);
+        this.setNext(x, y, up);
+        return true;
       }
-      return;
+    }
+  }
+
+  condenses(c: CellState, x: number, y: number) {
+    const T = y;
+
+    // Condenses
+    if (T < 10) {
+      if (Math.random() < 0.1) {
+        this.setNext(x, y, ICE);
+        return true;
+      }
+    } else if (T < 20) {
+      if (Math.random() < 0.1) {
+        this.setNext(x, y, WATER);
+        return true;
+      }
+    }
+  }
+
+  falls(c: CellState, x: number, y: number) {
+    if (y < this.height - 1) {
+      const den = getDensity(c);
+
+      const yy = y + 1;
+      if (this.changedGrid.has(x, yy)) return;
+
+      const down = this.get(x, yy);
+
+      // Everything falls down
+      if (den > getDensity(down)) {
+        this.setNext(x, yy, c);
+        this.setNext(x, y, down);
+        return true;
+      }
+    }
+  }
+
+  flows(c: CellState, x: number, y: number) {
+    if (y < this.height - 1) {
+      const den = getDensity(c);
+
+      const yy = y + 1;
+      if (yy >= this.height) return;
+
+      let xx = x;
+
+      // Margolus neighborhood-like
+      if ((this.step + x + y) % 2 === 0) {
+        xx = x-1;
+      } else {
+        xx = x+1;
+      }
+      if (xx < 0  || xx >= this.width) return;
+
+      const down = this.get(xx, yy);
+      const canMove = getDensity(down) < den && !this.changedGrid.has(xx, yy);
+      if (canMove) {
+        this.setNext(xx, yy, c);
+        this.setNext(x, y, down);
+        return true;
+      }
+    }
+  }
+
+  sloshes(c: CellState, x: number, y: number) {
+    const den = getDensity(c);
+
+    let xx = x;
+    // Margolus neighborhood-like
+    if ((this.step + x + y) % 2 === 0) {
+      xx = x-1;
+    } else {
+      xx = x+1;
     }
 
+    if (xx < 0  || xx >= this.width) return;
+
+    const side = this.get(xx, y);
+    const canMove = getDensity(side) < den && !this.changedGrid.has(xx, y);
+
+    if (canMove) {
+      this.setNext(xx, y, c);
+      this.setNext(x, y, side);
+      return true;
+    }
+  }
+
+  melts(_: CellState, x: number, y: number) {
+    const T = y;
+    if (Math.random() < 0.1 * T/30) {
+      this.setNext(x, y, WATER);
+      return true;
+    }
+  }
+
+  evaporates(_: CellState, x: number, y: number) {
     const up = this.get(x, y - 1);
-    if (density.indexOf(up) > density.indexOf(c)) return moveDown(up);
+    if (up === EMPTY) {
+      const T = y;
+      if (Math.random() < 0.1 * T/40) {
+        this.setNext(x, y, VAPOR);
+        return true;
+      }
+    }
+  }
 
-    if (y >= this.height) return c;
+  freezes(_: CellState, x: number, y: number) {
+    const T = y;
+    if (T < 20) {
+      if (Math.random() < 0.1) {
+        this.setNext(x, y, ICE);
+        return true;
+      }
+    }
+  }
 
-    if (density.indexOf(down) < density.indexOf(c)) return moveDown(down);
-
-    const up_left = this.get(x - 1, y - 1);
-    const up_right = this.get(x + 1, y - 1);
-
+  private pushCell(c: CellState, x: number, y: number) {
     switch (c) {
-      case EMPTY: {
-        if (up_left === SAND_R) return SAND;
-        if (up_right === SAND_L) return SAND;
-
-        if (up_left === WATER_R) return WATER;
-        if (up_right === WATER_L) return WATER;
-
-        if (left === WATER_R) return WATER;
-        if (right === WATER_L) return WATER;
-
+      case VAPOR:
+        if (this.raises(c, x, y)) return;
+        if (this.condenses(c, x, y)) return;
+        if (this.sloshes(c, x, y)) return;
+      case EMPTY:
+      case WALL:
         return;
-      }
-      case SNOW: {
-        return Math.random() < 0.2 ? WATER : SNOW;
-      }
-      case SAND_L: {
-        if (down_left === EMPTY) return EMPTY;
-        return SAND;
-      }
-      case SAND_R: {
-        if (down_right === EMPTY) return EMPTY;
-        return SAND;
-      }
-      case WATER_L: {
-        if (down_left === EMPTY) return EMPTY;
-        if (left === EMPTY) return EMPTY;
-        return WATER;
-      }
-      case WATER_R: {
-        if (down_right === EMPTY) return EMPTY;
-        if (left === EMPTY) return EMPTY;
-        return WATER;
-      }
+      case WATER:
+        if (this.falls(c, x, y)) return;
+        if (this.flows(c, x, y)) return;
+        if (this.evaporates(c, x, y)) return;
+        if (this.freezes(c, x, y)) return;
+        if (this.sloshes(c, x, y)) return;
+        return;
+      case SAND:
+        if (this.falls(c, x, y)) return;
+        if (this.flows(c, x, y)) return;
+        return;
+      case ICE:
+        if (this.melts(c, x, y)) return;
+        if (this.falls(c, x, y)) return;
+        return;
+      default:
+        if (this.falls(c, x, y)) return;
     }
 
     return;
   }
 
+  doStep() {
+    this.changedGrid.clear();
+
+    this.currentGrid.forEach((c, x, y) => {
+      if (this.changedGrid.has(x, y)) return;
+      this.pushCell(c, x, y);
+    });
+
+    this.currentGrid.assign(this.changedGrid);
+    this.step++;
+  }
+
   refreshStats() {
-    this.stats.Drops = this.worldCountWhen(ACTIVE);
+    this.stats.H2O = this.worldCountWhen(WATER) + this.worldCountWhen(ICE) + this.worldCountWhen(VAPOR);
   }
 }
+
+// TODO: Sublimation

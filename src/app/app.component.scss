@@ -239,34 +239,29 @@
     }
   }
 
-  // &.ca--rule30,
-  // &.ca--rule110 {
-  //   #board {
-  //     .cell {
-  //       line-height: 0;
-  //     }
-  //   }
-  // }
-
   &.ca--snow {
     .cell {
-      &--water,
-      &--water-l,
-      &--water-r {
-        background-color: blue;
+      &--water {
+        background-color: #0e87cc;
       }
 
       &--rock {
         background-color: green !important;
       }
 
-      &--snow {
+      &--wall {
+        background-color: grey;
+      }
+
+      &--vapor {
+        background-color: rgb(43, 43, 43);
+      }
+
+      &--ice {
         background-color: white;
       }
 
-      &--sand,
-      &--sand-l,
-      &--sand-r {
+      &--sand {
         background-color: tan !important;
       }
 
@@ -281,6 +276,26 @@
       &--refractory {
         color: blue;
         background-color: blue;
+      }
+    }
+  }
+
+  &.ca--ant {
+    .cell {
+      &[data-state$="◄"] {
+        transform: rotate(0);
+      }
+
+      &[data-state$="▲"] {
+        transform: rotate(90deg);
+      }
+
+      &[data-state$="►"] {
+        transform: rotate(180deg);
+      }
+
+      &[data-state$="▼"] {
+        transform: rotate(270deg);
       }
     }
   }

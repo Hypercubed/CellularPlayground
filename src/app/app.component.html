@@ -76,18 +76,21 @@
       (touchcancel)="onMouseLeave()"
     >
       <tr *ngFor="let row of grid; let y = index; trackBy: trackByIndex">
-        <td
-          *ngFor="let cell of grid[y]; let x = index; trackBy: trackByIndex"
-          (mousedown)="onMouseEnter($event, x, y)"
-          (mouseenter)="onMouseEnter($event, x, y)"
-          (click)="onClick($event, x, y)"
-          (mouseup)="onMouseLeave()"
-          class="cell"
-          [class]="'cell--' + cell.state"
-          [attr.data-state]="cell.state"
-        >
-          <span>{{ cell.display }}</span>
-        </td>
+        <ng-container *ngFor="let emptyCell of row; let x = index; trackBy: trackByIndex">
+          <ng-container *ngIf="(ca.grid?.[y]?.[x] || emptyCell) as cell">
+            <td
+              (mousedown)="onMouseEnter($event, x, y)"
+              (mouseenter)="onMouseEnter($event, x, y)"
+              (click)="onClick($event, x, y)"
+              (mouseup)="onMouseLeave()"
+              class="cell"
+              [class]="'cell--' + cell.state"
+              [attr.data-state]="cell.state"
+            >
+              <span>{{ cell.display }}</span>
+            </td>
+          </ng-container>
+        </ng-container>
       </tr>
     </table>
   </div>
