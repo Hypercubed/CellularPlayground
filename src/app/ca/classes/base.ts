@@ -208,6 +208,15 @@ export abstract class CA<
     return c;
   }
 
+  getVonNeumannNeighbors(x: number, y: number): T[] {
+    const up = this.get(x, y - 1);
+    const right = this.get(x + 1, y);
+    const down = this.get(x, y + 1);
+    const left = this.get(x - 1, y);
+
+    return [up, right, down, left];
+  }
+
   /*
    * Gets an array of all cells in the von Neumann neighborhood of the given cell
    */

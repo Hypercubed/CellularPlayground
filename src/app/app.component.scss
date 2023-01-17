@@ -299,4 +299,20 @@
       }
     }
   }
+
+  &.ca--wator {
+    .cell {
+      &--fish {
+        background-color: green;
+      }
+
+      &--shark {
+        background-color: rgb(62, 62, 158);
+      }
+
+      &--empty {
+        background-color: #ffffff;
+      }
+    }
+  }
 }

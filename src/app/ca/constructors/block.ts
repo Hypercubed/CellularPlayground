@@ -8,7 +8,7 @@ const VoteDefaultOptions: BlockCAOptions = {
   width: 40,
   height: 40,
   boundaryType: BoundaryType.Torus,
-  ruleString: 'MS,D15;1;2;3;4;5;6;7;8; 9;10;11;12;13;14;0'
+  ruleString: 'MS,D15;1;2;3;4;5;6;7;8;9;10;11;12;13;14;0'
 };
 
 export class BlockCA extends CA {
@@ -38,12 +38,9 @@ export class BlockCA extends CA {
   doStep() {
     this.changedGrid.clear();
 
-    const dx = this.step % 2;
-    const dy = this.step % 2;
-
     for (let x = 0; x < this.width; x += 2) {
       for (let y = 0; y < this.height; y += 2) {
-        this.doNeighborhood(x + dx, y + dy);
+        this.doNeighborhood(x, y);
       }
     }
 
@@ -51,12 +48,25 @@ export class BlockCA extends CA {
     this.step++;
   }
 
+  getMargolusNeighborhood(x: number, y: number) {
+    const nw = this.get(x, y);
+    const ne = this.get(x + 1, y);
+    const sw = this.get(x, y + 1);
+    const se = this.get(x + 1, y + 1);
+
+    return [nw, ne, sw, se];
+  }
+
   // Margolus neighborhood
   doNeighborhood(x: number, y: number) {
-    let nw = this.get(x, y) === ACTIVE ? 1 : 0;
-    let ne = this.get(x + 1, y) === ACTIVE ? 1 : 0;
-    let sw = this.get(x, y + 1) === ACTIVE ? 1 : 0;
-    let se = this.get(x + 1, y + 1) === ACTIVE ? 1 : 0;
+    const d = this.step % 2;
+
+    x = x - (x % 2) + d;
+    y = y - (y % 2) + d;
+
+    let [nw, ne, sw, se]: number[] = this
+      .getMargolusNeighborhood(x, y)
+      .map(s => s === ACTIVE ? 1 : 0);
 
     const sum = nw + ne*2 + sw*4 + se*8;
     const newState = this.rule[sum];
@@ -66,9 +76,14 @@ export class BlockCA extends CA {
     sw = newState & 4;
     se = newState & 8;
 
-    this.set(x, y, nw ? ACTIVE : EMPTY);
-    this.set(x + 1, y, ne ? ACTIVE : EMPTY);
-    this.set(x, y + 1, sw ? ACTIVE : EMPTY);
-    this.set(x + 1, y + 1, se ? ACTIVE : EMPTY);
+    this.setNext(x, y, nw ? ACTIVE : EMPTY);
+    this.setNext(x + 1, y, ne ? ACTIVE : EMPTY);
+    this.setNext(x, y + 1, sw ? ACTIVE : EMPTY);
+    this.setNext(x + 1, y + 1, se ? ACTIVE : EMPTY);
+  }
+
+  refreshStats() {
+    this.stats.Generation = this.step;
+    this.stats.Alive = this.worldCountWhen(ACTIVE);
   }
 }

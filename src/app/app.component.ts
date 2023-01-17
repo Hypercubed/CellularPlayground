@@ -94,7 +94,7 @@ export class AppComponent {
 
   onRandom() {
     if (this.ca instanceof OCA) {
-      this.ca.fillWith((x, y) => {
+      this.ca.fillWith((_, y) => {
         if (y !== this.ca.step) return this.ca.emptyCell;
         return Math.random() < 0.5 ? this.ca.defaultCell : this.ca.emptyCell;
       });

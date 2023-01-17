@@ -15,6 +15,7 @@ import { OSCILLATOR, Vote } from './constructors/vote';
 import { Dendrite } from './constructors/dendrite';
 import { Brain, BRIAN_OSCILLATOR } from './constructors/brain';
 import { BlockCA } from './constructors/block';
+import { WaTor } from './constructors/wa-tor';
 
 export interface CAListItem {
   title: string;
@@ -204,6 +205,14 @@ export const CAList: CAListItem[] = [
     savedPatterns: [],
     class: 'block',
   },
+  {
+    title: 'Wa-Tor',
+    Ctor: WaTor,
+    options: [],
+    patterns: [],
+    savedPatterns: [],
+    class: 'wator'
+  }
 ];
 
 // TODO: Sharks and Fish on the Planet Wa-Tor
