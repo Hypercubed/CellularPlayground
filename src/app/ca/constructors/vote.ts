@@ -6,34 +6,30 @@ export interface VoteOptions extends CAOptions {
   ruleString: string;
 }
 
-const VoteDefaultOptions: VoteOptions = {
+const VoteDefaultOptions: Partial<VoteOptions> = {
   width: 64,
   height: 64,
-  ruleString: '56789', // Majority
-  boundaryType: BoundaryType.Wall,
+  ruleString: '56789',
 };
 
 export const OSCILLATOR = `6b2ob$5b4o$5b4o$b2o3b2ob$7o$4o$b2o2b3ob$5b4o$5b4o$6b2ob`;
 
 export class Vote extends CA {
-  stats: Record<string, any> = {
-    Alive: 0,
-  };
-
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];
 
-  protected options: VoteOptions;
   protected vote: number[];
 
   constructor(options?: Partial<VoteOptions>) {
-    super({
+    options = {
       ...VoteDefaultOptions,
       ...options,
-    });
+    };
 
-    this.options.ruleString = this.options.ruleString.toUpperCase();
-    const rule = parseRuleString(this.options.ruleString.toUpperCase());
+    super(options);
+
+    options.ruleString = options.ruleString.toUpperCase();
+    const rule = parseRuleString(options.ruleString.toUpperCase());
 
     // TODO: M and V extension and range
     this.vote = rule.vote;

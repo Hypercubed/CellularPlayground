@@ -1,34 +1,41 @@
-import { ACTIVE, EMPTY, CA, CAOptions, BoundaryType } from '../classes/base';
+import {
+  ACTIVE,
+  EMPTY,
+  CA,
+  CAOptions,
+  BoundaryType,
+  IterationType,
+} from '../classes/base';
+import { CellState } from '../classes/states';
 
 interface BlockCAOptions extends CAOptions {
   ruleString: string;
 }
 
-const VoteDefaultOptions: BlockCAOptions = {
+const VoteDefaultOptions: Partial<BlockCAOptions> = {
   width: 40,
   height: 40,
   boundaryType: BoundaryType.Torus,
-  ruleString: 'MS,D15;1;2;3;4;5;6;7;8;9;10;11;12;13;14;0'
+  iterationType: IterationType.BoundingBox,
+  neighborhoodRange: 0,
+  ruleString: 'MS,D15;1;2;3;4;5;6;7;8;9;10;11;12;13;14;0',
 };
 
 export class BlockCA extends CA {
-  stats: Record<string, any> = {
-    Alive: 0,
-  };
-
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];
 
-  protected options: BlockCAOptions;
   protected rule: number[];
 
   constructor(options?: Partial<BlockCAOptions>) {
-    super({
+    options = {
       ...VoteDefaultOptions,
       ...options,
-    });
+    };
 
-    this.rule = this.options.ruleString
+    super(options);
+
+    this.rule = options.ruleString
       .replace(/ /g, '')
       .replace(/^MS,D/, '')
       .split(';')
@@ -38,9 +45,10 @@ export class BlockCA extends CA {
   doStep() {
     this.changedGrid.clear();
 
+    // Can this use the BoundingBox iteration type?
     for (let x = 0; x < this.width; x += 2) {
       for (let y = 0; y < this.height; y += 2) {
-        this.doNeighborhood(x, y);
+        this.doNeighborhood(null, x, y);
       }
     }
 
@@ -48,6 +56,7 @@ export class BlockCA extends CA {
     this.step++;
   }
 
+  // Move to base class?
   getMargolusNeighborhood(x: number, y: number) {
     const nw = this.get(x, y);
     const ne = this.get(x + 1, y);
@@ -58,17 +67,17 @@ export class BlockCA extends CA {
   }
 
   // Margolus neighborhood
-  doNeighborhood(x: number, y: number) {
+  doNeighborhood(_: CellState, x: number, y: number) {
     const d = this.step % 2;
 
     x = x - (x % 2) + d;
     y = y - (y % 2) + d;
 
-    let [nw, ne, sw, se]: number[] = this
-      .getMargolusNeighborhood(x, y)
-      .map(s => s === ACTIVE ? 1 : 0);
+    let [nw, ne, sw, se]: number[] = this.getMargolusNeighborhood(x, y).map(
+      (s) => (s === ACTIVE ? 1 : 0)
+    );
 
-    const sum = nw + ne*2 + sw*4 + se*8;
+    const sum = nw + ne * 2 + sw * 4 + se * 8;
     const newState = this.rule[sum];
 
     nw = newState & 1;

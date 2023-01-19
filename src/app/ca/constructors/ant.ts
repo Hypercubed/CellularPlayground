@@ -2,7 +2,7 @@ import { BoundaryType, CA, CAOptions } from '../classes/base';
 import { UnboundedGrid } from '../classes/grid';
 import { createState } from '../classes/states';
 
-import { type CellState } from '../classes/states';
+import type { CellState } from '../classes/states';
 
 enum Color {
   WHITE = '□',
@@ -43,10 +43,11 @@ function isAnt(t: CellState): boolean {
   return t.state.length === 2;
 }
 
-const AntOptionsDefault = {
+const AntOptionsDefault: Partial<CAOptions> = {
   width: 64,
   height: 64,
   boundaryType: BoundaryType.Infinite,
+  neighborhoodRange: 0,
 };
 
 export class Ant extends CA {
@@ -68,10 +69,7 @@ export class Ant extends CA {
     WHITE,
   ];
 
-  pallet = [
-    [WHITE_UP],
-    [BLACK, WHITE],
-  ];
+  pallet = [[WHITE_UP], [BLACK, WHITE]];
 
   constructor(options?: Partial<CAOptions>) {
     super({
@@ -82,38 +80,33 @@ export class Ant extends CA {
 
   refreshStats() {
     this.stats.Generation = this.step;
-    this.stats.Ants = this.currentGrid.reduce((c, cell) => c + +(isAnt(cell)), 0);
+    this.stats.Ants = this.currentGrid.reduce((c, cell) => c + +isAnt(cell), 0);
   }
 
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit
   // At a black square, turn 90° counter-clockwise, flip the color of the square, move forward one unit
-  doStep() {
-    const lastChanges = this.changedGrid;
-    this.changedGrid = new UnboundedGrid<CellState>();
+  doNeighborhood(c: CellState, x: number, y: number, _?: number) {
+    if (!isAnt(c)) return;
 
-    lastChanges.forEach((c, x, y) => {
-      if (!isAnt(c)) return;
+    [x, y] = this.getPosition(x, y);
 
-      const color = getColor(c);
-      const dir = getDirection(c);
+    const color = getColor(c);
+    const dir = getDirection(c);
 
-      // Flip the color
-      const newColor = color === Color.WHITE ? BLACK : WHITE;
-      this.setNext(x, y, newColor);
+    // Flip the color
+    const newColor = color === Color.WHITE ? BLACK : WHITE;
+    this._setNext(x, y, newColor);
 
-      // Turn
-      const newDir = getNextDirection(dir, color);
-      
-      // Move
-      const [xx, yy] = getNextPosition(newDir, x, y);
-      const nextColor = getColor(this.get(xx, yy));
-      const nextState = getState(newDir, nextColor);
-      
-      this.setNext(xx, yy, nextState);
-    });
+    // Turn
+    const newDir = getNextDirection(dir, color);
 
-    this.currentGrid.assign(this.changedGrid);
-    this.step++;
+    // Move
+    const [xx, yy] = getNextPosition(newDir, x, y);
+    const nextColor = getColor(this.get(xx, yy));
+    const nextState = getState(newDir, nextColor);
+    this.setNext(xx, yy, nextState);
+
+    this._setNext(x, y, newColor);
   }
 }
 

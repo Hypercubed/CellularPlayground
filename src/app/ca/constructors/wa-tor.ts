@@ -1,4 +1,10 @@
-import { EMPTY as _EMPTY, CA, CAOptions, BoundaryType } from '../classes/base';
+import {
+  EMPTY as _EMPTY,
+  CA,
+  CAOptions,
+  BoundaryType,
+  IterationType,
+} from '../classes/base';
 import { CellState } from '../classes/states';
 
 interface WaTorState extends CellState {
@@ -6,7 +12,11 @@ interface WaTorState extends CellState {
   energy: number;
 }
 
-export function createState(state: string, fertility = 0, energy = 0): WaTorState {
+export function createState(
+  state: string,
+  fertility = 0,
+  energy = 0
+): WaTorState {
   return Object.freeze({
     state,
     token: state[0].toUpperCase(),
@@ -16,26 +26,33 @@ export function createState(state: string, fertility = 0, energy = 0): WaTorStat
   });
 }
 
-const initial_energies = { fish: 2, shark: 3 }
-const fertility_thresholds = { fish: 4, shark: 12 }
+const initial_energies = { fish: 2, shark: 3 };
+const fertility_thresholds = { fish: 4, shark: 12 };
 
-const SHARK = createState('shark', fertility_thresholds['shark'], initial_energies['shark']);
-const FISH = createState('fish', fertility_thresholds['fish'], initial_energies['fish']);
+const SHARK = createState(
+  'shark',
+  fertility_thresholds['shark'],
+  initial_energies['shark']
+);
+const FISH = createState(
+  'fish',
+  fertility_thresholds['fish'],
+  initial_energies['fish']
+);
 const EMPTY = _EMPTY as WaTorState;
 
-const DefaultOptions: CAOptions = {
+const DefaultOptions: Partial<CAOptions> = {
   width: 40,
   height: 40,
-  boundaryType: BoundaryType.Infinite
+  boundaryType: BoundaryType.Torus,
+  iterationType: IterationType.Active,
+  neighborhoodRange: 0,
 };
 
 export class WaTor extends CA<WaTorState> {
-  stats: Record<string, any> = {};
-
   states = [SHARK, FISH, EMPTY];
   pallet = [[SHARK, FISH], [EMPTY]];
 
-  protected options: CAOptions;
   protected rule: number[];
 
   constructor(options?: Partial<CAOptions>) {
@@ -46,7 +63,9 @@ export class WaTor extends CA<WaTorState> {
   }
 
   findRandomMove(neighbors: WaTorState[], STATE: WaTorState) {
-    const emptyNeighbors = neighbors.map((n, i) => n.state === STATE.state ? i : null).filter(n => n !== null);
+    const emptyNeighbors = neighbors
+      .map((n, i) => (n.state === STATE.state ? i : null))
+      .filter((n) => n !== null);
     if (emptyNeighbors.length > 0) {
       const i = Math.floor(Math.random() * emptyNeighbors.length);
       return getPosition(emptyNeighbors[i]);
@@ -72,9 +91,13 @@ export class WaTor extends CA<WaTorState> {
       }
     }
 
-    let o = EMPTY;  // offspring
+    let o = EMPTY; // offspring
     if (c.fertility <= 0) {
-      o = createState(c.state, fertility_thresholds[c.state], initial_energies[c.state]);
+      o = createState(
+        c.state,
+        fertility_thresholds[c.state],
+        initial_energies[c.state]
+      );
       fertility = fertility_thresholds[c.state];
     }
     c = createState(c.state, fertility, energy);
@@ -83,14 +106,15 @@ export class WaTor extends CA<WaTorState> {
     this.set(x, y, o);
   }
 
-  protected doWaTorCell(c: WaTorState, x: number, y: number): WaTorState | void {
+  doNeighborhood(c: WaTorState, x: number, y: number, _?: number) {
+    if (this.changedGrid.has(x, y)) return;
+
     if (c === EMPTY) return;
 
     const neighbors = this.getVonNeumannNeighbors(x, y);
 
     switch (c.state) {
       case SHARK.state: {
-
         // Shark die
         if (c.energy <= 0) {
           this.set(x, y, EMPTY);
@@ -114,17 +138,6 @@ export class WaTor extends CA<WaTorState> {
     }
   }
 
-  doStep() {
-    this.changedGrid.clear();
-
-    this.currentGrid.forEach((c, x, y) => {
-      if (this.changedGrid.has(x, y)) return;
-      this.doWaTorCell(c, x, y);
-    });
-
-    this.step++;
-  }
-
   refreshStats() {
     this.stats.Chronon = this.step;
     this.stats.Fish = this.worldCountWhen(FISH);
@@ -134,9 +147,13 @@ export class WaTor extends CA<WaTorState> {
 
 function getPosition(i: number): [number, number] {
   switch (i) {
-    case 0: return [0, -1];
-    case 1: return [1, 0];
-    case 2: return [0, 1];
-    case 3: return [-1, 0];
+    case 0:
+      return [0, -1];
+    case 1:
+      return [1, 0];
+    case 2:
+      return [0, 1];
+    case 3:
+      return [-1, 0];
   }
 }

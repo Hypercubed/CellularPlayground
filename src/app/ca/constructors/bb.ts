@@ -1,6 +1,5 @@
 import { BoundaryType, CAOptions } from '../classes/base';
 import { OCA } from '../classes/elementary';
-import { UnboundedGrid } from '../classes/grid';
 import { createState, CellState } from '../classes/states';
 
 type TuringRules = Record<string, string>;
@@ -57,6 +56,7 @@ const BBOptionsDefault = {
   height: 29,
   boundaryType: BoundaryType.Infinite,
   rules: bb2,
+  neighborhoodRange: 0,
 };
 
 export class BB extends OCA<CellState, BBOptions> {
@@ -70,20 +70,22 @@ export class BB extends OCA<CellState, BBOptions> {
   protected headStates: string[];
 
   constructor(options?: Partial<BBOptions>) {
-    super({
+    options = {
       ...BBOptionsDefault,
       ...options,
-    });
+    };
 
-    this.rules = this.options.rules;
+    super(options);
+
+    this.rules = options.rules;
 
     const ruleKeys = Object.keys(this.rules);
 
     this.headStates =
-      this.options.headStates ||
+      options.headStates ||
       ruleKeys.map((k) => k[0]).filter((v, i, a) => a.indexOf(v) === i);
     this.tapeStates =
-      this.options.tapeStates ||
+      options.tapeStates ||
       ruleKeys.map((k) => k[1]).filter((v, i, a) => a.indexOf(v) === i);
 
     this.headStates.push('H');
@@ -112,93 +114,36 @@ export class BB extends OCA<CellState, BBOptions> {
       tapeStates[tapeStates.length - 1],
     ];
 
-    this.rules = this.options.rules;
+    this.rules = options.rules;
   }
 
-  doStep() {
-    const lastChanges = this.changedGrid;
-    this.changedGrid = new UnboundedGrid<CellState>();
+  doNeighborhood(c: CellState, x: number, y: number, _?: number) {
+    if (y !== this.step) return;
+    const yy = y + 1;
 
-    // For each cell that changed on the previous tick (and neighbors)
-    lastChanges.forEach((c, x, y) => {
-      if (y !== this.step) return;
-      const yy = y + 1;
+    // Cell was already visited, skip
+    if (this.changedGrid.has(x, yy)) return;
 
-      // Cell was already visited, skip
-      if (this.changedGrid.has(x, yy)) return;
+    if (!isHead(c) || c.state[0] === 'H') {
+      this.setNext(x, yy, c);
+      return;
+    }
 
-      if (!isHead(c) || c.state[0] === 'H') {
-        this.setNext(x, yy, c);
-        return;
-      }
+    // Write to tape
+    const rule = this.rules?.[c.state];
+    const write = String(rule[0]);
+    const writeState = this.states.find((s) => s.state === write);
+    this.setNext(x, yy, writeState);
 
-      // Write to tape
-      const rule = this.rules?.[c.state];
-      const write = String(rule[0]);
-      const writeState = this.states.find((s) => s.state === write);
-      this.setNext(x, yy, writeState);
-
-      // Move head
-      const direction = rule[1];
-      const xx = direction === 'L' ? x - 1 : x + 1;
-      const nextCell = this.get(xx, y);
-      const nextState = this.findState(rule[2] + getTapeState(nextCell));
-      // console.log(rule[2], xx, yy, nextState);
-      // console.log(this.states);
-      this.setNext(xx, yy, nextState);
-    });
-
-    this.currentGrid.assign(this.changedGrid);
-    this.step++;
+    // Move head
+    const direction = rule[1];
+    const xx = direction === 'L' ? x - 1 : x + 1;
+    const nextCell = this.get(xx, y);
+    const nextState = this.findState(rule[2] + getTapeState(nextCell));
+    // console.log(rule[2], xx, yy, nextState);
+    // console.log(this.states);
+    this.setNext(xx, yy, nextState);
   }
-
-  // protected doCell(x: number, y: number, R: number) {
-  //   if (y !== this.step) return;
-
-  //   // for each neighbor in range
-  //   for (let p = -R; p <= R; p++) {
-  //     const [xx, yy] = this.getPosition(x + p, this.step + 1);
-
-  //     // Cell was already visited, skip
-  //     if (this.changedGrid.has(xx, yy)) continue;
-
-  //     const c = this.get(xx, yy);
-  //     const n = this.getNextCell(c, xx, yy) || c;
-  //     this.setNext(xx, yy, n);
-  //   }
-  // }
-
-  // // 2-symbol busy beaver
-  // getNextCell(_: CellState, x: number, y: number) {
-  //   const up = this.get(x, y - 1);
-  //   if (isHead(up)) {
-  //     const rule = this.rules?.[up.state];
-  //     if (rule) {
-  //       const write = String(this.rules[up.state][0]);
-  //       return this.states.find((s) => s.state === write);
-  //     }
-  //   }
-
-  //   const up_right = this.get(x + 1, y - 1);
-  //   if (isHead(up_right)) {
-  //     const next = this.rules[up_right.state];
-  //     if (next?.[1] === 'L') {
-  //       return this.findState(next[2] + this.getTapeState(up));
-  //     }
-  //     return up;
-  //   }
-
-  //   const up_left = this.get(x - 1, y - 1);
-  //   if (isHead(up_left)) {
-  //     const next = this.rules[up_left.state];
-  //     if (next?.[1] === 'R') {
-  //       return this.findState(next[2] + this.getTapeState(up));
-  //     }
-  //     return up;
-  //   }
-
-  //   return up;
-  // }
 
   refreshStats() {
     const yMin = this.stats.S;

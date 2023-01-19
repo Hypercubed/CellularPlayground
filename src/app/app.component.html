@@ -76,7 +76,9 @@
       (touchcancel)="onMouseLeave()"
     >
       <tr *ngFor="let row of grid; let y = index; trackBy: trackByIndex">
-        <ng-container *ngFor="let emptyCell of row; let x = index; trackBy: trackByIndex">
+        <ng-container
+          *ngFor="let emptyCell of row; let x = index; trackBy: trackByIndex"
+        >
           <ng-container *ngIf="(ca.grid?.[y]?.[x] || emptyCell) as cell">
             <td
               (mousedown)="onMouseEnter($event, x, y)"

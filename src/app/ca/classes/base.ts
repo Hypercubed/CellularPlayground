@@ -4,16 +4,24 @@ import { CellState, createState } from './states';
 import { makeGridWith } from '../utils/grid';
 import { mod } from '../utils/math';
 
-export interface CAOptions {
-  width: number;
-  height: number;
-  boundaryType: BoundaryType;
-}
-
 export enum BoundaryType {
   Wall = 'wall',
   Torus = 'torus',
   Infinite = 'infinite',
+}
+
+export enum IterationType {
+  BoundingBox = 'boundingBox',
+  LastChanged = 'changed',
+  Active = 'active',
+}
+
+export interface CAOptions {
+  width: number;
+  height: number;
+  neighborhoodRange: number;
+  boundaryType: BoundaryType;
+  iterationType: IterationType;
 }
 
 export const EMPTY = createState('empty', 'b', '');
@@ -22,7 +30,9 @@ export const ACTIVE = createState('active', 'o', '');
 const DefaultCAOptions = {
   width: 40,
   height: 40,
+  neighborhoodRange: 1,
   boundaryType: BoundaryType.Infinite,
+  iterationType: IterationType.LastChanged,
 };
 
 const MaxSize = 200_000;
@@ -46,11 +56,10 @@ export abstract class CA<
    * For bounded girds also the border size */
   width: number;
   height: number;
-  stats: Record<string, any>;
 
-  boundaryType: BoundaryType = BoundaryType.Infinite;
+  /* Stats that are displayed in the UI */
+  stats: Record<string, any> = {};
   step = 0;
-  stochastic = false;
 
   get defaultCell() {
     return this.states[0];
@@ -64,21 +73,25 @@ export abstract class CA<
     return this.currentGrid.grid;
   }
 
-  protected neighborhoodRange = 1;
+  /* Set by options */
+  readonly boundaryType: BoundaryType = BoundaryType.Infinite;
+  readonly iterationType: IterationType = IterationType.LastChanged;
+  neighborhoodRange = 1;
+
   protected currentGrid: UnboundedGrid<T>;
   protected changedGrid: UnboundedGrid<T>;
-  protected options: O;
 
   constructor(options?: Partial<O>) {
-    this.options = {
+    options = {
       ...DefaultCAOptions,
       ...options,
-    } as O;
+    };
 
-    this.width = this.options.width;
-    this.height = this.options.height;
-    this.boundaryType = this.options.boundaryType;
-    this.stats = {};
+    this.width = options.width;
+    this.height = options.height;
+    this.boundaryType = options.boundaryType;
+    this.iterationType = options.iterationType;
+    this.neighborhoodRange = options.neighborhoodRange;
   }
 
   reset() {
@@ -234,20 +247,18 @@ export abstract class CA<
   }
 
   get(x: number, y: number): T {
-    [x, y] = this.getPosition(x, y);
-    return this._get(x, y)
+    return this._get(...this.getPosition(x, y));
   }
 
-  _get(x: number, y: number): T {
+  private _get(x: number, y: number): T {
     return this.currentGrid.get(x, y) || this.emptyCell;
   }
 
   set(x: number, y: number, s: T) {
-    [x, y] = this.getPosition(x, y);
-    this._set(x, y, s);
+    this._set(...this.getPosition(x, y), s);
   }
 
-  _set(x: number, y: number, s: T) {
+  protected _set(x: number, y: number, s: T) {
     const c = this.get(x, y);
     if (s === c) return;
 
@@ -262,18 +273,17 @@ export abstract class CA<
   }
 
   protected setNext(x: number, y: number, s: T) {
-    [x, y] = this.getPosition(x, y);
-    this._setNext(x, y, s);
+    this._setNext(...this.getPosition(x, y), s);
   }
 
   protected _setNext(x: number, y: number, s: T) {
-    const c = this.get(x, y);
+    const c = this._get(x, y);
     if (s === c) return;
 
     this.changedGrid.set(x, y, s);
   }
 
-  protected doCell(x: number, y: number, R: number) {
+  protected doNeighborhood(_: T, x: number, y: number, R: number) {
     // for each neighbor in range
     for (let q = -R; q <= R; q++) {
       for (let p = -R; p <= R; p++) {
@@ -289,40 +299,127 @@ export abstract class CA<
     }
   }
 
-  doStep() {
+  doStep(): void {
+    switch (this.iterationType) {
+      case IterationType.BoundingBox:
+        this.doStep = this.doStep_boundingBox;
+        break;
+      case IterationType.Active:
+        this.doStep = this.doStep_active;
+        break;
+      case IterationType.LastChanged:
+      default:
+        this.doStep = this.doStep_lastChanged;
+    }
+
+    return this.doStep();
+  }
+
+  private doStep_lastChanged() {
     const lastChanges = this.changedGrid;
     this.changedGrid = new UnboundedGrid<T>();
 
-    const doCell = (_: T, x: number, y: number) =>
-      this.doCell(x, y, this.neighborhoodRange);
-
     // For each cell that changed on the previous tick (and neighbors)
-    lastChanges.forEach(doCell);
-
-    // If stochastic, do also do all non-empty cells (and neighbors)
-    if (this.stochastic) this.currentGrid.forEach(doCell);
+    lastChanges.forEach((c: T, x: number, y: number) =>
+      this.doNeighborhood(c, x, y, this.neighborhoodRange)
+    );
 
     this.currentGrid.assign(this.changedGrid);
     this.step++;
   }
 
-  protected getPosition(x: number, y: number): [number, number] {
-    // Enforce boundary conditions
-    if (this.boundaryType === BoundaryType.Torus) {
-      x = mod(x, this.width);
-      y = mod(y, this.height);
-    } else if (this.boundaryType === BoundaryType.Wall) {
-      if (x < 0) x = 0;
-      if (y < 0) y = 0;
-      if (y >= this.height) y = this.height - 1;
-      if (x >= this.width) x = this.width - 1;
+  private doStep_active() {
+    this.changedGrid.clear();
+
+    // For each cell do also do all non-empty cells (and neighbors)
+    this.currentGrid.forEach((c: T, x: number, y: number) =>
+      this.doNeighborhood(c, x, y, this.neighborhoodRange)
+    );
+
+    this.currentGrid.assign(this.changedGrid);
+    this.step++;
+  }
+
+  private doStep_boundingBox() {
+    this.changedGrid.clear();
+
+    // For each cell do also do all non-empty cells (and neighbors)
+    if (this.iterationType === IterationType.BoundingBox) {
+      const bb = this.getBoundingBox();
+      for (let x = bb[0]; x < bb[2]; x++) {
+        for (let y = bb[1]; y < bb[3]; y++) {
+          const c = this.get(x, y);
+          this.doNeighborhood(c, x, y, this.neighborhoodRange);
+        }
+      }
     }
 
+    this.currentGrid.assign(this.changedGrid);
+    this.step++;
+  }
+
+  getBoundingBox(): [number, number, number, number] {
+    switch (this.boundaryType) {
+      case BoundaryType.Wall:
+      case BoundaryType.Torus:
+        this.getBoundingBox = this.getBoundingBox_finite;
+        break;
+      case BoundaryType.Infinite:
+      default:
+        this.getBoundingBox = this.getBoundingBox_infinite;
+    }
+
+    return this.getBoundingBox();
+  }
+
+  private getBoundingBox_finite(): [number, number, number, number] {
+    return [0, 0, this.width, this.height];
+  }
+
+  private getBoundingBox_infinite(): [number, number, number, number] {
+    return this.currentGrid.getBoundingBox();
+  }
+
+  protected getPosition(x: number, y: number): [number, number] {
+    switch (this.boundaryType) {
+      case BoundaryType.Torus:
+        this.getPosition = this.getPosition_torus;
+        break;
+      case BoundaryType.Wall:
+        this.getPosition = this.getPosition_wall;
+        break;
+      case BoundaryType.Infinite:
+      default:
+        this.getPosition = this.getPosition_infinite;
+    }
+
+    return this.getPosition(x, y);
+  }
+
+  private getPosition_infinite(x: number, y: number): [number, number] {
     // Enforce maximum compute size
     if (x < -MaxSize) x = -MaxSize;
     if (y < -MaxSize) y = -MaxSize;
     if (y >= MaxSize) y = MaxSize;
     if (x >= MaxSize) x = MaxSize;
+
+    return [x, y];
+  }
+
+  private getPosition_wall(x: number, y: number): [number, number] {
+    // Enforce boundary conditions
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (y >= this.height) y = this.height - 1;
+    if (x >= this.width) x = this.width - 1;
+
+    return [x, y];
+  }
+
+  private getPosition_torus(x: number, y: number): [number, number] {
+    // Enforce boundary conditions
+    x = mod(x, this.width);
+    y = mod(y, this.height);
 
     return [x, y];
   }

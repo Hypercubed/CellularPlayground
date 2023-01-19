@@ -1,6 +1,10 @@
 # Ignore artifacts:
 .angular/**
 dist/**
+.vscode/**
 
 # Ignore dependencies:
 node_modules/**
+
+/*.json
+tsconfig.*.json

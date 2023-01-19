@@ -168,37 +168,37 @@ export const CAList: CAListItem[] = [
     class: 'busybeaver',
   },
   {
-    title: 'Block cellular automaton',
+    title: 'BCA',
     Ctor: BlockCA,
     options: [
       {
         title: 'Tron',
-        ruleString: 'MS,D15;1;2;3;4;5;6;7;8; 9;10;11;12;13;14;0'
+        ruleString: 'MS,D15;1;2;3;4;5;6;7;8; 9;10;11;12;13;14;0',
       },
       {
         title: 'Billiard Ball Machine',
-        ruleString: 'MS,D0;8;4;3;2;5;9;7; 1;6;10;11;12;13;14;15'
+        ruleString: 'MS,D0;8;4;3;2;5;9;7; 1;6;10;11;12;13;14;15',
       },
       {
         title: 'Bounce Gas',
-        ruleString: 'MS,D0;8;4;3;2;5;9;14; 1;6;10;13;12;11;7;15'
+        ruleString: 'MS,D0;8;4;3;2;5;9;14; 1;6;10;13;12;11;7;15',
       },
       {
         title: 'HPP Gas',
-        ruleString: 'MS,D0;8;4;12;2;10;9; 14;1;6;5;13;3;11;7;15'
+        ruleString: 'MS,D0;8;4;12;2;10;9; 14;1;6;5;13;3;11;7;15',
       },
       {
         title: 'Critters',
-        ruleString: 'MS,D15;14;13;3;11;5; 6;1;7;9;10;2;12;4;8;0'
+        ruleString: 'MS,D15;14;13;3;11;5; 6;1;7;9;10;2;12;4;8;0',
       },
       {
         title: 'Sand',
         ruleString: 'MS,D0;4;8;12;4;12;12;13; 8;12;12;14;12;13;14;15',
-        boundaryType: BoundaryType.Wall
+        boundaryType: BoundaryType.Wall,
       },
       {
         title: 'Rotations',
-        ruleString: 'MS,D0;2;8;12;1;10;9; 11;4;6;5;14;3;7;13;15'
+        ruleString: 'MS,D0;2;8;12;1;10;9; 11;4;6;5;14;3;7;13;15',
       },
     ],
     patterns: [],
@@ -211,8 +211,8 @@ export const CAList: CAListItem[] = [
     options: [],
     patterns: [],
     savedPatterns: [],
-    class: 'wator'
-  }
+    class: 'wator',
+  },
 ];
 
 // TODO: Sharks and Fish on the Planet Wa-Tor

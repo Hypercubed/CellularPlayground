@@ -25,14 +25,6 @@ const COMMERCIAL = createState('C');
 const OBSTACLE = createState('■');
 
 export class City extends CA<CityState> {
-  stats = {
-    Step: 0,
-    $: 0,
-    C: 0,
-    I: 0,
-    R: 0,
-  };
-
   width = 5;
   height = 5;
 

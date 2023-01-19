@@ -282,19 +282,19 @@
 
   &.ca--ant {
     .cell {
-      &[data-state$="◄"] {
+      &[data-state$='◄'] {
         transform: rotate(0);
       }
 
-      &[data-state$="▲"] {
+      &[data-state$='▲'] {
         transform: rotate(90deg);
       }
 
-      &[data-state$="►"] {
+      &[data-state$='►'] {
         transform: rotate(180deg);
       }
 
-      &[data-state$="▼"] {
+      &[data-state$='▼'] {
         transform: rotate(270deg);
       }
     }

@@ -5,7 +5,7 @@ const READY = EMPTY;
 const FIRING = ACTIVE;
 const REFRACTORY = createState('refractory', 'r', '');
 
-const BrainDefaultOptions: CAOptions = {
+const BrainDefaultOptions: Partial<CAOptions> = {
   width: 64,
   height: 64,
   boundaryType: BoundaryType.Infinite,
@@ -14,12 +14,8 @@ const BrainDefaultOptions: CAOptions = {
 export const BRIAN_OSCILLATOR = 'br$b2or$r2ob$2brb';
 
 export class Brain extends CA {
-  stats: Record<string, any> = {};
-
   states = [FIRING, REFRACTORY, READY];
   pallet = [[FIRING, REFRACTORY, READY]];
-
-  protected options: CAOptions;
 
   constructor(options?: Partial<CAOptions>) {
     super({

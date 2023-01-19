@@ -3,17 +3,16 @@ import { OCA } from '../classes/elementary';
 
 import type { CellState } from '../classes/states';
 
-const defaultECAOptions = {
-  oneDimensional: true,
+interface ECAOptions extends CAOptions {
+  ruleNumber: number;
+}
+
+const defaultECAOptions: Partial<ECAOptions> = {
   width: 43,
   height: 22,
   boundaryType: BoundaryType.Infinite,
   ruleNumber: 30,
 };
-
-interface ECAOptions extends CAOptions {
-  ruleNumber: number;
-}
 
 export class ECA extends OCA<CellState, ECAOptions> {
   width = 86 / 2;
@@ -25,17 +24,35 @@ export class ECA extends OCA<CellState, ECAOptions> {
   private ruleNumber: number;
 
   constructor(options?: Partial<ECAOptions>) {
-    super({
+    options = {
       ...defaultECAOptions,
       ...options,
-    });
+    };
 
-    this.ruleNumber = this.options.ruleNumber;
+    super(options);
+
+    this.ruleNumber = options.ruleNumber;
   }
 
   refreshStats() {
     this.stats.n = this.step;
     this.stats['a(n)'] = this.getValue(this.step);
+  }
+
+  doNeighborhood(_: CellState, x: number, y: number, R: number) {
+    if (y !== this.step) return;
+
+    // for each neighbor in range
+    for (let p = -R; p <= R; p++) {
+      const [xx, yy] = this.getPosition(x + p, this.step + 1);
+
+      // Cell was already visited, skip
+      if (this.changedGrid.has(xx, yy)) continue;
+
+      const c = this.get(xx, yy);
+      const n = this.getNextCell(c, xx, yy) || c;
+      this.setNext(xx, yy, n);
+    }
   }
 
   getNextCell(_: CellState, x: number, y: number) {

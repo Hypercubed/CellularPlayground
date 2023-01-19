@@ -6,10 +6,9 @@ export interface LifeOptions extends CAOptions {
   ruleString: string;
 }
 
-const LifeDefaultOptions = {
+const LifeDefaultOptions: Partial<LifeOptions> = {
   width: 64,
   height: 64,
-  continuous: false,
   ruleString: 'S23/B3',
 };
 
@@ -21,31 +20,28 @@ export const StillsAndOscillators =
 export const DieHard = '2o4bob$bo3b3o';
 
 export class Life extends CA {
-  stats: Record<string, any> = {
-    Alive: 0,
-  };
-
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];
 
-  protected options: LifeOptions;
   protected birth: number[];
   protected survival: number[];
 
   constructor(options?: Partial<LifeOptions>) {
-    super({
+    options = {
       ...LifeDefaultOptions,
       ...options,
-    });
+    };
 
-    this.options.ruleString = this.options.ruleString.toUpperCase();
+    super(options);
 
-    if (this.options.ruleString.startsWith('B')) {
-      const [B, S] = this.options.ruleString.split('/');
-      this.options.ruleString = S + '/' + B;
+    options.ruleString = options.ruleString.toUpperCase();
+
+    if (options.ruleString.startsWith('B')) {
+      const [B, S] = options.ruleString.split('/');
+      options.ruleString = S + '/' + B;
     }
 
-    const rule = parseRuleString(this.options.ruleString);
+    const rule = parseRuleString(options.ruleString);
 
     this.birth = rule.birth;
     this.survival = rule.survival;

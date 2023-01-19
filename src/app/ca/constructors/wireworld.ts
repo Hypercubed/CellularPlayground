@@ -18,10 +18,6 @@ export const Diodes =
   '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
 
 export class WireWorld extends CA {
-  stats = {
-    Electrons: 0,
-  };
-
   width = 30;
   height = 30;
 
