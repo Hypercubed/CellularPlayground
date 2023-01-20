@@ -35,8 +35,8 @@ export class Vote extends CA {
     this.vote = rule.vote;
   }
 
-  getNextCell(_: CellState, x: number, y: number) {
-    const s = this.neighborhoodCountWhen(x, y, ACTIVE);
+  stateFunction(_: CellState, x: number, y: number) {
+    const s = this.nineSum(x, y);
     return this.vote.indexOf(s) > -1 ? ACTIVE : EMPTY;
   }
 }

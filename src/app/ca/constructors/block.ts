@@ -48,7 +48,7 @@ export class BlockCA extends CA {
     // Can this use the BoundingBox iteration type?
     for (let x = 0; x < this.width; x += 2) {
       for (let y = 0; y < this.height; y += 2) {
-        this.doNeighborhood(null, x, y);
+        this.stepFunction(null, x, y);
       }
     }
 
@@ -67,7 +67,7 @@ export class BlockCA extends CA {
   }
 
   // Margolus neighborhood
-  doNeighborhood(_: CellState, x: number, y: number) {
+  stepFunction(_: CellState, x: number, y: number) {
     const d = this.step % 2;
 
     x = x - (x % 2) + d;

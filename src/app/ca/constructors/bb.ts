@@ -117,7 +117,7 @@ export class BB extends OCA<CellState, BBOptions> {
     this.rules = options.rules;
   }
 
-  doNeighborhood(c: CellState, x: number, y: number, _?: number) {
+  stepFunction(c: CellState, x: number, y: number, _?: number) {
     if (y !== this.step) return;
     const yy = y + 1;
 
@@ -125,7 +125,7 @@ export class BB extends OCA<CellState, BBOptions> {
     if (this.changedGrid.has(x, yy)) return;
 
     if (!isHead(c) || c.state[0] === 'H') {
-      this.setNext(x, yy, c);
+      this._setNext(x, yy, c);
       return;
     }
 
@@ -133,16 +133,14 @@ export class BB extends OCA<CellState, BBOptions> {
     const rule = this.rules?.[c.state];
     const write = String(rule[0]);
     const writeState = this.states.find((s) => s.state === write);
-    this.setNext(x, yy, writeState);
+    this._setNext(x, yy, writeState);
 
     // Move head
     const direction = rule[1];
     const xx = direction === 'L' ? x - 1 : x + 1;
     const nextCell = this.get(xx, y);
     const nextState = this.findState(rule[2] + getTapeState(nextCell));
-    // console.log(rule[2], xx, yy, nextState);
-    // console.log(this.states);
-    this.setNext(xx, yy, nextState);
+    this._setNext(xx, yy, nextState);
   }
 
   refreshStats() {

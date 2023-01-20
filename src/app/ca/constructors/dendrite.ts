@@ -30,7 +30,7 @@ export class Dendrite extends CA {
     });
   }
 
-  getNextCell(_: CellState, x: number, y: number) {
+  stateFunction(_: CellState, x: number, y: number) {
     const s = this.getNeighbors(x, y);
     const i = Math.floor(Math.random() * s.length);
     return s[i];

@@ -139,11 +139,26 @@
       margin: 5px 0;
     }
 
-    button {
+    button.pallet-cell {
+      overflow: clip;
+
+      .mdc-button__label {
+        width: 100%;
+        height: 100%;
+        line-height: 30px;
+    
+      }
+
+      .cell {
+        width: 100%;
+        height: 100%;
+      }
+
       &.active {
         border: 2px solid black;
       }
     }
+
   }
 
   #pallet {
@@ -198,14 +213,14 @@
     background-color: white;
 
     &--active,
-    &[data-state$='■'],
+    &[data-state^='■'],
     &[data-state$='1'] {
       color: white;
       background-color: black;
     }
 
     &--empty,
-    &[data-state$='□'],
+    &[data-state^='□'],
     &[data-state$='0'] {
       color: black;
       background-color: white;

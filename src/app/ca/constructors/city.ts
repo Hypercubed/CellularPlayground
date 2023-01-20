@@ -42,7 +42,7 @@ export class City extends CA<CityState> {
     this.refreshStats();
   }
 
-  getNextCell(c: CityState, y: number, x: number): CityState {
+  stateFunction(c: CityState, y: number, x: number): CityState {
     const rNeighbors = this.getNeighborsWhen(y, x, RESIDENTIAL);
     const iNeighbors = this.getNeighborsWhen(y, x, INDUSTRIAL);
     const cNeighbors = this.getNeighborsWhen(y, x, COMMERCIAL);

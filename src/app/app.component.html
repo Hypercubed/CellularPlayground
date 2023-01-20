@@ -48,13 +48,13 @@
           mat-fab
           *ngFor="let type of set; trackBy: trackByIndex"
           [title]="type.state"
-          class="cell"
-          [class]="'cell--' + type.state"
-          [attr.data-state]="type.state"
+          class="pallet-cell"
           [class.active]="currentType.state === type.state"
           (click)="currentType = type"
         >
-          <span>{{ type.display }}</span>
+          <div class="cell" [class]="'cell--' + type.state" [attr.data-state]="type.state">
+            <span>{{ type.display }}</span>
+          </div>
         </button>
       </div>
     </div>
@@ -106,6 +106,7 @@
         class="pattern-container"
         *ngFor="let pattern of caItem.patterns"
         (click)="loadPattern(pattern)"
+        (contextmenu)="onRightClick($event, pattern)"
       >
         <app-pattern-view
           [pattern]="pattern"
@@ -116,6 +117,7 @@
         class="pattern-container"
         *ngFor="let pattern of caItem.savedPatterns"
         (click)="loadPattern(pattern)"
+        (contextmenu)="onRightClick($event, pattern)"
       >
         <button mat-mini-fab (click)="onRemovePattern(pattern)">
           <mat-icon>close</mat-icon>

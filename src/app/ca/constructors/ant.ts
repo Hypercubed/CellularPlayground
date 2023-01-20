@@ -69,13 +69,17 @@ export class Ant extends CA {
     WHITE,
   ];
 
-  pallet = [[WHITE_UP], [BLACK, WHITE]];
+  pallet = [[WHITE_UP, WHITE_RIGHT, WHITE_DOWN, WHITE_LEFT], [BLACK_UP, BLACK_RIGHT, BLACK_DOWN, BLACK_LEFT], [BLACK, WHITE]];
+
+  private rule = 'RL';
 
   constructor(options?: Partial<CAOptions>) {
     super({
       ...AntOptionsDefault,
       ...options,
     });
+
+    this.rule = 'RL';  // Right on black, left on white
   }
 
   refreshStats() {
@@ -85,68 +89,54 @@ export class Ant extends CA {
 
   // At a white square, turn 90° clockwise, flip the color of the square, move forward one unit
   // At a black square, turn 90° counter-clockwise, flip the color of the square, move forward one unit
-  doNeighborhood(c: CellState, x: number, y: number, _?: number) {
+  stepFunction(c: CellState, x: number, y: number) {
     if (!isAnt(c)) return;
 
     [x, y] = this.getPosition(x, y);
 
-    const color = getColor(c);
-    const dir = getDirection(c);
+    const color = getCellColor(c);
+    const dir = hetAntDirection(c);
 
     // Flip the color
     const newColor = color === Color.WHITE ? BLACK : WHITE;
     this._setNext(x, y, newColor);
 
     // Turn
-    const newDir = getNextDirection(dir, color);
+    const ci = color === Color.WHITE ? 1 : 0;
+    const newDir = turn(dir, this.rule[ci] as 'L' | 'R');
 
     // Move
-    const [xx, yy] = getNextPosition(newDir, x, y);
-    const nextColor = getColor(this.get(xx, yy));
-    const nextState = getState(newDir, nextColor);
-    this.setNext(xx, yy, nextState);
-
-    this._setNext(x, y, newColor);
+    const [xx, yy] = this.getPosition(...getNextPosition(newDir, x, y));
+    const nextColor = getCellColor(this._get(xx, yy));
+    const nextState = getAntStane(newDir, nextColor);
+    this._setNext(xx, yy, nextState);
   }
 }
 
-function getState(direction: string, color: Color) {
-  if (color === Color.WHITE) {
-    switch (direction) {
-      case Direction.UP:
-        return WHITE_UP;
-      case Direction.RIGHT:
-        return WHITE_RIGHT;
-      case Direction.DOWN:
-        return WHITE_DOWN;
-      case Direction.LEFT:
-        return WHITE_LEFT;
-    }
-  } else {
-    switch (direction) {
-      case Direction.UP:
-        return BLACK_UP;
-      case Direction.RIGHT:
-        return BLACK_RIGHT;
-      case Direction.DOWN:
-        return BLACK_DOWN;
-      case Direction.LEFT:
-        return BLACK_LEFT;
-    }
+function getAntStane(direction: string, color: Color) {
+  switch (direction) {
+    case Direction.UP:
+      return color === Color.WHITE ? WHITE_UP : BLACK_UP;
+    case Direction.RIGHT:
+      return color === Color.WHITE ? WHITE_RIGHT : BLACK_RIGHT;
+    case Direction.DOWN:
+      return color === Color.WHITE ? WHITE_DOWN : BLACK_DOWN;
+    case Direction.LEFT:
+      return color === Color.WHITE ? WHITE_LEFT: BLACK_LEFT;
   }
 }
 
-function getColor(s: CellState): Color {
+function getCellColor(s: CellState): Color {
   if (!s) return null;
   return (s.state[0] as Color) || null;
 }
 
-function getDirection(s: CellState): Direction {
+function hetAntDirection(s: CellState): Direction {
   if (!s) return null;
   return (s.state[1] as Direction) || null;
 }
 
-function getNextPosition(dir: Direction, x: number, y: number) {
+function getNextPosition(dir: Direction, x: number, y: number): [number, number] {
   switch (dir) {
     case Direction.UP:
       return [x, y - 1];
@@ -159,27 +149,15 @@ function getNextPosition(dir: Direction, x: number, y: number) {
   }
 }
 
-function getNextDirection(direction: Direction, color: Color): Direction {
-  if (color === Color.WHITE) {
+function turn(direction: Direction, to: 'L' | 'R'): Direction {
     switch (direction) {
       case Direction.UP:
-        return Direction.RIGHT;
+        return to === 'L' ? Direction.LEFT : Direction.RIGHT;
       case Direction.RIGHT:
-        return Direction.DOWN;
+        return to === 'L' ? Direction.UP : Direction.DOWN;
       case Direction.DOWN:
-        return Direction.LEFT;
+        return to === 'L' ? Direction.RIGHT : Direction.LEFT;
       case Direction.LEFT:
-        return Direction.UP;
+        return to === 'L' ? Direction.DOWN : Direction.UP;
     }
-  }
-  switch (direction) {
-    case Direction.UP:
-      return Direction.LEFT;
-    case Direction.RIGHT:
-      return Direction.UP;
-    case Direction.DOWN:
-      return Direction.RIGHT;
-    case Direction.LEFT:
-      return Direction.DOWN;
-  }
 }

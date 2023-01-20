@@ -3,40 +3,26 @@ export function readRle(rle: string): {
   height: number;
   width: number;
 } {
-  let height = 0;
-  let width = 0;
-
-  let x = 0;
-  let y = 0;
-  let grid = [[]];
-
-  const lines = rle
+  // Remove comments and whitespace
+  rle = rle
     .split(/\n/)
-    .filter((l) => !l.startsWith('#'))
-    .filter((l) => l.length > 0)
-    .map((l) => l.trim().replace(/\!$/, ''))
-    .join('$');
+    .filter(l => !(l.startsWith('#') || l.startsWith('x =') || l.startsWith('x=')))
+    .map(l => l.trim().replace(/\!$/, ''))
+    .filter(l => l.length > 0)
+    .join('')
+    .replace(/\s/g, '');
 
-  const r = lines.split('$');
+  // Expand runs
+  rle = rle.replace(/(\d+)(\D)/g, (_, d, c) => {
+    const n = parseInt(d, 10);
+    return c.repeat(n);
+  });
 
-  for (const c of r) {
-    const m = c.matchAll(/(\d*)(\D)/g);
-    for (let [_, count, token] of m) {
-      for (let i = 0; i < +(count || 1); i++) {
-        grid[y][x++] = token;
-        if (x > width) {
-          width = x;
-        }
-      }
-    }
-
-    x = 0;
-    y++;
-    grid[y] = [];
-    if (y > height) {
-      height = y;
-    }
-  }
+  const grid = rle.split('$')
+    .map((l) => l.split(''));
+  
+  const height = grid.length;
+  const width = grid.reduce((acc, row) => Math.max(acc, row.length), 0);
 
   return { grid, height, width };
 }

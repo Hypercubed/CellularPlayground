@@ -47,12 +47,11 @@ export class Life extends CA {
     this.survival = rule.survival;
   }
 
-  getNextCell(c: CellState, x: number, y: number) {
-    const s = this.neighborsCountWhen(x, y, ACTIVE);
+  stateFunction(c: CellState, x: number, y: number) {
+    const s = this.eightSum(x, y);
     if (c.state === EMPTY.state) {
-      return this.birth.indexOf(s) > -1 ? ACTIVE : EMPTY;
-    } else if (c.state === ACTIVE.state) {
-      return this.survival.indexOf(s) > -1 ? ACTIVE : EMPTY;
-    }
+      return this.birth.includes(s) ? ACTIVE : EMPTY;
+    } 
+    return this.survival.includes(s) ? ACTIVE : EMPTY;
   }
 }

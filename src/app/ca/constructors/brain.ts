@@ -24,7 +24,7 @@ export class Brain extends CA {
     });
   }
 
-  getNextCell(c: CellState, x: number, y: number) {
+  stateFunction(c: CellState, x: number, y: number) {
     switch (c) {
       case REFRACTORY:
         return READY;

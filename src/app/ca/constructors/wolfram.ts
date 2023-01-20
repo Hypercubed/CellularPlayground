@@ -39,7 +39,7 @@ export class ECA extends OCA<CellState, ECAOptions> {
     this.stats['a(n)'] = this.getValue(this.step);
   }
 
-  doNeighborhood(_: CellState, x: number, y: number, R: number) {
+  stepFunction(_: CellState, x: number, y: number, R: number) {
     if (y !== this.step) return;
 
     // for each neighbor in range
@@ -49,13 +49,13 @@ export class ECA extends OCA<CellState, ECAOptions> {
       // Cell was already visited, skip
       if (this.changedGrid.has(xx, yy)) continue;
 
-      const c = this.get(xx, yy);
-      const n = this.getNextCell(c, xx, yy) || c;
-      this.setNext(xx, yy, n);
+      const c = this._get(xx, yy);
+      const n = this.stateFunction(c, xx, yy) || c;
+      this._setNext(xx, yy, n);
     }
   }
 
-  getNextCell(_: CellState, x: number, y: number) {
+  stateFunction(_: CellState, x: number, y: number) {
     const b0 = +(this.get(x + 1, y - 1)?.state === ACTIVE.state);
     const b1 = +(this.get(x, y - 1)?.state === ACTIVE.state);
     const b2 = +(this.get(x - 1, y - 1)?.state === ACTIVE.state);

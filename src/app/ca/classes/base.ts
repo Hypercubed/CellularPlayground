@@ -176,6 +176,22 @@ export abstract class CA<
     return c;
   }
 
+    /*
+   * Gets the count of non-empty cells in the Moore neighborhood, including self
+   */
+    nineSum(x: number, y: number): number {
+      let c = 0;
+      for (let p = x - 1; p <= x + 1; p++) {
+        for (let q = y - 1; q <= y + 1; q++) {
+          const ss = this.get(p, q);
+          if (ss?.state !== this.emptyCell.state) c++;
+        }
+      }
+      return c;
+    }
+  
+
+
   /*
    * Gets an array of all cells in the Moore neighborhood of the given cell, excluding self
    */
@@ -221,6 +237,21 @@ export abstract class CA<
     return c;
   }
 
+  /*
+   * Counts the number of cells in the Moore neighborhood of the given cell that are not empty
+   */
+  eightSum(x: number, y: number): number {
+    let c = 0;
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        if (p === x && q === y) continue;
+        const ss = this.get(p, q);
+        if (ss?.state && ss.state !== this.emptyCell.state) c++;
+      }
+    }
+    return c;
+  }
+
   getVonNeumannNeighbors(x: number, y: number): T[] {
     const up = this.get(x, y - 1);
     const right = this.get(x + 1, y);
@@ -250,7 +281,7 @@ export abstract class CA<
     return this._get(...this.getPosition(x, y));
   }
 
-  private _get(x: number, y: number): T {
+  protected _get(x: number, y: number): T {
     return this.currentGrid.get(x, y) || this.emptyCell;
   }
 
@@ -283,7 +314,7 @@ export abstract class CA<
     this.changedGrid.set(x, y, s);
   }
 
-  protected doNeighborhood(_: T, x: number, y: number, R: number) {
+  protected stepFunction(_: T, x: number, y: number, R: number) {
     // for each neighbor in range
     for (let q = -R; q <= R; q++) {
       for (let p = -R; p <= R; p++) {
@@ -293,7 +324,7 @@ export abstract class CA<
         if (this.changedGrid.has(xx, yy)) continue;
 
         const c = this._get(xx, yy);
-        const n = this.getNextCell(c, xx, yy) || c;
+        const n = this.stateFunction(c, xx, yy) || c;
         this._setNext(xx, yy, n);
       }
     }
@@ -321,7 +352,7 @@ export abstract class CA<
 
     // For each cell that changed on the previous tick (and neighbors)
     lastChanges.forEach((c: T, x: number, y: number) =>
-      this.doNeighborhood(c, x, y, this.neighborhoodRange)
+      this.stepFunction(c, x, y, this.neighborhoodRange)
     );
 
     this.currentGrid.assign(this.changedGrid);
@@ -333,7 +364,7 @@ export abstract class CA<
 
     // For each cell do also do all non-empty cells (and neighbors)
     this.currentGrid.forEach((c: T, x: number, y: number) =>
-      this.doNeighborhood(c, x, y, this.neighborhoodRange)
+      this.stepFunction(c, x, y, this.neighborhoodRange)
     );
 
     this.currentGrid.assign(this.changedGrid);
@@ -349,7 +380,7 @@ export abstract class CA<
       for (let x = bb[0]; x < bb[2]; x++) {
         for (let y = bb[1]; y < bb[3]; y++) {
           const c = this.get(x, y);
-          this.doNeighborhood(c, x, y, this.neighborhoodRange);
+          this.stepFunction(c, x, y, this.neighborhoodRange);
         }
       }
     }
@@ -519,7 +550,7 @@ export abstract class CA<
     }
   }
 
-  protected getNextCell(c: T, y: number, x: number): T | void {
+  protected stateFunction(c: T, y: number, x: number): T | void {
     return;
   }
 }

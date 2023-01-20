@@ -171,7 +171,7 @@ export class Rain extends CA {
     }
   }
 
-  doNeighborhood(c: CellState, x: number, y: number, _?: number) {
+  stepFunction(c: CellState, x: number, y: number, _?: number) {
     if (this.changedGrid.has(x, y)) return;
 
     switch (c) {

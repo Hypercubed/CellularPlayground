@@ -8,6 +8,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { KeyValue } from '@angular/common';
+import {Clipboard} from '@angular/cdk/clipboard';
+import type { MatSelectChange } from '@angular/material/select';
 
 import Stats from 'stats.js';
 
@@ -16,7 +18,6 @@ import { OCA } from './ca/classes/elementary';
 import { CA, CAOptions } from './ca/classes/base';
 import { makeGridWith } from './ca/utils/grid';
 
-import type { MatSelectChange } from '@angular/material/select';
 import type { CellState } from './ca/classes/states';
 
 @Component({
@@ -52,12 +53,16 @@ export class AppComponent {
   timeoutMs: number;
   frameSkip: number;
 
-  constructor(private readonly cdr: ChangeDetectorRef) {
+  constructor(private readonly clipboard: Clipboard, private readonly cdr: ChangeDetectorRef) {
     this.stats = new Stats();
   }
 
   ngOnInit() {
-    this.setupCA(this.CAList[0], this.CAList[0]?.options[0]);
+    this.loadStateFromStore();
+    this.caItem ??= this.CAList[0];
+    this.caOptions ??= this.caItem.options[0];
+
+    this.setupCA(this.caItem, this.caOptions);
 
     this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     this.statElement.nativeElement.appendChild(this.stats.dom);
@@ -158,10 +163,28 @@ export class AppComponent {
   onKeyDown(event: KeyboardEvent) {
     if (event.code === 'Space') {
       this.onTogglePlay();
+    } else if (event.code === 'KeyR' && !event.ctrlKey) {
+      this.onReset();
+    } else if (event.code === 'KeyC' && !event.ctrlKey) {
+      this.onClear();
+    } else if (event.code === 'KeyA' && !event.ctrlKey) {
+      this.onRandom();
+    } else if (event.code === 'ArrowRight' && !event.ctrlKey) {
+      this.play();
     } else if (event.code === 'KeyS' && event.ctrlKey) {
       this.onAddPattern();
       event.preventDefault();
+    } else if (event.code === 'KeyC' && event.ctrlKey) {
+      const pattern = this.ca.getRLE();
+      this.clipboard.copy(pattern);
+      event.preventDefault();
+    } else if (event.code === 'KeyV' && event.ctrlKey) {
+      navigator['clipboard'].readText().then((data) => {
+        this.loadPattern(data);
+      });
+      event.preventDefault();
     }
+    // console.log(event);
   }
 
   setupCA(caItem: CAListItem, caOptions?: CAOptions) {
@@ -172,6 +195,7 @@ export class AppComponent {
     this.resetCA(caOptions);
     this.currentType = this.ca.defaultCell;
     this.loadPatternsFromStore();
+    this.saveStateToStore();
   }
 
   resetCA(caOptions: CAOptions) {
@@ -268,6 +292,15 @@ export class AppComponent {
   loadPattern(pattern: string) {
     this.ca.loadRLE(pattern);
     this.ca.refreshStats();
+
+    this.cdr.markForCheck();
+  }
+
+  onRightClick(event: Event, pattern: string) {
+    event.preventDefault();
+    console.log(pattern);
+    this.clipboard.copy(pattern);
+    return false;
   }
 
   private savePatternsToStore() {
@@ -287,5 +320,25 @@ export class AppComponent {
         console.log(e);
       }
     }
+  }
+
+  private saveStateToStore() {
+    const ruleIndex = this.CAList.findIndex(c => c === this.caItem);
+    const optionIndex = this.caItem.options.findIndex((c: CAOptions) => c === this.caOptions);
+
+    localStorage.setItem(
+      `rule`,
+      `${ruleIndex}-${optionIndex}`
+    );
+  }
+
+  private loadStateFromStore() {
+    const rule = localStorage.getItem(`rule`);
+    if (!rule) return;
+
+    const [ruleIndex, optionIndex] = rule.split('-').map(i => parseInt(i, 10));
+
+    this.caItem = this.CAList[ruleIndex];
+    this.caOptions = this.caItem.options[optionIndex];
   }
 }

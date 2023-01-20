@@ -106,7 +106,7 @@ export class WaTor extends CA<WaTorState> {
     this.set(x, y, o);
   }
 
-  doNeighborhood(c: WaTorState, x: number, y: number, _?: number) {
+  stepFunction(c: WaTorState, x: number, y: number, _?: number) {
     if (this.changedGrid.has(x, y)) return;
 
     if (c === EMPTY) return;

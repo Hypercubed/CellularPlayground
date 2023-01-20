@@ -34,16 +34,21 @@ export class WireWorld extends CA {
   Electron tail → Conductor
   Conductor → Electron head if exactly one or two of the neighboring cells are electron heads, or remains Conductor otherwise.
   */
-  getNextCell(a: CellState, x: number, y: number) {
-    if (a.state === HEAD.state) return TAIL;
-    if (a.state === TAIL.state) return ACTIVE;
-    if (a.state === ACTIVE.state) {
-      const c = this.neighborsCountWhen(x, y, HEAD);
-      if (c === 1 || c === 2) {
-        return HEAD;
+  stateFunction(a: CellState, x: number, y: number) {
+    switch (a.state) {
+      case HEAD.state:
+        return TAIL;
+      case TAIL.state:
+        return ACTIVE;
+      case ACTIVE.state: {
+        const c = this.neighborsCountWhen(x, y, HEAD);
+        if (c === 1 || c === 2) {
+          return HEAD;
+        }
       }
+      default:
+        return a;
     }
-    return a;
   }
 
   refreshStats() {
