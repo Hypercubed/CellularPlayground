@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1674279377821,
+  "timestamp": 1674320344221,
   "index": "/CellularPlayground/index.html",
   "assetGroups": [
     {
@@ -12,7 +12,7 @@
       },
       "urls": [
         "/CellularPlayground/index.html",
-        "/CellularPlayground/main.ff0e17c9696ed0c2.js",
+        "/CellularPlayground/main.67639e3d6582bcd9.js",
         "/CellularPlayground/manifest.webmanifest",
         "/CellularPlayground/polyfills.e96fb911a4dcf6de.js",
         "/CellularPlayground/runtime.233eba379154c253.js",
@@ -50,8 +50,8 @@
     "/CellularPlayground/assets/icons/icon-512x512.png": "7cf04f71742966e5a5bce2cb5de0415ad7b3fcc6",
     "/CellularPlayground/assets/icons/icon-72x72.png": "16170bb75ec361ea96f13d0766a6c7b53f0ab906",
     "/CellularPlayground/assets/icons/icon-96x96.png": "19a44ddfad3cde67308fe9f5e8556acfb4a0a28b",
-    "/CellularPlayground/index.html": "7598e31f38f3255dddd03a85f3c4e0cac6fdcbb8",
-    "/CellularPlayground/main.ff0e17c9696ed0c2.js": "44e32f4225403a5b483338b7b3cf486fd470c177",
+    "/CellularPlayground/index.html": "3fadd8628bed7ec6b61d23eaf49ddcfd05da9c42",
+    "/CellularPlayground/main.67639e3d6582bcd9.js": "54f73af35b67735c1d6c8fb58b2dca2f4b24e3d1",
     "/CellularPlayground/manifest.webmanifest": "075895cc3ffc99eccb9f9b9cf0517be03a570222",
     "/CellularPlayground/polyfills.e96fb911a4dcf6de.js": "2bd3fede7c7001319796f77944a9686b861bf160",
     "/CellularPlayground/runtime.233eba379154c253.js": "cb5d79a907360e0da16558b15d0f7492c0d026a4",
