@@ -31,14 +31,14 @@ const DefaultOptions: Partial<WaTorOptions> = {
   species: {
     fish: {
       energy: Infinity,
-      fertility: 4
+      fertility: 4,
     },
     shark: {
       energy: 3,
       fertility: 12,
-      prey: 'fish'
-    }
-  }
+      prey: 'fish',
+    },
+  },
 };
 
 export class WaTor extends CA<WaTorState> {
@@ -67,7 +67,7 @@ export class WaTor extends CA<WaTorState> {
   createState(
     state: string,
     fertility: number = this.species[state].fertility,
-    energy: number =this.species[state].energy,
+    energy: number = this.species[state].energy,
     prey: string = this.species[state].prey
   ): WaTorState {
     return Object.freeze({
@@ -76,7 +76,7 @@ export class WaTor extends CA<WaTorState> {
       display: '',
       fertility,
       energy,
-      prey
+      prey,
     });
   }
 
@@ -113,7 +113,7 @@ export class WaTor extends CA<WaTorState> {
     if (c === EMPTY) return;
 
     const neighbors = this.getVonNeumannNeighbors(x, y);
-    
+
     // death
     if (c.energy <= 0) {
       this.set(x, y, EMPTY);
@@ -123,16 +123,14 @@ export class WaTor extends CA<WaTorState> {
     // find prey first
     if (c.prey) {
       const [dx, dy] = findRandomMove(neighbors, c.prey);
-      if (dx !== null)
-        return this.move(c, x, y, dx, dy);
+      if (dx !== null) return this.move(c, x, y, dx, dy);
     }
 
     // Otherwise just swim
     const [dx, dy] = findRandomMove(neighbors, EMPTY.state);
-    if (dx !== null)
-      return this.move(c, x, y, dx, dy);
+    if (dx !== null) return this.move(c, x, y, dx, dy);
 
-    c = this.createState(c.state, c.fertility- 1, c.energy - 1);
+    c = this.createState(c.state, c.fertility - 1, c.energy - 1);
     this.set(x, y, c);
   }
 
@@ -153,7 +151,7 @@ function findRandomMove(neighbors: WaTorState[], state: string) {
     const i = Math.floor(Math.random() * emptyNeighbors.length);
     return getPosition(emptyNeighbors[i]);
   }
-  return [null,null];
+  return [null, null];
 }
 
 function getPosition(i: number): [number, number] {

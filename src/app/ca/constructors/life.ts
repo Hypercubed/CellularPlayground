@@ -51,7 +51,7 @@ export class Life extends CA {
     const s = this.eightSum(x, y);
     if (c.state === EMPTY.state) {
       return this.birth.includes(s) ? ACTIVE : EMPTY;
-    } 
+    }
     return this.survival.includes(s) ? ACTIVE : EMPTY;
   }
 }

@@ -69,7 +69,11 @@ export class Ant extends CA {
     WHITE,
   ];
 
-  pallet = [[WHITE_UP, WHITE_RIGHT, WHITE_DOWN, WHITE_LEFT], [BLACK_UP, BLACK_RIGHT, BLACK_DOWN, BLACK_LEFT], [BLACK, WHITE]];
+  pallet = [
+    [WHITE_UP, WHITE_RIGHT, WHITE_DOWN, WHITE_LEFT],
+    [BLACK_UP, BLACK_RIGHT, BLACK_DOWN, BLACK_LEFT],
+    [BLACK, WHITE],
+  ];
 
   private rule = 'RL';
 
@@ -79,7 +83,7 @@ export class Ant extends CA {
       ...options,
     });
 
-    this.rule = 'RL';  // Right on black, left on white
+    this.rule = 'RL'; // Right on black, left on white
   }
 
   refreshStats() {
@@ -122,7 +126,7 @@ function getAntStane(direction: string, color: Color) {
     case Direction.DOWN:
       return color === Color.WHITE ? WHITE_DOWN : BLACK_DOWN;
     case Direction.LEFT:
-      return color === Color.WHITE ? WHITE_LEFT: BLACK_LEFT;
+      return color === Color.WHITE ? WHITE_LEFT : BLACK_LEFT;
   }
 }
 
@@ -136,7 +140,11 @@ function hetAntDirection(s: CellState): Direction {
   return (s.state[1] as Direction) || null;
 }
 
-function getNextPosition(dir: Direction, x: number, y: number): [number, number] {
+function getNextPosition(
+  dir: Direction,
+  x: number,
+  y: number
+): [number, number] {
   switch (dir) {
     case Direction.UP:
       return [x, y - 1];
@@ -150,14 +158,14 @@ function getNextPosition(dir: Direction, x: number, y: number): [number, number]
 }
 
 function turn(direction: Direction, to: 'L' | 'R'): Direction {
-    switch (direction) {
-      case Direction.UP:
-        return to === 'L' ? Direction.LEFT : Direction.RIGHT;
-      case Direction.RIGHT:
-        return to === 'L' ? Direction.UP : Direction.DOWN;
-      case Direction.DOWN:
-        return to === 'L' ? Direction.RIGHT : Direction.LEFT;
-      case Direction.LEFT:
-        return to === 'L' ? Direction.DOWN : Direction.UP;
-    }
+  switch (direction) {
+    case Direction.UP:
+      return to === 'L' ? Direction.LEFT : Direction.RIGHT;
+    case Direction.RIGHT:
+      return to === 'L' ? Direction.UP : Direction.DOWN;
+    case Direction.DOWN:
+      return to === 'L' ? Direction.RIGHT : Direction.LEFT;
+    case Direction.LEFT:
+      return to === 'L' ? Direction.DOWN : Direction.UP;
+  }
 }

@@ -223,7 +223,7 @@ export const CAList: CAListItem[] = [
         species: {
           shrimp: {
             energy: Infinity,
-            fertility: 4
+            fertility: 4,
           },
           fish: {
             energy: 3,
@@ -234,14 +234,14 @@ export const CAList: CAListItem[] = [
             energy: 12,
             fertility: 15,
             prey: 'fish',
-          }
-        }
+          },
+        },
       },
     ],
     patterns: [],
     savedPatterns: [],
-    class: 'wator'
-  }
+    class: 'wator',
+  },
 ];
 
 // TODO: Sharks and Fish on the Planet Wa-Tor

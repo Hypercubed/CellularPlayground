@@ -52,7 +52,11 @@
           [class.active]="currentType.state === type.state"
           (click)="currentType = type"
         >
-          <div class="cell" [class]="'cell--' + type.state" [attr.data-state]="type.state">
+          <div
+            class="cell"
+            [class]="'cell--' + type.state"
+            [attr.data-state]="type.state"
+          >
             <span>{{ type.display }}</span>
           </div>
         </button>

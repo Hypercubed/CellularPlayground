@@ -177,21 +177,19 @@ export abstract class CA<
     return c;
   }
 
-    /*
+  /*
    * Gets the count of non-empty cells in the Moore neighborhood, including self
    */
-    nineSum(x: number, y: number): number {
-      let c = 0;
-      for (let p = x - 1; p <= x + 1; p++) {
-        for (let q = y - 1; q <= y + 1; q++) {
-          const ss = this.get(p, q);
-          if (ss?.state !== this.emptyCell.state) c++;
-        }
+  nineSum(x: number, y: number): number {
+    let c = 0;
+    for (let p = x - 1; p <= x + 1; p++) {
+      for (let q = y - 1; q <= y + 1; q++) {
+        const ss = this.get(p, q);
+        if (ss?.state !== this.emptyCell.state) c++;
       }
-      return c;
     }
-  
-
+    return c;
+  }
 
   /*
    * Gets an array of all cells in the Moore neighborhood of the given cell, excluding self

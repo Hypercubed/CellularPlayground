@@ -8,7 +8,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { KeyValue } from '@angular/common';
-import {Clipboard} from '@angular/cdk/clipboard';
+import { Clipboard } from '@angular/cdk/clipboard';
 import type { MatSelectChange } from '@angular/material/select';
 
 import Stats from 'stats.js';
@@ -53,7 +53,10 @@ export class AppComponent {
   timeoutMs: number;
   frameSkip: number;
 
-  constructor(private readonly clipboard: Clipboard, private readonly cdr: ChangeDetectorRef) {
+  constructor(
+    private readonly clipboard: Clipboard,
+    private readonly cdr: ChangeDetectorRef
+  ) {
     this.stats = new Stats();
   }
 
@@ -323,22 +326,23 @@ export class AppComponent {
   }
 
   private saveStateToStore() {
-    const ruleIndex = this.CAList.findIndex(c => c === this.caItem);
-    const optionIndex = this.caItem.options.findIndex((c: CAOptions) => c === this.caOptions);
-
-    localStorage.setItem(
-      `rule`,
-      `${ruleIndex}-${optionIndex}`
+    const ruleIndex = this.CAList.findIndex((c) => c === this.caItem);
+    const optionIndex = this.caItem.options.findIndex(
+      (c: CAOptions) => c === this.caOptions
     );
+
+    localStorage.setItem(`rule`, `${ruleIndex}-${optionIndex}`);
   }
 
   private loadStateFromStore() {
     const rule = localStorage.getItem(`rule`);
     if (!rule) return;
 
-    const [ruleIndex, optionIndex] = rule.split('-').map(i => parseInt(i, 10));
+    const [ruleIndex, optionIndex] = rule
+      .split('-')
+      .map((i) => parseInt(i, 10));
 
     this.caItem = this.CAList[ruleIndex] || this.CAList[0];
-    this.caOptions = this.caItem.options[optionIndex] ||  this.caItem.options[0];
+    this.caOptions = this.caItem.options[optionIndex] || this.caItem.options[0];
   }
 }
