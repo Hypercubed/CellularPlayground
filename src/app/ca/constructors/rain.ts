@@ -8,8 +8,8 @@ import {
 import { CellState, createState } from '../classes/states';
 
 const RainDefaultOptions: Partial<CAOptions> = {
-  width: 6,
-  height: 6,
+  width: 60,
+  height: 60,
   boundaryType: BoundaryType.Wall,
   iterationType: IterationType.Active,
   neighborhoodRange: 0,

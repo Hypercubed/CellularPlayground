@@ -155,9 +155,10 @@ export abstract class CA<
   /*
    * Gets the number of cells in the world that match the given state
    */
-  worldCountWhen(s: T): number {
+  worldCountWhen(s: T | string): number {
+    const state = typeof s === 'string' ? s : s.state;
     return this.currentGrid.reduce(
-      (c, cell) => c + +(cell?.state === s.state),
+      (c, cell) => c + +(cell?.state === state),
       0
     );
   }
@@ -462,7 +463,7 @@ export abstract class CA<
     let c = 0;
 
     const [yMin, xMax, yMax, xMin] =
-      this.boundaryType === BoundaryType.Infinite
+      this.boundaryType !== BoundaryType.Wall
         ? this.currentGrid.getBoundingBox()
         : [0, this.width - 1, this.height - 1, 0];
 
@@ -508,7 +509,7 @@ export abstract class CA<
     let dx = 0;
     let dy = 0;
 
-    if (this.boundaryType === BoundaryType.Infinite) {
+    if (this.boundaryType !== BoundaryType.Wall) {
       // Center the pattern
       dx = Math.floor((this.width - width) / 2);
       dy = Math.floor((this.height - height) / 2);

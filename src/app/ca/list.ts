@@ -205,14 +205,43 @@ export const CAList: CAListItem[] = [
     savedPatterns: [],
     class: 'block',
   },
+  // {
+  //   title: 'Wa-Tor',
+  //   Ctor: WaTor,
+  //   options: [],
+  //   patterns: [],
+  //   savedPatterns: [],
+  //   class: 'wator',
+  // },
   {
-    title: 'Wa-Tor',
+    title: 'Wa-Tor 2',
     Ctor: WaTor,
-    options: [],
+    options: [
+      { title: 'Fish and Sharks' },
+      {
+        title: 'Shrimp, Fish and Sharks',
+        species: {
+          shrimp: {
+            energy: Infinity,
+            fertility: 4
+          },
+          fish: {
+            energy: 3,
+            fertility: 12,
+            prey: 'shrimp',
+          },
+          shark: {
+            energy: 12,
+            fertility: 15,
+            prey: 'fish',
+          }
+        }
+      },
+    ],
     patterns: [],
     savedPatterns: [],
-    class: 'wator',
-  },
+    class: 'wator'
+  }
 ];
 
 // TODO: Sharks and Fish on the Planet Wa-Tor

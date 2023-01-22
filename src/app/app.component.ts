@@ -338,7 +338,7 @@ export class AppComponent {
 
     const [ruleIndex, optionIndex] = rule.split('-').map(i => parseInt(i, 10));
 
-    this.caItem = this.CAList[ruleIndex];
-    this.caOptions = this.caItem.options[optionIndex];
+    this.caItem = this.CAList[ruleIndex] || this.CAList[0];
+    this.caOptions = this.caItem.options[optionIndex] ||  this.caItem.options[0];
   }
 }

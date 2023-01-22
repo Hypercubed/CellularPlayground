@@ -1,3 +1,6 @@
+// Inspired by the “Sharks and Fish on the Planet Wa-Tor” ecosystem simulation described in A. K. Dewdney's The Armchair Universe
+// A. K. Dewdney, The Armchair Universe, W. H. Freeman: New York, 1988
+
 import {
   EMPTY as _EMPTY,
   CA,
@@ -10,67 +13,71 @@ import { CellState } from '../classes/states';
 interface WaTorState extends CellState {
   fertility: number;
   energy: number;
+  prey: string | null;
 }
 
-export function createState(
-  state: string,
-  fertility = 0,
-  energy = 0
-): WaTorState {
-  return Object.freeze({
-    state,
-    token: state[0].toUpperCase(),
-    display: '',
-    fertility,
-    energy,
-  });
-}
-
-const initial_energies = { fish: 2, shark: 3 };
-const fertility_thresholds = { fish: 4, shark: 12 };
-
-const SHARK = createState(
-  'shark',
-  fertility_thresholds['shark'],
-  initial_energies['shark']
-);
-const FISH = createState(
-  'fish',
-  fertility_thresholds['fish'],
-  initial_energies['fish']
-);
 const EMPTY = _EMPTY as WaTorState;
 
-const DefaultOptions: Partial<CAOptions> = {
+interface WaTorOptions extends CAOptions {
+  species: Record<string, Partial<WaTorState>>;
+}
+
+const DefaultOptions: Partial<WaTorOptions> = {
   width: 40,
   height: 40,
   boundaryType: BoundaryType.Torus,
   iterationType: IterationType.Active,
   neighborhoodRange: 0,
+  species: {
+    fish: {
+      energy: Infinity,
+      fertility: 4
+    },
+    shark: {
+      energy: 3,
+      fertility: 12,
+      prey: 'fish'
+    }
+  }
 };
 
 export class WaTor extends CA<WaTorState> {
-  states = [SHARK, FISH, EMPTY];
-  pallet = [[SHARK, FISH], [EMPTY]];
+  states = [EMPTY];
+  pallet = [[], [EMPTY]];
 
-  protected rule: number[];
+  private species: Record<string, Partial<WaTorState>> = {};
 
-  constructor(options?: Partial<CAOptions>) {
-    super({
+  constructor(options?: Partial<WaTorOptions>) {
+    options = {
       ...DefaultOptions,
       ...options,
-    });
+    };
+
+    super(options);
+
+    this.species = options.species;
+
+    for (const [name, s] of Object.entries(this.species)) {
+      const state = this.createState(name);
+      this.states.unshift(state);
+      this.pallet[0].push(state);
+    }
   }
 
-  findRandomMove(neighbors: WaTorState[], STATE: WaTorState) {
-    const emptyNeighbors = neighbors
-      .map((n, i) => (n.state === STATE.state ? i : null))
-      .filter((n) => n !== null);
-    if (emptyNeighbors.length > 0) {
-      const i = Math.floor(Math.random() * emptyNeighbors.length);
-      return getPosition(emptyNeighbors[i]);
-    }
-    return;
+  createState(
+    state: string,
+    fertility: number = this.species[state].fertility,
+    energy: number =this.species[state].energy,
+    prey: string = this.species[state].prey
+  ): WaTorState {
+    return Object.freeze({
+      state,
+      token: state[0].toUpperCase(),
+      display: '',
+      fertility,
+      energy,
+      prey
+    });
   }
 
   move(c: WaTorState, x: number, y: number, dx: number, dy: number) {
@@ -78,29 +85,23 @@ export class WaTor extends CA<WaTorState> {
 
     let { energy, fertility } = c;
 
-    fertility--;
-
-    // Only sharks eat and loose energy
-    if (c.state === SHARK.state) {
-      if (n !== EMPTY) {
-        // Eats!
-        energy += n.energy;
-      } else {
-        // Only sharks loose energy
-        energy--;
-      }
+    if (n !== EMPTY) {
+      // Eats!
+      energy += 2;
+    } else {
+      // otherwise loses energy
+      energy--;
     }
 
     let o = EMPTY; // offspring
-    if (c.fertility <= 0) {
-      o = createState(
-        c.state,
-        fertility_thresholds[c.state],
-        initial_energies[c.state]
-      );
-      fertility = fertility_thresholds[c.state];
+    if (fertility <= 0) {
+      o = this.createState(c.state);
+      fertility = this.species[c.state].fertility;
+    } else {
+      fertility--;
     }
-    c = createState(c.state, fertility, energy);
+
+    c = this.createState(c.state, fertility, energy);
 
     this.set(x + dx, y + dy, c);
     this.set(x, y, o);
@@ -112,37 +113,47 @@ export class WaTor extends CA<WaTorState> {
     if (c === EMPTY) return;
 
     const neighbors = this.getVonNeumannNeighbors(x, y);
-
-    switch (c.state) {
-      case SHARK.state: {
-        // Shark die
-        if (c.energy <= 0) {
-          this.set(x, y, EMPTY);
-          return;
-        }
-
-        // Shark eat fish
-        const p = this.findRandomMove(neighbors, FISH);
-        if (p) {
-          this.move(c, x, y, p[0], p[1]);
-          return;
-        }
-      }
-      case FISH.state: {
-        // Sharks and fish swim
-        const p = this.findRandomMove(neighbors, EMPTY);
-        if (p) {
-          this.move(c, x, y, p[0], p[1]);
-        }
-      }
+    
+    // death
+    if (c.energy <= 0) {
+      this.set(x, y, EMPTY);
+      return;
     }
+
+    // find prey first
+    if (c.prey) {
+      const [dx, dy] = findRandomMove(neighbors, c.prey);
+      if (dx !== null)
+        return this.move(c, x, y, dx, dy);
+    }
+
+    // Otherwise just swim
+    const [dx, dy] = findRandomMove(neighbors, EMPTY.state);
+    if (dx !== null)
+      return this.move(c, x, y, dx, dy);
+
+    c = this.createState(c.state, c.fertility- 1, c.energy - 1);
+    this.set(x, y, c);
   }
 
   refreshStats() {
     this.stats.Chronon = this.step;
-    this.stats.Fish = this.worldCountWhen(FISH);
-    this.stats.Sharks = this.worldCountWhen(SHARK);
+
+    for (const [name, s] of Object.entries(this.species)) {
+      this.stats[name] = this.worldCountWhen(name);
+    }
   }
+}
+
+function findRandomMove(neighbors: WaTorState[], state: string) {
+  const emptyNeighbors = neighbors
+    .map((n, i) => (n.state === state ? i : null))
+    .filter((n) => n !== null);
+  if (emptyNeighbors.length > 0) {
+    const i = Math.floor(Math.random() * emptyNeighbors.length);
+    return getPosition(emptyNeighbors[i]);
+  }
+  return [null,null];
 }
 
 function getPosition(i: number): [number, number] {
