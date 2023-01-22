@@ -388,6 +388,10 @@ export abstract class CA<
     this.step++;
   }
 
+  getChangeBoundingBox(): [number, number, number, number] {
+    return this.changedGrid.getBoundingBox();
+  }
+
   getBoundingBox(): [number, number, number, number] {
     switch (this.boundaryType) {
       case BoundaryType.Wall:

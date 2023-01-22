@@ -83,11 +83,13 @@
         <ng-container
           *ngFor="let emptyCell of row; let x = index; trackBy: trackByIndex"
         >
-          <ng-container *ngIf="(ca.grid?.[y]?.[x] || emptyCell) as cell">
+          <ng-container
+            *ngIf="(ca.grid?.[y + dy]?.[x + dx] || emptyCell) as cell"
+          >
             <td
-              (mousedown)="onMouseEnter($event, x, y)"
-              (mouseenter)="onMouseEnter($event, x, y)"
-              (click)="onClick($event, x, y)"
+              (mousedown)="onMouseEnter($event, x + dx, y + dy)"
+              (mouseenter)="onMouseEnter($event, x + dx, y + dy)"
+              (click)="onClick($event, x + dx, y + dy)"
               (mouseup)="onMouseLeave()"
               class="cell"
               [class]="'cell--' + cell.state"

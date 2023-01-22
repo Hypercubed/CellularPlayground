@@ -15,7 +15,7 @@ import Stats from 'stats.js';
 
 import { CAListItem, CAList } from './ca/list';
 import { OCA } from './ca/classes/elementary';
-import { CA, CAOptions } from './ca/classes/base';
+import { BoundaryType, CA, CAOptions } from './ca/classes/base';
 import { makeGridWith } from './ca/utils/grid';
 
 import type { CellState } from './ca/classes/states';
@@ -43,6 +43,8 @@ export class AppComponent {
 
   // This is an array of empty cells... used to draw the grid
   grid: Readonly<CellState[][]>;
+  dx = 0;
+  dy = 0;
 
   private timeoutId = null;
   private requestId = null;
@@ -168,15 +170,26 @@ export class AppComponent {
       this.onTogglePlay();
     } else if (event.code === 'KeyR' && !event.ctrlKey) {
       this.onReset();
-    } else if (event.code === 'KeyC' && !event.ctrlKey) {
+    } else if (event.code === 'Delete' && !event.ctrlKey) {
       this.onClear();
     } else if (event.code === 'KeyA' && !event.ctrlKey) {
       this.onRandom();
-    } else if (event.code === 'ArrowRight' && !event.ctrlKey) {
+    } else if (event.code === 'KeyD' && !event.ctrlKey) {
       this.play();
     } else if (event.code === 'KeyS' && event.ctrlKey) {
       this.onAddPattern();
-      event.preventDefault();
+    } else if (event.code === 'KeyC' && !event.ctrlKey) {
+      this.center();
+    } else if (event.code === 'KeyF' && !event.ctrlKey) {
+      this.centerChange();
+    } else if (event.code === 'ArrowRight' && !event.ctrlKey) {
+      this.pan(-1, 0);
+    } else if (event.code === 'ArrowLeft' && !event.ctrlKey) {
+      this.pan(1, 0);
+    } else if (event.code === 'ArrowUp' && !event.ctrlKey) {
+      this.pan(0, 1);
+    } else if (event.code === 'ArrowDown' && !event.ctrlKey) {
+      this.pan(0, -1);
     } else if (event.code === 'KeyC' && event.ctrlKey) {
       const pattern = this.ca.getRLE();
       this.clipboard.copy(pattern);
@@ -188,6 +201,44 @@ export class AppComponent {
       event.preventDefault();
     }
     // console.log(event);
+  }
+
+  center() {
+    console.log('center');
+
+    if (this.ca.boundaryType !== BoundaryType.Infinite) return;
+
+    const [top, right, bottom, left] = this.ca.getBoundingBox();
+
+    const cx = Math.floor((right + left) / 2);
+    const cy = Math.floor((bottom + top) / 2);
+
+    const vx = Math.floor(this.ca.width / 2);
+    const vy = Math.floor(this.ca.height / 2);
+
+    this.dx = cx - vx;
+    this.dy = cy - vy;
+  }
+
+  centerChange() {
+    if (this.ca.boundaryType !== BoundaryType.Infinite) return;
+
+    const [top, right, bottom, left] = this.ca.getChangeBoundingBox();
+
+    const cx = Math.floor((right + left) / 2);
+    const cy = Math.floor((bottom + top) / 2);
+
+    const vx = Math.floor(this.ca.width / 2);
+    const vy = Math.floor(this.ca.height / 2);
+
+    this.dx = cx - vx;
+    this.dy = cy - vy;
+  }
+
+  pan(dx: number, dy: number) {
+    if (this.ca.boundaryType !== BoundaryType.Infinite) return;
+    this.dx += dx;
+    this.dy += dy;
   }
 
   setupCA(caItem: CAListItem, caOptions?: CAOptions) {
