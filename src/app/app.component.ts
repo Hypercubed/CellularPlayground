@@ -4,19 +4,20 @@ import {
   Component,
   ElementRef,
   HostListener,
+  TemplateRef,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { KeyValue } from '@angular/common';
 import { Clipboard } from '@angular/cdk/clipboard';
 import type { MatSelectChange } from '@angular/material/select';
+import { MatDialog } from '@angular/material/dialog';
 
 import Stats from 'stats.js';
 
 import { CAListItem, CAList } from './ca/list';
 import { OCA } from './ca/classes/elementary';
 import { BoundaryType, CA, CAOptions } from './ca/classes/base';
-import { makeGridWith } from './ca/utils/grid';
 
 import type { CellState } from './ca/classes/states';
 
@@ -42,7 +43,8 @@ export class AppComponent {
   rle: string;
 
   // This is an array of empty cells... used to draw the grid
-  grid: Readonly<CellState[][]>;
+  height = 0;
+  width = 0;
   dx = 0;
   dy = 0;
 
@@ -52,12 +54,15 @@ export class AppComponent {
 
   @ViewChild('board', { static: true }) board: ElementRef;
   @ViewChild('stats', { static: true }) statElement: ElementRef;
+  @ViewChild('helpDialog', { static: true }) helpDialog: TemplateRef<any>;
+
   timeoutMs: number;
   frameSkip: number;
 
   constructor(
     private readonly clipboard: Clipboard,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    public readonly dialog: MatDialog
   ) {
     this.stats = new Stats();
   }
@@ -99,6 +104,8 @@ export class AppComponent {
 
   onClear() {
     this.ca.clearGrid();
+    this.dx = 0;
+    this.dy = 0;
     this.ca.refreshStats();
   }
 
@@ -160,52 +167,105 @@ export class AppComponent {
     const x = Math.floor((dx / el.clientWidth) * this.ca.width);
     const y = Math.floor((dy / el.clientHeight) * this.ca.height);
 
-    this.ca.set(x, y, this.currentType);
+    this.ca.set(x + dx, y + dy, this.currentType);
     this.ca.refreshStats();
   }
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if (event.code === 'Space') {
-      this.onTogglePlay();
-    } else if (event.code === 'KeyR' && !event.ctrlKey) {
-      this.onReset();
-    } else if (event.code === 'Delete' && !event.ctrlKey) {
-      this.onClear();
-    } else if (event.code === 'KeyA' && !event.ctrlKey) {
-      this.onRandom();
-    } else if (event.code === 'KeyD' && !event.ctrlKey) {
-      this.play();
-    } else if (event.code === 'KeyS' && event.ctrlKey) {
-      this.onAddPattern();
-    } else if (event.code === 'KeyC' && !event.ctrlKey) {
-      this.center();
-    } else if (event.code === 'KeyF' && !event.ctrlKey) {
-      this.centerChange();
-    } else if (event.code === 'ArrowRight' && !event.ctrlKey) {
-      this.pan(-1, 0);
-    } else if (event.code === 'ArrowLeft' && !event.ctrlKey) {
-      this.pan(1, 0);
-    } else if (event.code === 'ArrowUp' && !event.ctrlKey) {
-      this.pan(0, 1);
-    } else if (event.code === 'ArrowDown' && !event.ctrlKey) {
-      this.pan(0, -1);
-    } else if (event.code === 'KeyC' && event.ctrlKey) {
-      const pattern = this.ca.getRLE();
-      this.clipboard.copy(pattern);
-      event.preventDefault();
-    } else if (event.code === 'KeyV' && event.ctrlKey) {
-      navigator['clipboard'].readText().then((data) => {
-        this.loadPattern(data);
-      });
-      event.preventDefault();
+    // Control Keys
+    if (event.ctrlKey) {
+      if (event.code === 'KeyS' && event.ctrlKey) {
+        this.onAddPattern();
+        event.preventDefault();
+      } else if (event.code === 'KeyC' && event.ctrlKey) {
+        const pattern = this.ca.getRLE();
+        this.clipboard.copy(pattern);
+        event.preventDefault();
+      } else if (event.code === 'KeyV' && event.ctrlKey) {
+        navigator['clipboard'].readText().then((data) => {
+          this.loadPattern(data);
+        });
+        event.preventDefault();
+      }
+      // Normal Keys
+    } else {
+      if (event.key === '?') {
+        this.showHelp();
+        return;
+      }
+
+      switch (event.code) {
+        case 'Space':
+          this.onTogglePlay();
+          return;
+        case 'KeyR':
+          this.onReset();
+          return;
+        case 'Delete':
+          this.onClear();
+          return;
+        case 'KeyZ':
+          this.onRandom();
+          return;
+        case 'KeyN':
+          this.play();
+          return;
+        case 'KeyC':
+          this.center();
+          return;
+        case 'KeyF':
+          this.centerChange();
+          return;
+        case 'Home':
+          this.dx = this.dy = 0;
+          return;
+        case 'KeyD':
+          this.pan(-1, 0);
+          return;
+        case 'KeyA':
+          this.pan(1, 0);
+          return;
+        case 'KeyW':
+          this.pan(0, 1);
+          return;
+        case 'KeyS':
+          this.pan(0, -1);
+          return;
+        case 'PageUp': {
+          this.zoom(0.75);
+          return;
+        }
+        case 'PageDown': {
+          this.zoom(1.25);
+          return;
+        }
+      }
     }
     // console.log(event);
   }
 
-  center() {
-    console.log('center');
+  makeGrid(height: number, width: number) {
+    this.height = height;
+    this.width = width;
+  }
 
+  zoom(s: number) {
+    if (this.ca.boundaryType !== BoundaryType.Infinite) return;
+
+    const { width, height } = this;
+
+    // TODO: zoom in center
+    this.height = Math.floor(height * s);
+    this.width = Math.floor(width * s);
+
+    this.dx += Math.ceil((width - this.width) / 2);
+    this.dy += Math.ceil((height - this.height) / 2);
+
+    return;
+  }
+
+  center() {
     if (this.ca.boundaryType !== BoundaryType.Infinite) return;
 
     const [top, right, bottom, left] = this.ca.getBoundingBox();
@@ -213,8 +273,8 @@ export class AppComponent {
     const cx = Math.floor((right + left) / 2);
     const cy = Math.floor((bottom + top) / 2);
 
-    const vx = Math.floor(this.ca.width / 2);
-    const vy = Math.floor(this.ca.height / 2);
+    const vx = Math.floor(this.width / 2);
+    const vy = Math.floor(this.height / 2);
 
     this.dx = cx - vx;
     this.dy = cy - vy;
@@ -241,6 +301,13 @@ export class AppComponent {
     this.dy += dy;
   }
 
+  showHelp() {
+    this.dialog.open(this.helpDialog, {
+      minWidth: '50vw',
+      minHeight: '50vh',
+    });
+  }
+
   setupCA(caItem: CAListItem, caOptions?: CAOptions) {
     this.stop();
 
@@ -260,7 +327,9 @@ export class AppComponent {
     this.ca = new Ctor(caOptions || {});
     this.ca.reset();
 
-    this.grid = makeGridWith(this.ca.width, this.ca.height, this.ca.emptyCell);
+    this.makeGrid(this.ca.height, this.ca.width);
+    this.dx = 0;
+    this.dy = 0;
     if (this.caItem.startingPattern) {
       this.loadPattern(this.caItem.startingPattern);
     }
@@ -345,6 +414,8 @@ export class AppComponent {
 
   loadPattern(pattern: string) {
     this.ca.loadRLE(pattern);
+    this.dx = 0;
+    this.dy = 0;
     this.ca.refreshStats();
 
     this.cdr.markForCheck();
@@ -371,7 +442,6 @@ export class AppComponent {
         this.caItem.savedPatterns = JSON.parse(patterns);
       } catch (e) {
         this.caItem.savedPatterns = [];
-        console.log(e);
       }
     }
   }

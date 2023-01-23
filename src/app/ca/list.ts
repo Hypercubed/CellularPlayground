@@ -214,10 +214,10 @@ export const CAList: CAListItem[] = [
   //   class: 'wator',
   // },
   {
-    title: 'Wa-Tor 2',
+    title: 'Wa-Tor',
     Ctor: WaTor,
     options: [
-      { title: 'Fish and Sharks' },
+      { title: 'Sharks and Fish on the Planet Wa-Tor' },
       {
         title: 'Shrimp, Fish and Sharks',
         species: {
@@ -243,5 +243,3 @@ export const CAList: CAListItem[] = [
     class: 'wator',
   },
 ];
-
-// TODO: Sharks and Fish on the Planet Wa-Tor

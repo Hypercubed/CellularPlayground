@@ -1,11 +1,11 @@
 <div
   id="container"
   class="ca"
-  [class]="'ca--' + caItem.class"
+  [class]="'ca--' + caItem.class + ' ca--boundary-' + ca.boundaryType"
   [class.playing]="playing"
   [class.paused]="paused"
-  [style.--m]="ca.width"
-  [style.--n]="ca.height"
+  [style.--m]="width"
+  [style.--n]="height"
 >
   <div #stats id="fpsStats" [class.show]="playing"></div>
   <aside id="left-side">
@@ -79,12 +79,22 @@
       (touchend)="onMouseLeave()"
       (touchcancel)="onMouseLeave()"
     >
-      <tr *ngFor="let row of grid; let y = index; trackBy: trackByIndex">
+      <tr
+        *ngFor="
+          let _ of [].constructor(height);
+          let y = index;
+          trackBy: trackByIndex
+        "
+      >
         <ng-container
-          *ngFor="let emptyCell of row; let x = index; trackBy: trackByIndex"
+          *ngFor="
+            let _ of [].constructor(width);
+            let x = index;
+            trackBy: trackByIndex
+          "
         >
           <ng-container
-            *ngIf="(ca.grid?.[y + dy]?.[x + dx] || emptyCell) as cell"
+            *ngIf="(ca.grid?.[y + dy]?.[x + dx] || ca.emptyCell) as cell"
           >
             <td
               (mousedown)="onMouseEnter($event, x + dx, y + dy)"
@@ -137,3 +147,63 @@
     </div>
   </aside>
 </div>
+
+<ng-template #helpDialog>
+  <div mat-dialog-content>
+    <h1>Playback Controls</h1>
+    <table>
+      <tr>
+        <td>pause/resume</td>
+        <td>Space</td>
+      </tr>
+      <tr>
+        <td>next</td>
+        <td>N</td>
+      </tr>
+      <tr>
+        <td>reset</td>
+        <td>R</td>
+      </tr>
+    </table>
+
+    <h1>Camera Controls</h1>
+    <table>
+      <tr>
+        <td>center</td>
+        <td>c</td>
+      </tr>
+      <tr>
+        <td>center action</td>
+        <td>f</td>
+      </tr>
+      <tr>
+        <td>pan</td>
+        <td>WASD</td>
+      </tr>
+    </table>
+
+    <h1>Pattern Controls</h1>
+    <table>
+      <tr>
+        <td>random</td>
+        <td>z</td>
+      </tr>
+      <tr>
+        <td>clear</td>
+        <td>c</td>
+      </tr>
+      <tr>
+        <td>save pattern</td>
+        <td>s</td>
+      </tr>
+      <tr>
+        <td>copy board to clipboard</td>
+        <td>ctrl-c</td>
+      </tr>
+      <tr>
+        <td>paste board from clipboard</td>
+        <td>ctrl-v</td>
+      </tr>
+    </table>
+  </div>
+</ng-template>

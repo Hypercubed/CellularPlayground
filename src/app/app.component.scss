@@ -4,7 +4,7 @@
 
   --board-width: min(100vw - 540px, 100vh - 100px);
   --cell-size: calc(var(--board-width) / var(--m));
-  --board-height: auto;
+  --board-height: var(--board-width);
   --board-grid-color: #bdbdbd;
 
   --background-color: #ddd;
@@ -222,6 +222,24 @@
     &[data-state$='0'] {
       color: black;
       background-color: white;
+    }
+  }
+
+  &.ca--boundary-infinite {
+    #board {
+      border: 2px dotted var(--board-grid-color);
+    }
+  }
+
+  &.ca--boundary-torus {
+    #board {
+      border: 2px dashed var(--board-grid-color);
+    }
+  }
+
+  &.ca--boundary-wall {
+    #board {
+      border: 4px solid var(--board-grid-color);
     }
   }
 
