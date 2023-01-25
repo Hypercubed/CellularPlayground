@@ -60,6 +60,37 @@ const BBOptionsDefault = {
 };
 
 export class BB extends OCA<CellState, BBOptions> {
+  static readonly title = 'Busy Beaver';
+  static readonly description =
+    'Busy Beaver game consists of designing a halting Turing machine with alphabet {0,1} which writes the most 1s on the tape, using only a given set of states';
+  static readonly options: Partial<BBOptions>[] = [
+    {
+      title: '2-state busy beaver',
+      boundaryType: BoundaryType.Wall,
+      rules: bb2,
+    },
+    {
+      title: '3-state busy beaver',
+      rules: bb3,
+      boundaryType: BoundaryType.Wall,
+    },
+    {
+      title: '4-state busy beaver',
+      height: 120,
+      rules: bb4,
+      boundaryType: BoundaryType.Wall,
+    },
+    {
+      title: '5-state busy beaver',
+      height: 59,
+      width: 59,
+      rules: bb5,
+      boundaryType: BoundaryType.Infinite,
+    },
+  ];
+  static readonly startingPattern = 'A';
+  static readonly className = 'busybeaver';
+
   stats = {
     S: 0,
     Σ: 0,

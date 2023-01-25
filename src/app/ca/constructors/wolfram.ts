@@ -15,6 +15,20 @@ const defaultECAOptions: Partial<ECAOptions> = {
 };
 
 export class ECA extends OCA<CellState, ECAOptions> {
+  static readonly title = 'Wolfram';
+  static readonly description =
+    'The simplest class of one-dimensional cellular automata.';
+  static readonly options: Partial<ECAOptions>[] = [
+    { title: 'Rule 30', ruleNumber: 30 },
+    { title: 'Rule 90', ruleNumber: 90 },
+    // { title: 'Rule 73', ruleNumber: 73 },
+    // { title: 'Rule 74', ruleNumber: 74 },
+    { title: 'Rule 110', ruleNumber: 110 },
+  ];
+  static readonly patterns = [];
+  static readonly startingPattern = 'o';
+  static readonly className = 'wolfram';
+
   width = 86 / 2;
   height = 86 / 2;
 

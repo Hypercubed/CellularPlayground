@@ -30,6 +30,11 @@ function getDensity(s: CellState) {
 }
 
 export class Rain extends CA {
+  // Static
+  static readonly title = 'Snow';
+  static readonly description = 'Snow simulation';
+  static readonly className = 'snow';
+
   states = [WALL, ROCK, SAND, WATER, ICE, VAPOR, EMPTY];
   pallet = [
     [ROCK, SAND],

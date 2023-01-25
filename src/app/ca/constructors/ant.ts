@@ -51,6 +51,22 @@ const AntOptionsDefault: Partial<CAOptions> = {
 };
 
 export class Ant extends CA {
+  static readonly title = "Langton's Ant";
+  static readonly description =
+    "Langton's Ant is a two-dimensional universal Turing machine with a very simple set of rules but complex emergent behavior.";
+  static readonly options: Partial<CAOptions>[] = [
+    { title: 'Default' },
+    {
+      title: 'Torus',
+      boundaryType: BoundaryType.Torus,
+      width: 39,
+      height: 39,
+    },
+  ];
+  static readonly patterns = [];
+  static readonly startingPattern = '▲';
+  static readonly className = 'ant';
+
   stats = {
     Generation: 0,
     Ants: 0,

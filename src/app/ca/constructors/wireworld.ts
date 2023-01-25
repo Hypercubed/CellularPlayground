@@ -18,6 +18,14 @@ export const Diodes =
   '11b2o$10b2ob3o$9bob2o$9bo$bo■e2o3bo$o5bo2bo$o5b3o$o5bo2bo$b5o3bo$9bo$9bob2o$10bob4o$11b2o';
 
 export class WireWorld extends CA {
+  // Static
+  static readonly title = 'WireWorld';
+  static readonly description =
+    'Wireworld is particularly suited to simulating transistors, and is Turing-complete.';
+  static readonly options: Partial<CAOptions>[] = [];
+  static readonly patterns = [Diodes];
+  static readonly className = 'wireworld';
+
   width = 30;
   height = 30;
 

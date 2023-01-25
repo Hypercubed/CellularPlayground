@@ -15,6 +15,17 @@ const VoteDefaultOptions: Partial<VoteOptions> = {
 export const OSCILLATOR = `6b2ob$5b4o$5b4o$b2o3b2ob$7o$4o$b2o2b3ob$5b4o$5b4o$6b2ob`;
 
 export class Vote extends CA {
+  static readonly title = 'Vote';
+  static readonly description =
+    'Vote is an example of the simplest possible kind of eight-neighbor CA';
+  static readonly options: Partial<VoteOptions>[] = [
+    { title: 'Majority' },
+    { title: 'Anneal', ruleString: '46789' },
+    { title: 'Fredkin', ruleString: '13579' },
+  ];
+  static readonly patterns = [OSCILLATOR];
+  static readonly className = 'vote';
+
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];
 

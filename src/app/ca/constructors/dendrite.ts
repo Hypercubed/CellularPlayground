@@ -18,6 +18,10 @@ const DendriteDefaultOptions: Partial<CAOptions> = {
 export const OSCILLATOR = `6b2ob$5b4o$5b4o$b2o3b2ob$7o$4o$b2o2b3ob$5b4o$5b4o$6b2ob`;
 
 export class Dendrite extends CA {
+  static readonly title = 'Dendrite';
+  static readonly description = 'Dendrite';
+  static readonly className = 'dendrite';
+
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];
 

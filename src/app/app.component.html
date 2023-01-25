@@ -1,7 +1,7 @@
 <div
   id="container"
   class="ca"
-  [class]="'ca--' + caItem.class + ' ca--boundary-' + ca.boundaryType"
+  [class]="'ca--' + caItem.className + ' ca--boundary-' + ca.boundaryType"
   [class.playing]="playing"
   [class.paused]="paused"
   [style.--m]="width"
@@ -131,7 +131,7 @@
       </div>
       <div
         class="pattern-container"
-        *ngFor="let pattern of caItem.savedPatterns"
+        *ngFor="let pattern of savedPatterns"
         (click)="loadPattern(pattern)"
         (contextmenu)="onRightClick($event, pattern)"
       >

@@ -42,6 +42,32 @@ const DefaultOptions: Partial<WaTorOptions> = {
 };
 
 export class WaTor extends CA<WaTorState> {
+  static readonly title = 'Wa-Tor';
+  static readonly description = 'Sharks and Fish on the Planet Wa-Tor';
+  static readonly options: Partial<WaTorOptions>[] = [
+    { title: 'Sharks and Fish on the Planet Wa-Tor' },
+    {
+      title: 'Shrimp, Fish and Sharks',
+      species: {
+        shrimp: {
+          energy: Infinity,
+          fertility: 4,
+        },
+        fish: {
+          energy: 3,
+          fertility: 12,
+          prey: 'shrimp',
+        },
+        shark: {
+          energy: 12,
+          fertility: 15,
+          prey: 'fish',
+        },
+      },
+    },
+  ];
+  static readonly className = 'wator';
+
   states = [EMPTY];
   pallet = [[], [EMPTY]];
 

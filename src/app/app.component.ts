@@ -10,15 +10,15 @@ import {
 } from '@angular/core';
 import { KeyValue } from '@angular/common';
 import { Clipboard } from '@angular/cdk/clipboard';
-import type { MatSelectChange } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
 
 import Stats from 'stats.js';
 
-import { CAListItem, CAList } from './ca/list';
+import { CAList, CAStatic } from './ca/list';
 import { OCA } from './ca/classes/elementary';
 import { BoundaryType, CA, CAOptions } from './ca/classes/base';
 
+import type { MatSelectChange } from '@angular/material/select';
 import type { CellState } from './ca/classes/states';
 
 @Component({
@@ -34,7 +34,7 @@ export class AppComponent {
   playing = false;
   paused = false;
 
-  caItem: CAListItem;
+  caItem: CAStatic;
   ca: CA;
   caOptions: CAOptions;
 
@@ -47,6 +47,7 @@ export class AppComponent {
   width = 0;
   dx = 0;
   dy = 0;
+  savedPatterns: string[] = [];
 
   private timeoutId = null;
   private requestId = null;
@@ -70,7 +71,7 @@ export class AppComponent {
   ngOnInit() {
     this.loadStateFromStore();
     this.caItem ??= this.CAList[0];
-    this.caOptions ??= this.caItem.options[0];
+    this.caOptions ??= this.caItem.options?.[0];
 
     this.setupCA(this.caItem, this.caOptions);
 
@@ -308,7 +309,7 @@ export class AppComponent {
     });
   }
 
-  setupCA(caItem: CAListItem, caOptions?: CAOptions) {
+  setupCA(caItem: CAStatic, caOptions?: CAOptions) {
     this.stop();
 
     this.caItem = caItem;
@@ -323,7 +324,7 @@ export class AppComponent {
     this.stop();
 
     this.caOptions = caOptions;
-    const { Ctor } = this.caItem;
+    const Ctor = this.caItem;
     this.ca = new Ctor(caOptions || {});
     this.ca.reset();
 
@@ -393,22 +394,20 @@ export class AppComponent {
   }
 
   titleAscOrder(
-    a: KeyValue<string, CAListItem>,
-    b: KeyValue<string, CAListItem>
+    a: KeyValue<string, CAStatic>,
+    b: KeyValue<string, CAStatic>
   ): number {
     return a.value.title.localeCompare(b.value.title);
   }
 
   onAddPattern() {
     const pattern = this.ca.getRLE();
-    this.caItem.savedPatterns.push(pattern);
+    this.savedPatterns.push(pattern);
     this.savePatternsToStore();
   }
 
   onRemovePattern(pattern: string) {
-    this.caItem.savedPatterns = this.caItem.savedPatterns.filter(
-      (p) => p !== pattern
-    );
+    this.savedPatterns = this.savedPatterns.filter((p) => p !== pattern);
     this.savePatternsToStore();
   }
 
@@ -430,19 +429,18 @@ export class AppComponent {
 
   private savePatternsToStore() {
     localStorage.setItem(
-      `patterns-${this.caItem.class}`,
-      JSON.stringify(this.caItem.savedPatterns)
+      `patterns-${this.caItem.className}`,
+      JSON.stringify(this.savedPatterns)
     );
   }
 
   private loadPatternsFromStore() {
-    const patterns = localStorage.getItem(`patterns-${this.caItem.class}`);
-    if (patterns) {
-      try {
-        this.caItem.savedPatterns = JSON.parse(patterns);
-      } catch (e) {
-        this.caItem.savedPatterns = [];
-      }
+    const patterns =
+      localStorage.getItem(`patterns-${this.caItem.className}`) || '[]';
+    try {
+      this.savedPatterns = JSON.parse(patterns);
+    } catch (e) {
+      this.savedPatterns = [];
     }
   }
 

@@ -14,6 +14,12 @@ const BrainDefaultOptions: Partial<CAOptions> = {
 export const BRIAN_OSCILLATOR = 'br$b2or$r2ob$2brb';
 
 export class Brain extends CA {
+  static readonly title = 'Brain';
+  static readonly description =
+    'Brain is a cellular automaton that was invented by John Horton Conway in 1970.';
+  static readonly patterns = [BRIAN_OSCILLATOR];
+  static readonly className = 'brain';
+
   states = [FIRING, REFRACTORY, READY];
   pallet = [[FIRING, REFRACTORY, READY]];
 

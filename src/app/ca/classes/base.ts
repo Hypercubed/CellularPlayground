@@ -17,6 +17,7 @@ export enum IterationType {
 }
 
 export interface CAOptions {
+  title?: string;
   width: number;
   height: number;
   neighborhoodRange: number;
@@ -41,6 +42,13 @@ export abstract class CA<
   T extends CellState = CellState,
   O extends CAOptions = CAOptions
 > {
+  // static readonly title: string;
+  // static readonly description?: string;
+  // static readonly options?: CAOptions[];
+  // static readonly patterns?: string[];
+  // static readonly startingPattern?: string;
+  // static readonly  className: string;
+
   /* Array of all possible states
    * The first state is the default state
    * The last state is the state that is used when the cell is empty
