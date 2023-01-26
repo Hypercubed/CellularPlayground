@@ -52,8 +52,12 @@ const AntOptionsDefault: Partial<CAOptions> = {
 
 export class Ant extends CA {
   static readonly title = "Langton's Ant";
-  static readonly description =
-    "Langton's Ant is a two-dimensional universal Turing machine with a very simple set of rules but complex emergent behavior.";
+  static readonly description = `
+    Langton's Ant is a two-dimensional universal Turing machine with a very simple set of rules but complex emergent behavior.
+
+    References:
+    http://mathworld.wolfram.com/LangtonsAnt.html
+    https://en.wikipedia.org/wiki/Langton's_ant`;
   static readonly options: Partial<CAOptions>[] = [
     { title: 'Default' },
     {

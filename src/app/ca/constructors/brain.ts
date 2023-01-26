@@ -15,8 +15,14 @@ export const BRIAN_OSCILLATOR = 'br$b2or$r2ob$2brb';
 
 export class Brain extends CA {
   static readonly title = 'Brain';
-  static readonly description =
-    'Brain is a cellular automaton that was invented by John Horton Conway in 1970.';
+  static readonly description = `
+    Brian's Brain, discovered by Brian Silverman.
+
+        (Toffoli & Margolus, section 6.1, page 47)
+
+    This can be though of as simulating the action of neurons which
+    are insensitive to stimuli for some time after they fire.
+  `;
   static readonly patterns = [BRIAN_OSCILLATOR];
   static readonly className = 'brain';
 

@@ -165,10 +165,10 @@ export class AppComponent {
     const dx = e.touches[0].clientX - el.offsetLeft;
     const dy = e.touches[0].clientY - el.offsetTop;
 
-    const x = Math.floor((dx / el.clientWidth) * this.ca.width);
-    const y = Math.floor((dy / el.clientHeight) * this.ca.height);
+    const x = Math.floor((dx / el.clientWidth) * this.width);
+    const y = Math.floor((dy / el.clientHeight) * this.height);
 
-    this.ca.set(x + dx, y + dy, this.currentType);
+    this.ca.set(x + this.dx, y + this.dy, this.currentType);
     this.ca.refreshStats();
   }
 

@@ -43,7 +43,13 @@ const DefaultOptions: Partial<WaTorOptions> = {
 
 export class WaTor extends CA<WaTorState> {
   static readonly title = 'Wa-Tor';
-  static readonly description = 'Sharks and Fish on the Planet Wa-Tor';
+  static readonly description = `
+    Inspired by the "Sharks and Fish on the Planet Wa-Tor" ecosystem simulation
+
+    For the original simulation upon which this is based, see
+      A. K. Dewdney, The Armchair Universe,
+      W. H. Freeman: New York, 1988, pp. 239-251.
+  `;
   static readonly options: Partial<WaTorOptions>[] = [
     { title: 'Sharks and Fish on the Planet Wa-Tor' },
     {
