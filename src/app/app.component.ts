@@ -176,6 +176,7 @@ export class AppComponent {
   onKeyDown(event: KeyboardEvent) {
     // Control Keys
     if (event.ctrlKey) {
+      console.log(event.code);
       if (event.code === 'KeyS' && event.ctrlKey) {
         this.onAddPattern();
         event.preventDefault();
