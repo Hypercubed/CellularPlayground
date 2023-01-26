@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1674703679447,
+  "timestamp": 1674708126855,
   "index": "/CellularPlayground/index.html",
   "assetGroups": [
     {
@@ -12,7 +12,7 @@
       },
       "urls": [
         "/CellularPlayground/index.html",
-        "/CellularPlayground/main.b3a862571f63dab7.js",
+        "/CellularPlayground/main.02f2d7c8a6658b85.js",
         "/CellularPlayground/manifest.webmanifest",
         "/CellularPlayground/polyfills.e96fb911a4dcf6de.js",
         "/CellularPlayground/runtime.233eba379154c253.js",
@@ -28,11 +28,13 @@
         "ignoreVary": true
       },
       "urls": [
+        "/CellularPlayground/assets/icons/favicon.ico",
         "/CellularPlayground/assets/icons/icon-128x128.png",
         "/CellularPlayground/assets/icons/icon-144x144.png",
         "/CellularPlayground/assets/icons/icon-152x152.png",
         "/CellularPlayground/assets/icons/icon-192x192.png",
         "/CellularPlayground/assets/icons/icon-384x384.png",
+        "/CellularPlayground/assets/icons/icon-48x48.png",
         "/CellularPlayground/assets/icons/icon-512x512.png",
         "/CellularPlayground/assets/icons/icon-72x72.png",
         "/CellularPlayground/assets/icons/icon-96x96.png"
@@ -42,16 +44,18 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/CellularPlayground/assets/icons/icon-128x128.png": "dae3b6ed49bdaf4327b92531d4b5b4a5d30c7532",
-    "/CellularPlayground/assets/icons/icon-144x144.png": "5fb3509769cc3704ae5109d9c3bdaf740e9a111f",
-    "/CellularPlayground/assets/icons/icon-152x152.png": "7479a9477815dfd9668d60f8b3b2fba709b91310",
-    "/CellularPlayground/assets/icons/icon-192x192.png": "8788dd957634fbdb4420be99ecd357d50dda99c1",
-    "/CellularPlayground/assets/icons/icon-384x384.png": "329749cd6393768d3131ed6304c136b1ca05f2fd",
-    "/CellularPlayground/assets/icons/icon-512x512.png": "7cf04f71742966e5a5bce2cb5de0415ad7b3fcc6",
-    "/CellularPlayground/assets/icons/icon-72x72.png": "16170bb75ec361ea96f13d0766a6c7b53f0ab906",
-    "/CellularPlayground/assets/icons/icon-96x96.png": "19a44ddfad3cde67308fe9f5e8556acfb4a0a28b",
-    "/CellularPlayground/index.html": "bff71e0929b58658028732081f2f263fcd768ab6",
-    "/CellularPlayground/main.b3a862571f63dab7.js": "8d430a7fe7de9117940bedce01e1f1a1133d42e2",
+    "/CellularPlayground/assets/icons/favicon.ico": "4a9cfb4dddd33b1c41bf8caab9d7f6567a7f6203",
+    "/CellularPlayground/assets/icons/icon-128x128.png": "56c894e9421d7492ec3b8a9d900dd3b0334e9e39",
+    "/CellularPlayground/assets/icons/icon-144x144.png": "6f32cd02fc1553a0ec9aa3a2a1e87682b5b922f2",
+    "/CellularPlayground/assets/icons/icon-152x152.png": "1d022fb7287bf17f32afdad51007b41f111b2aef",
+    "/CellularPlayground/assets/icons/icon-192x192.png": "ff076fc2aa8d0107c3c137f68b34e3399353ceb9",
+    "/CellularPlayground/assets/icons/icon-384x384.png": "dd201db3e2e05d57c7cdabe17ca78779ddaad887",
+    "/CellularPlayground/assets/icons/icon-48x48.png": "f4907e799987248fee6ae71933f77492542604e3",
+    "/CellularPlayground/assets/icons/icon-512x512.png": "7c4c139735dd44e3b021071a424a34af61276134",
+    "/CellularPlayground/assets/icons/icon-72x72.png": "915054b459b2afbefc4104bfca5aa9ca74d822b9",
+    "/CellularPlayground/assets/icons/icon-96x96.png": "8c25e77fc714380c1751200e653d197898cf3c63",
+    "/CellularPlayground/index.html": "a78dd06a02cbcfa27b58e515003e4eb4092a987b",
+    "/CellularPlayground/main.02f2d7c8a6658b85.js": "e461cbf46819c74632a9b633d38f95dbe72d1943",
     "/CellularPlayground/manifest.webmanifest": "075895cc3ffc99eccb9f9b9cf0517be03a570222",
     "/CellularPlayground/polyfills.e96fb911a4dcf6de.js": "2bd3fede7c7001319796f77944a9686b861bf160",
     "/CellularPlayground/runtime.233eba379154c253.js": "cb5d79a907360e0da16558b15d0f7492c0d026a4",
