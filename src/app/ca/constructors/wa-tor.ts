@@ -169,9 +169,18 @@ export class WaTor extends CA<WaTorState> {
   refreshStats() {
     this.stats.Chronon = this.step;
 
+    let total = 0;
     for (const [name, s] of Object.entries(this.species)) {
       this.stats[name] = this.worldCountWhen(name);
+      total += this.stats[name];
     }
+    this.stats.$total = total;
+
+    const chart = {};
+    for (const [name, s] of Object.entries(this.species)) {
+      chart[name] = this.stats[name] / total;
+    }
+    this.stats.$bar = chart;
   }
 }
 

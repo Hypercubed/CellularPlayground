@@ -9,69 +9,129 @@
 >
   <div #stats id="fpsStats" [class.show]="playing"></div>
   <aside id="left-side">
-    <div class="controls">
-      <mat-select (selectionChange)="onGameChange($event)" [(ngModel)]="caItem">
-        <mat-option *ngFor="let item of CAList" [value]="item">
-          {{ item.title }}
-        </mat-option>
-      </mat-select>
-      <mat-select
-        (selectionChange)="onOptionsChange($event)"
-        [(ngModel)]="caOptions"
-        *ngIf="caItem.options?.length"
-      >
-        <mat-option *ngFor="let option of caItem.options" [value]="option">
-          {{ option.title }}
-        </mat-option>
-      </mat-select>
-    </div>
-    <div class="controls">
-      <div class="control-group">
-        <button mat-icon-button (click)="onReset()">
-          <mat-icon>restart_alt</mat-icon>
-        </button>
-        <button mat-icon-button (click)="play()" [disabled]="playing || paused">
-          <mat-icon>skip_next</mat-icon>
-        </button>
-        <button mat-icon-button (click)="onTogglePlay()" [disabled]="paused">
-          <mat-icon *ngIf="playing">pause</mat-icon>
-          <mat-icon *ngIf="!playing">play_arrow</mat-icon>
-        </button>
-      </div>
-      <mat-slider min="-5" max="5" step="1" value="1.5" discrete showTickMarks>
-        <input matSliderThumb [(ngModel)]="speed" />
-      </mat-slider>
-    </div>
-    <div id="pallet" class="controls">
-      <div class="set" *ngFor="let set of ca.pallet; trackBy: trackByIndex">
-        <button
-          mat-fab
-          *ngFor="let type of set; trackBy: trackByIndex"
-          [title]="type.state"
-          class="pallet-cell"
-          [class.active]="currentType.state === type.state"
-          (click)="currentType = type"
-        >
-          <div
-            class="cell"
-            [class]="'cell--' + type.state"
-            [attr.data-state]="type.state"
+    <mat-accordion multi>
+      <mat-expansion-panel expanded="true" hideToggle="true">
+        <div class="controls">
+          <mat-select
+            (selectionChange)="onGameChange($event)"
+            [(ngModel)]="caItem"
           >
-            <span>{{ type.display }}</span>
+            <mat-option *ngFor="let item of CAList" [value]="item">
+              {{ item.title }}
+            </mat-option>
+          </mat-select>
+          <mat-select
+            (selectionChange)="onOptionsChange($event)"
+            [(ngModel)]="caOptions"
+            *ngIf="caItem.options?.length"
+          >
+            <mat-option *ngFor="let option of caItem.options" [value]="option">
+              {{ option.title }}
+            </mat-option>
+          </mat-select>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel expanded="true" hideToggle="true">
+        <div class="controls">
+          <div class="control-group">
+            <button mat-icon-button (click)="onReset()">
+              <mat-icon>restart_alt</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="play()"
+              [disabled]="playing || paused"
+            >
+              <mat-icon>skip_next</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="onTogglePlay()"
+              [disabled]="paused"
+            >
+              <mat-icon *ngIf="playing">pause</mat-icon>
+              <mat-icon *ngIf="!playing">play_arrow</mat-icon>
+            </button>
           </div>
-        </button>
-      </div>
-    </div>
+          <mat-slider
+            min="-5"
+            max="5"
+            step="1"
+            value="1.5"
+            discrete
+            showTickMarks
+          >
+            <input matSliderThumb [(ngModel)]="speed" />
+          </mat-slider>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel expanded="true">
+        <div id="pallet" class="controls">
+          <div class="set" *ngFor="let set of ca.pallet; trackBy: trackByIndex">
+            <button
+              mat-fab
+              *ngFor="let type of set; trackBy: trackByIndex"
+              [title]="type.state"
+              class="pallet-cell"
+              [class.active]="currentType.state === type.state"
+              (click)="currentType = type"
+            >
+              <div
+                class="cell"
+                [class]="'cell--' + type.state"
+                [attr.data-state]="type.state"
+              >
+                <span>{{ type.display }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header> Options </mat-expansion-panel-header>
+        <div id="advanced" class="controls">
+          <div class="control-group">
+            <button
+              mat-icon-button
+              [attr.aria-pressed]="showGrid"
+              (click)="showGrid = !showGrid"
+            >
+              <mat-icon>grid_on</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
   </aside>
+
   <div id="content">
     <div id="stats">
-      <span *ngFor="let stat of ca.stats | keyvalue">
-        {{ stat.key }}: {{ stat.value }}
-      </span>
+      <ng-container *ngFor="let stat of ca.stats | keyvalue">
+        <span class="stat" *ngIf="!stat.key.startsWith('$')">
+          {{ stat.key }}: {{ stat.value }}
+        </span>
+      </ng-container>
+
+      <div id="bar" *ngIf="!!ca.stats.$bar">
+        <ng-container *ngFor="let state of ca.stats.$bar | keyvalue">
+          <span
+            class="cell cell-bar"
+            [class]="'cell--' + state.key"
+            [attr.data-state]="state.key"
+            [title]="state.key + ': ' + state.value"
+            [style.width.%]="state.value * 100 || 0"
+          >
+          </span>
+        </ng-container>
+      </div>
     </div>
     <table
       #board
       id="board"
+      [class.show-grid]="showGrid"
       oncontextmenu="return false;"
       (mouseleave)="onMouseLeave()"
       (touchstart)="onTouch($event)"
@@ -112,39 +172,47 @@
       </tr>
     </table>
   </div>
+
   <aside id="right-side">
-    <div class="controls">
-      <button mat-button (click)="onRandom()">Random</button>
-      <button mat-button (click)="onClear()">Clear</button>
-    </div>
-    <div class="controls">
-      <div
-        class="pattern-container"
-        *ngFor="let pattern of caItem.patterns"
-        (click)="loadPattern(pattern)"
-        (contextmenu)="onRightClick($event, pattern)"
-      >
-        <app-pattern-view
-          [pattern]="pattern"
-          [states]="ca.states"
-        ></app-pattern-view>
-      </div>
-      <div
-        class="pattern-container"
-        *ngFor="let pattern of savedPatterns"
-        (click)="loadPattern(pattern)"
-        (contextmenu)="onRightClick($event, pattern)"
-      >
-        <button mat-mini-fab (click)="onRemovePattern(pattern)">
-          <mat-icon>close</mat-icon>
-        </button>
-        <app-pattern-view
-          [pattern]="pattern"
-          [states]="ca.states"
-        ></app-pattern-view>
-      </div>
-      <button mat-button (click)="onAddPattern()">+ Save Pattern</button>
-    </div>
+    <mat-accordion multi>
+      <mat-expansion-panel expanded="true" hideToggle="true">
+        <div class="controls">
+          <button mat-button (click)="onRandom()">Random</button>
+          <button mat-button (click)="onClear()">Clear</button>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel expanded="true" hideToggle="true">
+        <div class="controls">
+          <div
+            class="pattern-container"
+            *ngFor="let pattern of caItem.patterns"
+            (click)="loadPattern(pattern)"
+            (contextmenu)="onRightClick($event, pattern)"
+          >
+            <app-pattern-view
+              [pattern]="pattern"
+              [states]="ca.states"
+            ></app-pattern-view>
+          </div>
+          <div
+            class="pattern-container"
+            *ngFor="let pattern of savedPatterns"
+            (click)="loadPattern(pattern)"
+            (contextmenu)="onRightClick($event, pattern)"
+          >
+            <button mat-mini-fab (click)="onRemovePattern(pattern)">
+              <mat-icon>close</mat-icon>
+            </button>
+            <app-pattern-view
+              [pattern]="pattern"
+              [states]="ca.states"
+            ></app-pattern-view>
+          </div>
+          <button mat-button (click)="onAddPattern()">+ Save Pattern</button>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
   </aside>
 </div>
 

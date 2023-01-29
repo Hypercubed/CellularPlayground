@@ -51,7 +51,7 @@
 
   #content {
     width: var(--board-width);
-    padding: 20px;
+    padding: 10px;
     margin: 0 auto;
   }
 
@@ -70,7 +70,6 @@
     .cell {
       height: var(--cell-size);
       width: var(--cell-size);
-      border: 1px solid var(--board-grid-color);
 
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -96,6 +95,12 @@
         border-radius: 1px;
       }
     }
+
+    &.show-grid {
+      .cell {
+        border: 1px solid var(--board-grid-color);
+      }
+    }
   }
 
   .pattern-container {
@@ -115,13 +120,7 @@
   }
 
   .controls {
-    border: 1px solid var(--control-border-color);
-    width: 200px;
-    height: auto;
-    padding: 10px;
-    margin: 10px;
-    background: var(--control-background-color, #fff);
-    border-radius: 5px;
+    padding: 10px 0 0 0;
 
     .control-group {
       display: block;
@@ -137,6 +136,32 @@
     [mat-button] {
       width: 100%;
       margin: 5px 0;
+    }
+
+    button[aria-pressed='true'] {
+      background-color: #e0e0e0;
+      color: #0000008a;
+    }
+  }
+
+  #pallet {
+    .set {
+      clear: both;
+      margin: 10px auto;
+    }
+
+    button {
+      height: 30px;
+      width: 30px;
+      margin: 0 5px;
+      vertical-align: top;
+      text-align: center;
+      box-sizing: border-box;
+
+      &.active {
+        outline: 2px solid blue;
+        outline-offset: 1px;
+      }
     }
 
     button.pallet-cell {
@@ -159,44 +184,31 @@
     }
   }
 
-  #pallet {
-    border: 1px solid var(--control-border-color);
-    width: 200px;
-    padding: 10px;
-    margin: 10px;
-    background: var(--control-background-color, #fff);
-
-    .set {
-      clear: both;
-      margin: 10px auto;
-    }
-
-    button {
-      height: 30px;
-      width: 30px;
-      margin: 0 5px;
-      vertical-align: top;
-      text-align: center;
-      box-sizing: border-box;
-
-      &.active {
-        outline: 2px solid blue;
-        outline-offset: 1px;
-      }
-    }
-  }
-
   #stats {
     border: 1px solid var(--control-border-color);
     width: 100%;
     margin: 0 0 10px 0;
-    padding: 5px;
+    padding: 5px 0;
     border-radius: 5px;
-    box-sizing: border-box;
     background: var(--control-background-color, #fff);
+    position: relative;
+    overflow: clip;
 
-    > span {
+    .stat {
       padding: 0 10px;
+    }
+
+    #bar {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      height: 10px;
+
+      .cell-bar {
+        height: 10px;
+        display: inline-block;
+      }
     }
   }
 

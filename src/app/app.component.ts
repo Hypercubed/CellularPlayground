@@ -47,7 +47,10 @@ export class AppComponent {
   width = 0;
   dx = 0;
   dy = 0;
+  showGrid = true;
   savedPatterns: string[] = [];
+
+  Math = Math;
 
   private timeoutId = null;
   private requestId = null;
