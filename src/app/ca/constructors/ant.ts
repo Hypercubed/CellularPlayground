@@ -59,12 +59,12 @@ export class Ant extends CA {
     http://mathworld.wolfram.com/LangtonsAnt.html
     https://en.wikipedia.org/wiki/Langton's_ant`;
   static readonly options: Partial<CAOptions>[] = [
-    { title: 'Default' },
+    { title: 'Default', ...AntOptionsDefault },
     {
       title: 'Torus',
       boundaryType: BoundaryType.Torus,
       width: 39,
-      height: 39,
+      height: 39, ...AntOptionsDefault
     },
   ];
   static readonly patterns = [];

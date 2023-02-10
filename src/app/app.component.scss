@@ -122,6 +122,17 @@
   .controls {
     padding: 10px 0 0 0;
 
+    .control-group--suffix {
+      display: flex;
+
+      mat-icon {
+        margin-left: 10px;
+        font-size: 16px;
+        margin-top: 3px;
+        cursor: pointer;
+      }
+    }
+
     .control-group {
       display: block;
       margin: 0 auto;

@@ -1,0 +1,26 @@
+<form [formGroup]="form">
+  <div *ngFor="let item of formLayout" class="form-row">
+    <div [ngSwitch]="item.controlType">
+      <ng-container *ngSwitchCase="'textbox'">
+        <mat-form-field>
+          <mat-label>{{ item.key }}</mat-label>
+          <input matInput [formControlName]="item.key" [id]="item.key" [type]="item.type">
+        </mat-form-field>
+      </ng-container>
+      <ng-container *ngSwitchCase="'dropdown'">
+        <mat-form-field>
+          <mat-label>{{ item.key }}</mat-label>
+          <mat-select [formControlName]="item.key" [id]="item.key">
+            <mat-option *ngFor="let option of item.options" [value]="option">
+              {{ option }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+    </div>
+  </div>
+</form>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="false">Cancel</button>
+  <button mat-button [mat-dialog-close]="form.value" cdkFocusInitial>Ok</button>
+</div>

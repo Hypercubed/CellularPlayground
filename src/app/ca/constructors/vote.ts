@@ -19,9 +19,9 @@ export class Vote extends CA {
   static readonly description =
     'Vote is an example of the simplest possible kind of eight-neighbor CA';
   static readonly options: Partial<VoteOptions>[] = [
-    { title: 'Majority' },
-    { title: 'Anneal', ruleString: '46789' },
-    { title: 'Fredkin', ruleString: '13579' },
+    { title: 'Majority', ...VoteDefaultOptions },
+    { title: 'Anneal', ruleString: '46789', ...VoteDefaultOptions  },
+    { title: 'Fredkin', ruleString: '13579', ...VoteDefaultOptions  },
   ];
   static readonly patterns = [OSCILLATOR];
   static readonly className = 'vote';

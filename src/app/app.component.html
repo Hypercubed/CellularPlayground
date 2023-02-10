@@ -8,27 +8,33 @@
   [style.--n]="height"
 >
   <div #stats id="fpsStats" [class.show]="playing"></div>
+
   <aside id="left-side">
     <mat-accordion multi>
       <mat-expansion-panel expanded="true" hideToggle="true">
         <div class="controls">
-          <mat-select
-            (selectionChange)="onGameChange($event)"
-            [(ngModel)]="caItem"
-          >
-            <mat-option *ngFor="let item of CAList" [value]="item">
-              {{ item.title }}
-            </mat-option>
-          </mat-select>
-          <mat-select
-            (selectionChange)="onOptionsChange($event)"
-            [(ngModel)]="caOptions"
-            *ngIf="caItem.options?.length"
-          >
-            <mat-option *ngFor="let option of caItem.options" [value]="option">
-              {{ option.title }}
-            </mat-option>
-          </mat-select>
+
+            <mat-select
+              (selectionChange)="onGameChange($event)"
+              [(ngModel)]="caItem"
+            >
+              <mat-option *ngFor="let item of CAList" [value]="item">
+                {{ item.title }}
+              </mat-option>
+            </mat-select>
+
+            <div class="control-group--suffix" *ngIf="caItem.options?.length">
+              <mat-select
+                (selectionChange)="onOptionsChange($event)"
+                [(ngModel)]="caOptions"
+              >
+                <mat-option *ngFor="let option of caItem.options" [value]="option">
+                  {{ option.title }}
+                </mat-option>
+              </mat-select>
+              <!-- <mat-icon (click)="onEditOptions()">edit</mat-icon> -->
+            </div>
+
         </div>
       </mat-expansion-panel>
 

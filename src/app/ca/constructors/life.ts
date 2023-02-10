@@ -27,26 +27,29 @@ export class Life extends CA {
       title: "Conway's Life",
       ruleString: 'S23/B3',
       boundaryType: BoundaryType.Infinite,
+      ...LifeDefaultOptions
     },
     {
       title: 'Torus',
       ruleString: 'S23/B3',
       boundaryType: BoundaryType.Torus,
+      ...LifeDefaultOptions
     },
-    { title: 'Diamoeba', ruleString: 'S5678/B35678' },
-    { title: 'Maze', ruleString: 'S12345/B3' },
-    { title: 'Day & Night', ruleString: 'S34678/B3678' },
-    { title: 'HighLife', ruleString: 'S23/B36' },
-    { title: 'Assimilation', ruleString: 'S4567/B345' },
-    { title: 'Coagulations', ruleString: 'B378/S235678' },
-    { title: 'Coral', ruleString: 'S45678/B3' },
-    { title: 'Replicator', ruleString: 'B1357/S1357' },
-    { title: 'Serviettes', ruleString: 'B234/S' },
-    { title: 'Walled Cities', ruleString: 'B45678/S2345' },
-    { title: 'AntiLife', ruleString: 'B0123478/S01234678' },
+    { title: 'Diamoeba', ruleString: 'S5678/B35678', ...LifeDefaultOptions },
+    { title: 'Maze', ruleString: 'S12345/B3', ...LifeDefaultOptions },
+    { title: 'Day & Night', ruleString: 'S34678/B3678', ...LifeDefaultOptions },
+    { title: 'HighLife', ruleString: 'S23/B36', ...LifeDefaultOptions },
+    { title: 'Assimilation', ruleString: 'S4567/B345', ...LifeDefaultOptions },
+    { title: 'Coagulations', ruleString: 'B378/S235678', ...LifeDefaultOptions },
+    { title: 'Coral', ruleString: 'S45678/B3', ...LifeDefaultOptions },
+    { title: 'Replicator', ruleString: 'B1357/S1357', ...LifeDefaultOptions },
+    { title: 'Serviettes', ruleString: 'B234/S', ...LifeDefaultOptions },
+    { title: 'Walled Cities', ruleString: 'B45678/S2345', ...LifeDefaultOptions },
+    { title: 'AntiLife', ruleString: 'B0123478/S01234678', ...LifeDefaultOptions }
   ];
   static readonly patterns = [Glider, StillsAndOscillators, GosperGliderGun];
   static readonly className = 'life';
+  static readonly defaultOptions = LifeDefaultOptions;
 
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];

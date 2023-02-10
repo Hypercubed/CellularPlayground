@@ -20,6 +20,7 @@ import { BoundaryType, CA, CAOptions } from './ca/classes/base';
 
 import type { MatSelectChange } from '@angular/material/select';
 import type { CellState } from './ca/classes/states';
+import { OptionsEditComponent } from './options-edit/options-edit.component';
 
 @Component({
   selector: 'my-app',
@@ -175,11 +176,23 @@ export class AppComponent {
     this.ca.refreshStats();
   }
 
+  onEditOptions() {
+    this.dialog.open(OptionsEditComponent, {
+      data: { option: this.caOptions }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        this.caOptions = result;
+        this.setupCA(this.caItem, this.caOptions);
+      }
+    });
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (document.getElementsByTagName('mat-dialog-container')[0]) return;
+
     // Control Keys
     if (event.ctrlKey) {
-      console.log(event.code);
       if (event.code === 'KeyS' && event.ctrlKey) {
         this.onAddPattern();
         event.preventDefault();
@@ -251,8 +264,8 @@ export class AppComponent {
   }
 
   makeGrid(height: number, width: number) {
-    this.height = height;
-    this.width = width;
+    this.height = +height;
+    this.width = +width;
   }
 
   zoom(s: number) {
@@ -332,7 +345,7 @@ export class AppComponent {
     this.ca = new Ctor(caOptions || {});
     this.ca.reset();
 
-    this.makeGrid(this.ca.height, this.ca.width);
+    this.makeGrid(+this.ca.height, +this.ca.width);
     this.dx = 0;
     this.dy = 0;
     if (this.caItem.startingPattern) {
