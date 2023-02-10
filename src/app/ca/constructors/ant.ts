@@ -45,7 +45,6 @@ function isAnt(t: CellState): boolean {
 
 const AntOptionsDefault: Partial<CAOptions> = {
   width: 64,
-  height: 64,
   boundaryType: BoundaryType.Infinite,
   neighborhoodRange: 0,
 };
@@ -62,9 +61,9 @@ export class Ant extends CA {
     { title: 'Default', ...AntOptionsDefault },
     {
       title: 'Torus',
+      ...AntOptionsDefault,
       boundaryType: BoundaryType.Torus,
       width: 39,
-      height: 39, ...AntOptionsDefault
     },
   ];
   static readonly patterns = [];
@@ -106,6 +105,21 @@ export class Ant extends CA {
     this.rule = 'RL'; // Right on black, left on white
   }
 
+  randomize() {
+    this.fillWith(() => {
+      return Math.random() < 0.5 ? this.defaultCell : this.emptyCell;
+    });
+
+    const xx = Math.floor(this.width / 2);
+    const yy = Math.floor(this.height / 2);
+
+    const nextColor = getCellColor(this._get(xx, yy));
+    const nextState = getAntState(Direction.UP, nextColor);
+    this.set(xx, yy, nextState);
+
+    this.refreshStats();
+  }
+
   refreshStats() {
     this.stats.Generation = this.step;
     this.stats.Ants = this.currentGrid.reduce((c, cell) => c + +isAnt(cell), 0);
@@ -119,7 +133,7 @@ export class Ant extends CA {
     [x, y] = this.getPosition(x, y);
 
     const color = getCellColor(c);
-    const dir = hetAntDirection(c);
+    const dir = getAntDirection(c);
 
     // Flip the color
     const newColor = color === Color.WHITE ? BLACK : WHITE;
@@ -132,12 +146,12 @@ export class Ant extends CA {
     // Move
     const [xx, yy] = this.getPosition(...getNextPosition(newDir, x, y));
     const nextColor = getCellColor(this._get(xx, yy));
-    const nextState = getAntStane(newDir, nextColor);
+    const nextState = getAntState(newDir, nextColor);
     this._setNext(xx, yy, nextState);
   }
 }
 
-function getAntStane(direction: string, color: Color) {
+function getAntState(direction: string, color: Color) {
   switch (direction) {
     case Direction.UP:
       return color === Color.WHITE ? WHITE_UP : BLACK_UP;
@@ -155,7 +169,7 @@ function getCellColor(s: CellState): Color {
   return (s.state[0] as Color) || null;
 }
 
-function hetAntDirection(s: CellState): Direction {
+function getAntDirection(s: CellState): Direction {
   if (!s) return null;
   return (s.state[1] as Direction) || null;
 }

@@ -8,7 +8,6 @@ export interface VoteOptions extends CAOptions {
 
 const VoteDefaultOptions: Partial<VoteOptions> = {
   width: 64,
-  height: 64,
   ruleString: '56789',
 };
 
@@ -20,8 +19,8 @@ export class Vote extends CA {
     'Vote is an example of the simplest possible kind of eight-neighbor CA';
   static readonly options: Partial<VoteOptions>[] = [
     { title: 'Majority', ...VoteDefaultOptions },
-    { title: 'Anneal', ruleString: '46789', ...VoteDefaultOptions  },
-    { title: 'Fredkin', ruleString: '13579', ...VoteDefaultOptions  },
+    { title: 'Anneal', ...VoteDefaultOptions, ruleString: '46789'  },
+    { title: 'Fredkin', ...VoteDefaultOptions, ruleString: '13579'  },
   ];
   static readonly patterns = [OSCILLATOR];
   static readonly className = 'vote';

@@ -10,7 +10,6 @@ import { CellState } from '../classes/states';
 
 const DendriteDefaultOptions: Partial<CAOptions> = {
   width: 64,
-  height: 64,
   boundaryType: BoundaryType.Wall,
   iterationType: IterationType.BoundingBox,
 };

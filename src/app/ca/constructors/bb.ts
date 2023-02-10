@@ -53,7 +53,6 @@ export const bb5 = {
 const BBOptionsDefault = {
   oneDimensional: true,
   width: 29,
-  height: 29,
   boundaryType: BoundaryType.Infinite,
   rules: bb2,
   neighborhoodRange: 0,
@@ -82,7 +81,6 @@ export class BB extends OCA<CellState, BBOptions> {
     },
     {
       title: '5-state busy beaver',
-      height: 59,
       width: 59,
       rules: bb5,
       boundaryType: BoundaryType.Infinite,

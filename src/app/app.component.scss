@@ -2,9 +2,9 @@
   --n: 19;
   --m: 19;
 
-  --board-width: min(100vw - 540px, 100vh - 100px);
+  --board-width: min(100vw - 540px, 177vh - 150px);
   --cell-size: calc(var(--board-width) / var(--m));
-  --board-height: var(--board-width);
+  --board-height: calc(var(--cell-size) * var(--n));
   --board-grid-color: #bdbdbd;
 
   --background-color: #ddd;
@@ -250,19 +250,19 @@
 
   &.ca--boundary-infinite {
     #board {
-      border: 2px dotted var(--board-grid-color);
+      outline: 2px dotted var(--board-grid-color);
     }
   }
 
   &.ca--boundary-torus {
     #board {
-      border: 2px dashed var(--board-grid-color);
+      outline: 2px dashed var(--board-grid-color);
     }
   }
 
   &.ca--boundary-wall {
     #board {
-      border: 4px solid var(--board-grid-color);
+      outline: 4px solid var(--board-grid-color);
     }
   }
 
@@ -372,5 +372,20 @@
         background-color: #ffffff;
       }
     }
+  }
+}
+
+@media all and (display-mode: fullscreen) {
+  body, #container {
+    background-color: black !important;
+  }
+
+  #left-side, #right-side {
+    display: none;
+  }
+
+  #board {
+    pointer-events: none;
+    cursor: none;
   }
 }

@@ -8,8 +8,7 @@ import {
 import { CellState, createState } from '../classes/states';
 
 const RainDefaultOptions: Partial<CAOptions> = {
-  width: 60,
-  height: 60,
+  width: 80,
   boundaryType: BoundaryType.Wall,
   iterationType: IterationType.Active,
   neighborhoodRange: 0,
@@ -42,11 +41,55 @@ export class Rain extends CA {
     [WALL, EMPTY],
   ];
 
+  actions = [
+    {
+      title: 'Flip',
+      fn: () => {
+        this.flip();
+        this.shake();
+      }
+    },
+    {
+      title: 'Shake',
+      fn: () => this.shake()
+    },
+    {
+      title: 'Clear',
+      fn: () => this.clear()
+    }
+  ];
+
   constructor(options?: Partial<CAOptions>) {
     super({
       ...RainDefaultOptions,
       ...options,
     });
+  }
+
+  flip() {
+    const current = this.currentGrid;
+    this.fillWith((x, y) => {
+      return current.get(x, this.height - y - 1);
+    });
+    this.refreshStats();
+  }
+
+  shake() {
+    const bb = this.getBoundingBox();
+    for (let x = bb[0]; x < bb[2]; x++) {
+      for (let y = bb[1]; y < bb[3]; y++) {
+        const c = this.get(x, y);
+
+        const dx = Math.floor(Math.random() * 3) - 1;
+        const dy = Math.floor(Math.random() * 3) - 1;
+
+        const n = this.get(x + dx, y + dy);
+        
+        this.set(x, y, n);
+        this.set(x + dx, y + dy, c);
+      }
+    }
+    this.refreshStats();
   }
 
   raises(c: CellState, x: number, y: number) {

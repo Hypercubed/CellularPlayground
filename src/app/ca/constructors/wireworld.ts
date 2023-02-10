@@ -27,7 +27,6 @@ export class WireWorld extends CA {
   static readonly className = 'wireworld';
 
   width = 30;
-  height = 30;
 
   readonly states = States;
   readonly pallet = Pallet;

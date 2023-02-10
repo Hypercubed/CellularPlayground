@@ -22,8 +22,6 @@ export class OptionsEditComponent implements OnInit {
   constructor(private readonly formBuilder: FormBuilder, @Inject(MAT_DIALOG_DATA) public data: { option: CAOptions }) { }
 
   ngOnInit(): void {
-    console.log(this.data.option);
-
     this.form = this.formBuilder.group(this.data.option);
     this.formLayout = this.createFormLayout(this.data.option);
   }

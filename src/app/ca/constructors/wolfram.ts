@@ -9,7 +9,6 @@ interface ECAOptions extends CAOptions {
 
 const defaultECAOptions: Partial<ECAOptions> = {
   width: 43,
-  height: 22,
   boundaryType: BoundaryType.Infinite,
   ruleNumber: 30,
 };
@@ -28,9 +27,6 @@ export class ECA extends OCA<CellState, ECAOptions> {
   static readonly patterns = [];
   static readonly startingPattern = 'o';
   static readonly className = 'wolfram';
-
-  width = 86 / 2;
-  height = 86 / 2;
 
   states = [ACTIVE, EMPTY];
   pallet = [[ACTIVE, EMPTY]];

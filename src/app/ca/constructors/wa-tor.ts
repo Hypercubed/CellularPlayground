@@ -23,8 +23,7 @@ interface WaTorOptions extends CAOptions {
 }
 
 const DefaultOptions: Partial<WaTorOptions> = {
-  width: 40,
-  height: 40,
+  width: 80,
   boundaryType: BoundaryType.Torus,
   iterationType: IterationType.Active,
   neighborhoodRange: 0,

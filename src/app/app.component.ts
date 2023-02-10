@@ -22,6 +22,17 @@ import type { MatSelectChange } from '@angular/material/select';
 import type { CellState } from './ca/classes/states';
 import { OptionsEditComponent } from './options-edit/options-edit.component';
 
+const enterFullscreen = (elem: any, options?: any) => {
+  return elem[
+    [
+      'requestFullscreen',
+      'mozRequestFullScreen',
+      'msRequestFullscreen',
+      'webkitRequestFullscreen',
+    ].find((prop) => typeof elem[prop] === 'function')
+  ]?.(options);
+};
+
 @Component({
   selector: 'my-app',
   templateUrl: './app.component.html',
@@ -108,7 +119,7 @@ export class AppComponent {
   }
 
   onClear() {
-    this.ca.clearGrid();
+    this.ca.clear();
     this.dx = 0;
     this.dy = 0;
     this.ca.refreshStats();
@@ -261,6 +272,10 @@ export class AppComponent {
       }
     }
     // console.log(event);
+  }
+
+  openFullscreen() {
+    enterFullscreen(this.board.nativeElement);
   }
 
   makeGrid(height: number, width: number) {
@@ -439,7 +454,6 @@ export class AppComponent {
 
   onRightClick(event: Event, pattern: string) {
     event.preventDefault();
-    console.log(pattern);
     this.clipboard.copy(pattern);
     return false;
   }
@@ -463,9 +477,9 @@ export class AppComponent {
 
   private saveStateToStore() {
     const ruleIndex = this.CAList.findIndex((c) => c === this.caItem);
-    const optionIndex = this.caItem.options.findIndex(
+    const optionIndex = this.caItem.options?.findIndex(
       (c: CAOptions) => c === this.caOptions
-    );
+    ) || 0;
 
     localStorage.setItem(`rule`, `${ruleIndex}-${optionIndex}`);
   }
@@ -479,6 +493,6 @@ export class AppComponent {
       .map((i) => parseInt(i, 10));
 
     this.caItem = this.CAList[ruleIndex] || this.CAList[0];
-    this.caOptions = this.caItem.options[optionIndex] || this.caItem.options[0];
+    this.caOptions = this.caItem.options?.[optionIndex] || this.caItem.options?.[0];
   }
 }

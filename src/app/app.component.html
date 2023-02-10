@@ -107,6 +107,13 @@
             >
               <mat-icon>grid_on</mat-icon>
             </button>
+            <button
+              mat-icon-button
+              [attr.aria-pressed]="false"
+              (click)="openFullscreen()"
+            >
+              <mat-icon>fullscreen</mat-icon>
+            </button>
           </div>
         </div>
       </mat-expansion-panel>
@@ -183,8 +190,9 @@
     <mat-accordion multi>
       <mat-expansion-panel expanded="true" hideToggle="true">
         <div class="controls">
-          <button mat-button (click)="onRandom()">Random</button>
-          <button mat-button (click)="onClear()">Clear</button>
+          <button mat-button *ngFor="let action of ca.actions" (click)="action.fn()">{{ action.title }}</button>
+          <!-- <button mat-button (click)="onRandom()">Random</button>
+          <button mat-button (click)="onClear()">Clear</button> -->
         </div>
       </mat-expansion-panel>
 

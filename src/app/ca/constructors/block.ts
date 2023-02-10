@@ -13,8 +13,7 @@ interface BlockCAOptions extends CAOptions {
 }
 
 const VoteDefaultOptions: Partial<BlockCAOptions> = {
-  width: 40,
-  height: 40,
+  width: 64,
   boundaryType: BoundaryType.Torus,
   iterationType: IterationType.BoundingBox,
   neighborhoodRange: 0,

@@ -30,7 +30,6 @@ export const ACTIVE = createState('active', 'o', '');
 
 const DefaultCAOptions = {
   width: 40,
-  height: 40,
   neighborhoodRange: 1,
   boundaryType: BoundaryType.Infinite,
   iterationType: IterationType.LastChanged,
@@ -59,6 +58,17 @@ export abstract class CA<
    * Items are arranged into rows
    */
   pallet: T[][];
+
+  actions = [
+    {
+      title: 'Randomize',
+      fn: () => this.randomize()
+    },
+    {
+      title: 'Clear',
+      fn: () => this.clear()
+    }
+  ];
 
   /* Width and height of the view grid,
    * For bounded girds also the border size */
@@ -96,20 +106,28 @@ export abstract class CA<
     };
 
     this.width = options.width;
-    this.height = options.height;
+    this.height = options.height || Math.floor(options.width * 9/16);
     this.boundaryType = options.boundaryType;
     this.iterationType = options.iterationType;
     this.neighborhoodRange = options.neighborhoodRange;
   }
 
   reset() {
-    this.clearGrid();
+    this.clear();
     this.step = 0;
   }
 
-  clearGrid() {
+  clear() {
     this.currentGrid = new UnboundedGrid<T>(this.emptyCell);
     this.changedGrid = new UnboundedGrid<T>(null);
+  }
+
+  randomize() {
+    this.fillWith(() => {
+      const i = Math.floor(Math.random() * this.states.length);
+      return this.states[i];
+    });
+    this.refreshStats();
   }
 
   refreshStats() {
@@ -134,7 +152,7 @@ export abstract class CA<
   fillWith(c?: T | ((x: number, y: number) => T)) {
     c ||= this.emptyCell;
 
-    this.clearGrid();
+    this.clear();
     if (c === this.emptyCell) return;
 
     const grid = makeGridWith(this.width, this.height, c);
@@ -511,7 +529,7 @@ export abstract class CA<
   }
 
   loadRLE(rle: string) {
-    this.clearGrid();
+    this.clear();
     if (!rle) return;
 
     const { grid, height, width } = readRle(rle);

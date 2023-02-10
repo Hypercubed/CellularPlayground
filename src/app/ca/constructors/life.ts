@@ -8,8 +8,7 @@ export interface LifeOptions extends CAOptions {
 
 const LifeDefaultOptions: Partial<LifeOptions> = {
   width: 64,
-  height: 64,
-  ruleString: 'S23/B3',
+  ruleString: 'S23/B3'
 };
 
 export const Glider = 'bo$2bo$3o!';
@@ -25,27 +24,27 @@ export class Life extends CA {
   static readonly options: Partial<LifeOptions>[] = [
     {
       title: "Conway's Life",
+      ...LifeDefaultOptions,
       ruleString: 'S23/B3',
       boundaryType: BoundaryType.Infinite,
-      ...LifeDefaultOptions
     },
     {
       title: 'Torus',
+      ...LifeDefaultOptions,
       ruleString: 'S23/B3',
       boundaryType: BoundaryType.Torus,
-      ...LifeDefaultOptions
     },
-    { title: 'Diamoeba', ruleString: 'S5678/B35678', ...LifeDefaultOptions },
-    { title: 'Maze', ruleString: 'S12345/B3', ...LifeDefaultOptions },
-    { title: 'Day & Night', ruleString: 'S34678/B3678', ...LifeDefaultOptions },
-    { title: 'HighLife', ruleString: 'S23/B36', ...LifeDefaultOptions },
-    { title: 'Assimilation', ruleString: 'S4567/B345', ...LifeDefaultOptions },
-    { title: 'Coagulations', ruleString: 'B378/S235678', ...LifeDefaultOptions },
-    { title: 'Coral', ruleString: 'S45678/B3', ...LifeDefaultOptions },
-    { title: 'Replicator', ruleString: 'B1357/S1357', ...LifeDefaultOptions },
-    { title: 'Serviettes', ruleString: 'B234/S', ...LifeDefaultOptions },
-    { title: 'Walled Cities', ruleString: 'B45678/S2345', ...LifeDefaultOptions },
-    { title: 'AntiLife', ruleString: 'B0123478/S01234678', ...LifeDefaultOptions }
+    { title: 'Diamoeba', ...LifeDefaultOptions, ruleString: 'S5678/B35678' },
+    { title: 'Maze', ...LifeDefaultOptions, ruleString: 'S12345/B3' },
+    { title: 'Day & Night', ...LifeDefaultOptions, ruleString: 'S34678/B3678' },
+    { title: 'HighLife', ...LifeDefaultOptions, ruleString: 'S23/B36' },
+    { title: 'Assimilation', ...LifeDefaultOptions, ruleString: 'S4567/B345' },
+    { title: 'Coagulations', ...LifeDefaultOptions, ruleString: 'B378/S235678' },
+    { title: 'Coral', ...LifeDefaultOptions, ruleString: 'S45678/B3' },
+    { title: 'Replicator', ...LifeDefaultOptions, ruleString: 'B1357/S1357' },
+    { title: 'Serviettes', ...LifeDefaultOptions, ruleString: 'B234/S' },
+    { title: 'Walled Cities', ...LifeDefaultOptions, ruleString: 'B45678/S2345' },
+    { title: 'AntiLife', ...LifeDefaultOptions, ruleString: 'B0123478/S01234678' }
   ];
   static readonly patterns = [Glider, StillsAndOscillators, GosperGliderGun];
   static readonly className = 'life';

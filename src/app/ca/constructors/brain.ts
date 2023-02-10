@@ -7,7 +7,6 @@ const REFRACTORY = createState('refractory', 'r', '');
 
 const BrainDefaultOptions: Partial<CAOptions> = {
   width: 64,
-  height: 64,
   boundaryType: BoundaryType.Infinite,
 };
 

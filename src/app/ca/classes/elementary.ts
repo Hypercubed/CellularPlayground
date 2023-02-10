@@ -18,8 +18,16 @@ export abstract class OCA<
     }, 0);
   }
 
+  randomize() {
+    this.fillWith((_, y) => {
+      if (y !== this.step) return this.emptyCell;
+      return Math.random() < 0.5 ? this.defaultCell : this.emptyCell;
+    });
+    this.refreshStats();
+  }
+
   loadRLE(rle: string) {
-    this.clearGrid();
+    this.clear();
     if (!rle) return;
 
     const { grid, width } = readRle(rle);
